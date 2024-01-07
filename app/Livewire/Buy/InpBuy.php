@@ -6,11 +6,14 @@ use App\Enums\PlaceType;
 use App\Livewire\Forms\BuyForm;
 use App\Livewire\Forms\BuyTranForm;
 use App\Models\Barcode;
+use App\Models\Buy;
+use App\Models\Buy_tran;
 use App\Models\Buy_tran_work;
 use App\Models\Buys_work;
 use App\Models\Item;
 
 
+use App\Models\Supplier;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Actions\Action;
@@ -34,6 +37,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -57,6 +61,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
     ];
   }
 
+
+
   public BuyForm $buyForm;
   public BuyTranForm $buyTranForm;
 
@@ -73,7 +79,17 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
   }
   public function add_rec(){
    $this->buyTranForm->loadForm($this->buy_id,$this->buytranData);
-   Buy_tran_work::create($this->buyTranForm->all());
+   $this->buyTranForm->qs1=$this->buyTranForm->q1;
+
+   $res=Buy_tran_work::where('buy_id',$this->buy_id)
+       ->where('item_id',$this->buyTranForm->item_id)->get();
+
+   if ($res->count()>0)
+       Buy_tran_work::where('buy_id',$this->buy_id)
+           ->where('item_id',$this->buyTranForm->item_id)
+           ->update($this->buyTranForm->all());
+   else  Buy_tran_work::create($this->buyTranForm->all());
+
    $this->buyTranForm->reset();
    $this->buytranFormBlade->fill($this->buyTranForm->toArray());
    $tot=Buy_tran_work::where('buy_id',$this->buy_id)->sum('sub_input');
@@ -109,7 +125,9 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->required(),
             Select::make('supplier_id')
               ->label('المورد')
+
               ->relationship('Supplier','name')
+              ->live()
               ->required()
               ->inlineLabel()
               ->columnSpan(3)
@@ -127,7 +145,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                     TextInput::make('libyana')
                       ->label('لبيانا'),
                     Hidden::make('user_id')
-                      ->default(Auth::id()),
+                      ,
 
                   ])
               ])
@@ -157,6 +175,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
             Select::make('place_id')
               ->label('مكان التخزين')
               ->relationship('Place','name')
+                ->live()
               ->required()
               ->inlineLabel()
               ->columnSpan(3)
@@ -209,12 +228,20 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
             TextInput::make('pay')
               ->label('المدفوع')
               ->columnSpan(2)
+              ->live(onBlur: true)
               ->inlineLabel()
               ->default('0')
               ->extraAttributes([
-
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'barcode_id' })",
               ])
+              ->afterStateUpdated(function (Set $set,Get $get,$state){
+                  if (!$state) $set('pay',0);
+                  $set('baky',$get('tot')-$get('pay'));
+                  $res=Buys_work::find($this->buy_id);
+                  $res->pay=$get('pay');
+                  $res->baky=$get('baky');
+                  $res->save();
+              })
               ->id('pay'),
             TextInput::make('baky')
               ->label('المتبقي')
@@ -277,8 +304,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   })
                   ->extraAttributes([
                     'wire:change' => "\$dispatch('goto', { test: 'q1' })",
-                    'wire:keydown..enter' => "\$dispatch('goto', { test: 'q1' })",
 
+                    'wire:keydown..enter' => "\$dispatch('goto', { test: 'q1' })",
                   ])
                   ->id('item_id'),
             TextInput::make('price_input')
@@ -302,19 +329,49 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ])
                   ->id('q1'),
 
-            \Filament\Forms\Components\Actions::make([
-              \Filament\Forms\Components\Actions\Action::make('اضافة')
-                ->icon('heroicon-m-plus')
-                ->button()
-                ->color('success')
-                ->requiresConfirmation()
-                ->action(function () {
-                  return true;
-                })
 
-
-            ])->extraAttributes(['class' => 'items-center justify-between']),
           ]),
+        Section::make()
+          ->schema([
+              \Filament\Forms\Components\Actions::make([
+                  \Filament\Forms\Components\Actions\Action::make('تخزين')
+                      ->icon('heroicon-m-plus')
+                      ->button()
+                      ->visible(Buy_tran_work::where('buy_id',$this->buy_id)->count()>0)
+                      ->color('success')
+                      ->requiresConfirmation()
+                      ->action(function () {
+                          $buy=Buys_work::find($this->buy_id);
+                          $buytran=Buy_tran_work::where('buy_id',$this->buy_id)->get();
+                          if ($buytran->count()==0)
+                              Notification::make()
+                                  ->title('لم يتم ادخال اصناف بعد !! ')
+                                  ->icon('heroicon-o-exclamation-triangle')
+                                  ->iconColor('warning')
+                                  ->send();
+                          $this->buyForm->copyToSave($buy);
+                          $id=Buy::create($this->buyForm->all());
+                          foreach ($buytran as $item) {
+                              $this->buyTranForm->copyToSave($id->id, $item);
+                              Buy_tran::create($this->buyTranForm->all());
+                          }
+                          Buy_tran_work::where('buy_id',$this->buy_id)->delete();
+                          $buy->tot=0;
+                          $buy->pay=0;
+                          $buy->baky=0;
+                          $buy->save();
+                      }),
+                    \Filament\Forms\Components\Actions\Action::make('مسح')
+                        ->icon('heroicon-m-trash')
+                        ->button()
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function () {
+                            return true;
+                        })
+              ])->extraAttributes(['class' => 'items-center justify-between']),
+
+          ])
 
       ])
       ->statePath('buytranData')
@@ -329,15 +386,48 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
         return  $buy_tran;
       })
       ->columns([
-        TextColumn::make('sort'),
-        TextColumn::make('item_id'),
-        TextColumn::make('barcode_id'),
-        TextColumn::make('Item.name'),
-        TextColumn::make('q1'),
-        TextColumn::make('price_input'),
-        TextColumn::make('sub_input'),
+        TextColumn::make('sort')
+          ->label('ت')
+          ->sortable(),
+        TextColumn::make('item_id')
+            ->label('رقم الصنف')
+            ->sortable(),
+        TextColumn::make('barcode_id')
+            ->label('الباركود')
+            ->sortable(),
+          TextColumn::make('Item.name')
+              ->label('اسم الصنف')
+              ->color('info')
+              ->sortable(),
+          TextColumn::make('q1')
+              ->label('الكمية')
+              ->sortable(),
+          TextColumn::make('price_input')
+              ->label('سعر الشراء')
+              ->sortable(),
+          TextColumn::make('sub_input')
+              ->label('المجموع')
+              ->sortable(),
       ])
+        ->actions([
+            \Filament\Tables\Actions\Action::make('delete')
+               ->action(function (Buy_tran_work $record){
+                   $record->delete();
+               })
+               ->icon('heroicon-m-trash')
+                ->iconButton()->color('danger')
+                ->hiddenLabel()
+               ->requiresConfirmation(),
+            \Filament\Tables\Actions\Action::make('edit')
+                ->action(function (Buy_tran_work $record){
+                    $this->buytranFormBlade->fill($record->toArray());
+                    $this->dispatch('goto',  test: 'q1' );
+                })
+                ->icon('heroicon-m-pencil')
+                ->iconButton()->color('info')
+                ->hiddenLabel()
 
+        ])
       ->striped();
   }
 

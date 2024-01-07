@@ -18,7 +18,9 @@ class Place extends Model
   public function Buy(){
     return $this->hasMany(Buy::class);
   }
-
+    public function Buys_work(){
+        return $this->hasMany(Buys_work::class);
+    }
   public function __construct(array $attributes = [])
   {
     parent::__construct($attributes);

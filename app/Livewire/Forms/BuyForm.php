@@ -41,5 +41,19 @@ class BuyForm extends Form
     $this->notes = $rec->notes;
     $this->user_id = $rec->user_id;
   }
+    public function copyToSave($rec){
+        $this->order_date = $rec->order_date;
+        $this->supplier_id = $rec->supplier_id;
+        $this->price_type = $rec->price_type;
+        $this->place_id = $rec->place_id;
+        $this->tot = $rec->tot;
+        $this->pay = $rec->pay;
+        $this->pay_after = $rec->pay_after;
+        $this->morajeh = $rec->morajeh;
+        $this->baky = $rec->baky;
+        $this->not_pay_date = $rec->not_pay_date;
+        $this->notes = $rec->notes;
+        $this->user_id = $rec->user_id;
+    }
 
 }

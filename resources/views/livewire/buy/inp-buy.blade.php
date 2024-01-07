@@ -19,7 +19,7 @@
         document.addEventListener('livewire:initialized', () => {
         @this.on('goto', (event) => {
             postid = (event.test);
-
+            console.info(postid)
             if (postid == 'order_date') {
                 $("#order_date").focus();
                 $("#order_date").select();
@@ -50,8 +50,8 @@
                 $("#q1").focus();
                 $("#q1").select();
             }if (postid == 'price_input') {
-                $("#p1").focus();
-                $("#p1").select();
+                $("#price_input").focus();
+                $("#price_input").select();
             }
         });
         });
