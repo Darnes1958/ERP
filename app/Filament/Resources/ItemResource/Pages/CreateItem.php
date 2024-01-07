@@ -22,7 +22,7 @@ class CreateItem extends CreateRecord
     {
         $item=Item::latest()->first();
         $bar = new Barcode;
-        $bar->barcode=$item->barcode;
+        $bar->id=$item->barcode;
         $bar->item_id=$item->id;
         $bar->save();
 

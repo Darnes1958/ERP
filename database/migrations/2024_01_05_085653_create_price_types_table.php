@@ -11,9 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('other')->create('unitas', function (Blueprint $table) {
+        Schema::create('price_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name',40)->unique();
+            $table->string('name');
+            $table->binary('buy');
+            $table->binary('sell');
+            $table->binary('receipt');
+            $table->integer('inc_dec');
+            $table->integer('rate');
+            $table->float('val');
+            $table->binary('available');
             $table->timestamps();
         });
     }
@@ -23,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('unitas');
+        Schema::dropIfExists('price_types');
     }
 };

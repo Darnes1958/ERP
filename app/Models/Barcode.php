@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 class Barcode extends Model
 {
     protected $connection = 'other';
-
+    public $incrementing = false;
     public function Item(){
         return $this->belongsTo(Item::class);
     }

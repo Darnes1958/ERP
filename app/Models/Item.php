@@ -28,6 +28,15 @@ class Item extends Model
     public function Barcode(){
         return $this->hasMany(Barcode::class);
     }
+  public function Buy_tran(){
+    return $this->hasMany(Buy_tran::class);
+  }
+  public function Buy_tran_work(){
+    return $this->hasMany(Buy_tran_work::class);
+  }
+  public function Tar_Buy(){
+  return $this->hasMany(Tar_buy::class);
+}
 
     public function __construct(array $attributes = [])
     {

@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('other')->create('unitas', function (Blueprint $table) {
+        Schema::connection('other')->create('suppliers', function (Blueprint $table) {
             $table->id();
-            $table->string('name',40)->unique();
+            $table->string('name');
+            $table->string('address');
+            $table->string('mdar');
+            $table->string('libyana');
+            $table->string('user_id');
             $table->timestamps();
         });
     }
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('unitas');
+        Schema::dropIfExists('suppliers');
     }
 };

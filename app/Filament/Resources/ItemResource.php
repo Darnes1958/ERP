@@ -5,11 +5,13 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Item;
+use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -18,6 +20,8 @@ use Filament\Tables\Table;
 class ItemResource extends Resource
 {
     protected static ?string $model = Item::class;
+
+    protected static ?string $pluralModelLabel='أصناف';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -28,21 +32,28 @@ class ItemResource extends Resource
                 TextInput::make('name')
                  ->label('اسم الصنف')
                  ->required()
-                ->unique()
+                ->unique(ignoreRecord: true)
+                  ->validationMessages([
+                    'unique' => ' :attribute مخزون مسبقا ',
+                  ])
                 ->columnSpan(2),
                 TextInput::make('barcode')
                     ->label('الباركود')
                     ->required()
+                    ->live()
                     ->unique(ignoreRecord: true)
-                    ->unique(table: \App\Models\Barcode::class,column: 'barcode'),
-                Radio::make('unitlevel')
+                  ->validationMessages([
+                    'unique' => 'هذا الـ :attribute مخزون مسبقا',
+                  ]),
+
+                Radio::make('two_unit')
                     ->label('مستوي الوحدات')
                     ->inline()
                     ->options([
-                        1 => 'أحادي',
-                        2 => 'ثنائي',
+                        false => 'أحادي',
+                        true => 'ثنائي',
                     ])
-                    ->default(1)
+                    ->default(false)
                     ->required(),
                 Select::make('unita_id')
                     ->label('الوحدة')
@@ -92,16 +103,31 @@ class ItemResource extends Resource
                                     ->unique()
                                     ->label('الاسم'),
                             ])->columns(2)
-                    ]),
+                    ])
+                    ->hidden(fn(Get $get): bool => ! $get('two_unit')),
                 TextInput::make('count')
                     ->label('العدد')
-                    ->required(),
+                    ->required()
+                    ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
+              TextInput::make('price_buy')
+                ->label('سعر الشراء')
+                ->required(),
+
                 TextInput::make('price1')
-                    ->label('السعر')
+                    ->label('السعر قطاعي')
                     ->required(),
                 TextInput::make('price2')
-                    ->label('سعر الوحدة الصغري')
-                    ->required(),
+                    ->label('سعر الصغري قطاعي')
+                    ->required()
+                    ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+              TextInput::make('pricej1')
+                ->label('السعر جملة')
+                ->required(),
+              TextInput::make('pricej2')
+                ->label('سعر الصغري جملة')
+                ->required()
+                ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+
                 Select::make('item_type_id')
                     ->label('التصنيف')
                     ->relationship('Item_type','name')
@@ -129,7 +155,7 @@ class ItemResource extends Resource
                 Select::make('company_id')
                     ->label('الشركة المصنعة')
                     ->relationship('Company','name')
-                    ->required()
+                    ->default(1)
                     ->columnSpan(2)
                     ->createOptionForm([
                         Section::make('ادخال شركات مصنع')
@@ -178,28 +204,20 @@ class ItemResource extends Resource
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('stock1')
-                    ->label('الرصيد')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('الرصيد'),
                 TextColumn::make('stock2')
-                    ->label('رصيد الصغري')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('رصيد الصغري'),
                 TextColumn::make('price1')
-                    ->label('السعر')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('السعر'),
                 TextColumn::make('price2')
-                    ->label('سعر الصغري')
-                    ->sortable()
-                    ->searchable(),
-
+                    ->label('سعر الصغري'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+              Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
