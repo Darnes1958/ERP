@@ -22,6 +22,9 @@ class Price_type extends Model
   public function Buy(){
     return $this->hasMany(Buy::class);
   }
+  public function Price_buy(){
+    return $this->hasMany(Price_buy::class);
+  }
 
   public function __construct(array $attributes = [])
   {

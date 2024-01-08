@@ -4,16 +4,22 @@ namespace App\Livewire\Forms;
 
 use App\Models\Buys_work;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Rule;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 
 class BuyForm extends Form
 {
   public $order_date = '' ;
+  #[Rule('required')]
   public $supplier_id = 1 ;
+  #[Rule('required')]
   public $price_type_id = 1 ;
+  #[Rule('required')]
   public $place_id = 1 ;
+  #[Rule('required')]
   public $tot = 0 ;
+  #[Rule('required')]
   public $pay = 0 ;
   public $pay_after = 0 ;
   public $morajeh = 0 ;

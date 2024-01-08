@@ -8,7 +8,12 @@ use Illuminate\Support\Facades\Auth;
 class Item extends Model
 {
     protected $connection = 'other';
-
+    public function Place_stock(){
+      return $this->hasMany(Place_stock::class);
+    }
+  public function Price_buy(){
+    return $this->hasMany(Price_buy::class);
+  }
     public function Company(){
         return $this->belongsTo(Company::class);
     }

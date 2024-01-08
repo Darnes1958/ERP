@@ -14,6 +14,9 @@ class Place extends Model
   protected $casts =[
     'inc_dec' => PlaceType::class,
   ];
+  public function Place_stock(){
+    return $this->hasMany(Place_stock::class);
+  }
 
   public function Buy(){
     return $this->hasMany(Buy::class);

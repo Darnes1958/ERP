@@ -13,6 +13,8 @@ use App\Models\Buys_work;
 use App\Models\Item;
 
 
+use App\Models\Place_stock;
+use App\Models\Price_buy;
 use App\Models\Supplier;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -32,6 +34,7 @@ use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Alignment;
 use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -40,6 +43,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Rule;
 use Livewire\Component;
 
 
@@ -120,23 +124,32 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->id('order_date')
               ->autofocus()
               ->label('التاريخ')
+              ->afterStateUpdated(function ($state){
+                $res=Buys_work::find($this->buy_id);
+                $res->order_date=$state;
+                $res->save();
+              })
               ->columnSpan(2)
               ->inlineLabel()
               ->required(),
             Select::make('supplier_id')
               ->label('المورد')
-
               ->relationship('Supplier','name')
               ->live()
               ->required()
               ->inlineLabel()
               ->columnSpan(3)
+              ->afterStateUpdated(function ($state){
+                $res=Buys_work::find($this->buy_id);
+                $res->supplier_id=$state;
+                $res->save();
+              })
               ->createOptionForm([
                 Section::make('ادخال مورد جديد')
                   ->schema([
                     TextInput::make('name')
                       ->required()
-                      ->unique()
+
                       ->label('الاسم'),
                     TextInput::make('address')
                       ->label('العنوان'),
@@ -154,7 +167,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->schema([
                     TextInput::make('name')
                       ->required()
-                      ->unique()
+
                       ->label('الاسم'),
                     TextInput::make('address')
                       ->label('العنوان'),
@@ -179,6 +192,11 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->required()
               ->inlineLabel()
               ->columnSpan(3)
+              ->afterStateUpdated(function ($state){
+                $res=Buys_work::find($this->buy_id);
+                $res->place_id=$state;
+                $res->save();
+              })
               ->createOptionForm([
                 Section::make('ادخال مكان تخزين')
                   ->schema([
@@ -215,6 +233,11 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->default(1)
               ->relationship('Price_type','name')
               ->required()
+              ->afterStateUpdated(function ($state){
+                $res=Buys_work::find($this->buy_id);
+                $res->price_type_id=$state;
+                $res->save();
+              })
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'pay' })",
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'pay' })",
@@ -354,12 +377,24 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                           foreach ($buytran as $item) {
                               $this->buyTranForm->copyToSave($id->id, $item);
                               Buy_tran::create($this->buyTranForm->all());
+                              $itemrec=Item::find($this->buyTranForm->item_id);
+                                $itemrec->stock1+=$this->buyTranForm->q1;
+                                $itemrec->price_buy=$this->buyTranForm->price_input;
+                              $itemrec->save();
+
+                              $placeStock=Place_stock::updateOrCreate(
+                                  ['item_id' => $this->buyTranForm->item_id,'place_id' => $this->buyForm->place_id],
+                                );
+                            $placeStock=Price_buy::updateOrCreate(
+                              ['item_id' => $this->buyTranForm->item_id,'price_type_id' => $this->buyForm->price_type_id],
+                            );
+
+                              $placeStock->stock1+=$this->buyTranForm->q1;
+                              $placeStock->save();
                           }
                           Buy_tran_work::where('buy_id',$this->buy_id)->delete();
-                          $buy->tot=0;
-                          $buy->pay=0;
-                          $buy->baky=0;
-                          $buy->save();
+                          $buy->tot=0;  $buy->pay=0; $buy->baky=0;  $buy->save();
+
                       }),
                     \Filament\Forms\Components\Actions\Action::make('مسح')
                         ->icon('heroicon-m-trash')
@@ -413,6 +448,9 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
             \Filament\Tables\Actions\Action::make('delete')
                ->action(function (Buy_tran_work $record){
                    $record->delete();
+                   $res=Buy_tran_work::where('buy_id',$this->buy_id)->orderBy('sort')->get();
+                   $i=0;
+                   foreach ($res as $item) {$item->sort=++$i;$item->save();}
                })
                ->icon('heroicon-m-trash')
                 ->iconButton()->color('danger')
@@ -426,8 +464,23 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 ->icon('heroicon-m-pencil')
                 ->iconButton()->color('info')
                 ->hiddenLabel()
+        ])
+      ->bulkActions([
+
+         BulkAction::make('deleteAll')
+           ->action(function (Collection $records){
+             $records->each->delete();
+             $res=Buy_tran_work::where('buy_id',$this->buy_id)->orderBy('sort')->get();
+             $i=0;
+             foreach ($res as $item) {$item->sort=++$i;$item->save();}
+           })
+           ->icon('heroicon-m-trash')
+           ->color('danger')
+           ->Label('الغاء المحدد')
+           ->requiresConfirmation(),
 
         ])
+
       ->striped();
   }
 
