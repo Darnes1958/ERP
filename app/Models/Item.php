@@ -14,6 +14,9 @@ class Item extends Model
   public function Price_buy(){
     return $this->hasMany(Price_buy::class);
   }
+    public function Price_sell(){
+        return $this->hasMany(Price_sell::class);
+    }
     public function Company(){
         return $this->belongsTo(Company::class);
     }

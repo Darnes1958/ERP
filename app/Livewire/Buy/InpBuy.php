@@ -274,10 +274,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->default('0'),
 
 
-          ])->columns(8),
-
-
-
+          ])
+          ->columns(8)
       ])
       ->statePath('buyData')
       ->model(Buys_work::class);
@@ -351,8 +349,6 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                     'wire:keydown.enter' => "add_rec",
                   ])
                   ->id('q1'),
-
-
           ]),
         Section::make()
           ->schema([
@@ -367,7 +363,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                           $buy=Buys_work::find($this->buy_id);
                           $buytran=Buy_tran_work::where('buy_id',$this->buy_id)->get();
                           if ($buytran->count()==0)
-                              Notification::make()
+                            Notification::make()
                                   ->title('لم يتم ادخال اصناف بعد !! ')
                                   ->icon('heroicon-o-exclamation-triangle')
                                   ->iconColor('warning')
@@ -376,25 +372,11 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                           $id=Buy::create($this->buyForm->all());
                           foreach ($buytran as $item) {
                               $this->buyTranForm->copyToSave($id->id, $item);
+                              $this->buyTranForm->place_id=$this->buyForm->place_id;
                               Buy_tran::create($this->buyTranForm->all());
-                              $itemrec=Item::find($this->buyTranForm->item_id);
-                                $itemrec->stock1+=$this->buyTranForm->q1;
-                                $itemrec->price_buy=$this->buyTranForm->price_input;
-                              $itemrec->save();
-
-                              $placeStock=Place_stock::updateOrCreate(
-                                  ['item_id' => $this->buyTranForm->item_id,'place_id' => $this->buyForm->place_id],
-                                );
-                            $placeStock=Price_buy::updateOrCreate(
-                              ['item_id' => $this->buyTranForm->item_id,'price_type_id' => $this->buyForm->price_type_id],
-                            );
-
-                              $placeStock->stock1+=$this->buyTranForm->q1;
-                              $placeStock->save();
                           }
                           Buy_tran_work::where('buy_id',$this->buy_id)->delete();
                           $buy->tot=0;  $buy->pay=0; $buy->baky=0;  $buy->save();
-
                       }),
                     \Filament\Forms\Components\Actions\Action::make('مسح')
                         ->icon('heroicon-m-trash')

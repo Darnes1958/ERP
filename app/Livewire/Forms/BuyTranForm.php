@@ -25,6 +25,7 @@ class BuyTranForm extends Form
 
   public $exp_date = '' ;
   public $user_id = '' ;
+  public $place_id=0;
 
   public function loadForm($buy_id,$rec){
     $this->buy_id=$buy_id;
