@@ -184,6 +184,7 @@ class BuyResource extends Resource
     {
         return $table
             ->columns([
+               TextColumn::make('id'),
                TextColumn::make('Supplier.name'),
                TextColumn::make('tot'),
             ])

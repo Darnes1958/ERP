@@ -11,15 +11,10 @@ use Livewire\Form;
 class BuyForm extends Form
 {
   public $order_date = '' ;
-  #[Rule('required')]
   public $supplier_id = 1 ;
-  #[Rule('required')]
   public $price_type_id = 1 ;
-  #[Rule('required')]
   public $place_id = 1 ;
-  #[Rule('required')]
   public $tot = 0 ;
-  #[Rule('required')]
   public $pay = 0 ;
   public $pay_after = 0 ;
   public $morajeh = 0 ;
@@ -32,6 +27,12 @@ class BuyForm extends Form
     $this->order_date=date('Y-m-d');
     $this->user_id=Auth::id();
   }
+  public function mountForEdit(){
+    $this->supplier_id='';
+    $this->price_type_id='';
+    $this->place_id='';
+  }
+
   public function fillForm($buy_id){
     $rec=Buys_work::find($buy_id);
     $this->order_date = $rec->order_date;
