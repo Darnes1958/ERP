@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Models\Buy_tran;
 use App\Models\Buy_tran_work;
 use App\Models\Buys_work;
 use Illuminate\Support\Facades\Auth;
@@ -34,18 +35,24 @@ class BuyTranForm extends Form
     $this->item_id = $rec['item_id'];
     $this->barcode_id = $rec['barcode_id'];
     $this->q1 = $rec['q1'];
-
     $this->price_input = $rec['price_input'];
-
-
-   $this->sub_input = $this->q1*$this->price_input;
-
-
-  //  $this->tar_buy_id = $rec->tar_buy_id;
-  //  $this->exp_date = $rec->exp_date;
+    $this->sub_input = $this->q1*$this->price_input;
+    $this->exp_date = $rec['exp_date'];
+    info($this->exp_date);
     $this->user_id = Auth::id();
 
   }
+    public function loadFromBuyTran($buy_id,$rec){
+        $this->buy_id=$buy_id;
+        $this->sort = Buy_tran_work::where('buy_id',$buy_id)->max('sort')+1;
+        $this->item_id = $rec['item_id'];
+        $this->barcode_id = $rec['barcode_id'];
+        $this->q1 = $rec['q1'];
+        $this->qs1 = $rec['q1'];
+        $this->price_input = $rec['price_input'];
+        $this->sub_input = $this->q1*$this->price_input;
+        $this->user_id = Auth::id();
+    }
     public function copyToSave($buy_id,$rec){
         $this->buy_id=$buy_id;
         $this->sort = $rec->sort;
@@ -55,6 +62,8 @@ class BuyTranForm extends Form
         $this->qs1 = $rec->qs1;
         $this->price_input = $rec->price_input;
         $this->sub_input = $rec->sub_input;
+        $this->exp_date = $rec->exp_date;
+
         $this->user_id = $rec->user_id;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Item;
+use App\Models\Setting;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Section;
@@ -16,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class ItemResource extends Resource
 {
@@ -54,7 +56,8 @@ class ItemResource extends Resource
                         true => 'ثنائي',
                     ])
                     ->default(false)
-                    ->required(),
+                    ->required()
+                    ->visible(Setting::find(Auth::user()->company)->has_two),
                 Select::make('unita_id')
                     ->label('الوحدة')
                     ->relationship('Unita','name')
@@ -202,15 +205,18 @@ class ItemResource extends Resource
                 TextColumn::make('Unitb.name')
                     ->label('الوحدة الصغري')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->visible(Setting::find(Auth::user()->company)->many_place),
                 TextColumn::make('stock1')
                     ->label('الرصيد'),
                 TextColumn::make('stock2')
-                    ->label('رصيد الصغري'),
+                    ->label('رصيد الصغري')
+                    ->visible(Setting::find(Auth::user()->company)->many_place),
                 TextColumn::make('price1')
                     ->label('السعر'),
                 TextColumn::make('price2')
-                    ->label('سعر الصغري'),
+                    ->label('سعر الصغري')
+                    ->visible(Setting::find(Auth::user()->company)->many_place),
             ])
             ->filters([
                 //

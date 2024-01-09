@@ -2,7 +2,11 @@
 
 namespace App\Livewire\Forms;
 
+use App\Models\Buy;
 use App\Models\Buys_work;
+use App\Models\Place;
+use App\Models\Price_type;
+use App\Models\Supplier;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Validate;
@@ -10,6 +14,7 @@ use Livewire\Form;
 
 class BuyForm extends Form
 {
+
   public $order_date = '' ;
   public $supplier_id = 1 ;
   public $price_type_id = 1 ;
@@ -27,17 +32,13 @@ class BuyForm extends Form
     $this->order_date=date('Y-m-d');
     $this->user_id=Auth::id();
   }
-  public function mountForEdit(){
-    $this->supplier_id='';
-    $this->price_type_id='';
-    $this->place_id='';
-  }
+
 
   public function fillForm($buy_id){
     $rec=Buys_work::find($buy_id);
     $this->order_date = $rec->order_date;
     $this->supplier_id = $rec->supplier_id;
-    $this->price_type = $rec->price_type;
+    $this->price_type_id = $rec->price_type_id;
     $this->place_id = $rec->place_id;
     $this->tot = $rec->tot;
     $this->pay = $rec->pay;
@@ -48,10 +49,11 @@ class BuyForm extends Form
     $this->notes = $rec->notes;
     $this->user_id = $rec->user_id;
   }
+
     public function copyToSave($rec){
         $this->order_date = $rec->order_date;
         $this->supplier_id = $rec->supplier_id;
-        $this->price_type = $rec->price_type;
+        $this->price_type_id = $rec->price_type_id;
         $this->place_id = $rec->place_id;
         $this->tot = $rec->tot;
         $this->pay = $rec->pay;

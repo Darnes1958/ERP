@@ -2,6 +2,12 @@
 
 namespace App\Livewire\Buy;
 
+use App\Livewire\Forms\BuyFormEdit;
+use App\Livewire\Forms\BuyTranFormEdit;
+use App\Models\Place;
+use App\Models\Price_type;
+use App\Models\Setting;
+use Illuminate\Support\HtmlString;
 use Livewire\Component;
 
 use App\Enums\PlaceType;
@@ -67,12 +73,11 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
 
 
 
-  public BuyForm $buyForm;
-  public BuyTranForm $buyTranForm;
+  public BuyFormEdit $buyForm;
+  public BuyTranFormEdit $buyTranForm;
 
   public function ChkBarcode(){
     $res=Barcode::find($this->buytranData['barcode_id']);
-
     if (! $res)
       Notification::make()
         ->title('هذا الباركود غير مخزون ')
@@ -82,29 +87,29 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
     else $this->dispatch('goto', test: 'q1');
   }
   public function add_rec(){
-    $this->buyTranForm->loadForm($this->buy_id,$this->buytranData);
-    $this->buyTranForm->qs1=$this->buyTranForm->q1;
+    $this->buyTranForm->loadFromBuyTran($this->buy_id,$this->buytranData);
+    $this->buyTranForm->place_id=$this->buyForm->place_id;
 
-    $res=Buy_tran_work::where('buy_id',$this->buy_id)
+    $res=Buy_tran::where('buy_id',$this->buy_id)
       ->where('item_id',$this->buyTranForm->item_id)->get();
 
     if ($res->count()>0)
-      Buy_tran_work::where('buy_id',$this->buy_id)
+      Buy_tran::where('buy_id',$this->buy_id)
         ->where('item_id',$this->buyTranForm->item_id)
         ->update($this->buyTranForm->all());
-    else  Buy_tran_work::create($this->buyTranForm->all());
+    else  Buy_tran::create($this->buyTranForm->all());
 
     $this->buyTranForm->reset();
     $this->buytranFormBlade->fill($this->buyTranForm->toArray());
-    $tot=Buy_tran_work::where('buy_id',$this->buy_id)->sum('sub_input');
-    $baky=$tot-Buys_work::find($this->buy_id)->pay;
-    Buys_work::find($this->buy_id)->update([
+    $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
+    $baky=$tot-Buy::find($this->buy_id)->pay;
+    Buy::find($this->buy_id)->update([
       'tot'=>$tot,
       'baky'=>$baky,
 
     ]);
 
-    $this->buyForm->fillForm($this->buy_id);
+    $this->buyForm->loadFromBuy($this->buy_id);
     $this->buyFormBlade->fill($this->buyForm->toArray());
 
 
@@ -121,22 +126,53 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
           ->label('رقم الفاتورة')
           ->options(DB::connection('other')->table('buys')
             ->join('suppliers','buys.supplier_id','=','suppliers.id')
-            ->selectRaw('suppliers.name+str(tot) as name,buys.id') ->latest('buys.created_at')->pluck('name','id'))
+            ->selectRaw('\'المورد : \'+suppliers.name+\'  اجمالي الفاتورة : \'+str(tot) as name,buys.id') ->latest('buys.created_at')->pluck('name','id'))
           ->searchable()
           ->live()
-
           ->preload()
           ->inlineLabel()
           ->columnSpan(2)
           ->afterStateUpdated(function ($state){
-            $this->id=$state;
-          })
+            if(Buy_tran::where('buy_id',$state)
+                          ->where('q1','!=',DB::raw('qs1'))->exists()) {
 
+                Notification::make()
+                    ->title(fn () => new HtmlString('الفاتورة رقم <span class="text-primary-400">'.$state.'</span> تم بيع أصناف منها ولا يجوز تعديلها '))
+                    ->icon('heroicon-o-check')
+                    ->iconColor('success')
+                    ->send();
+              $this->buy_id='';
+              $this->buyForm->reset();$this->buyTranForm->reset();
+              $this->buyFormBlade->fill($this->buyForm->toArray());
+              $this->buytranFormBlade->fill($this->buyTranForm->toArray());
+            }
+            else
+                if(Buy::find($state)->morajeh>0) {
+
+                    Notification::make()
+                        ->title(fn () => new HtmlString('الفاتورة رقم <span class="text-primary-400">'.$state.'</span> تم <span class="text-primary-400">ترجيع</span> أصناف منها ولا يجوز تعديلها '))
+                        ->icon('heroicon-o-check')
+                        ->iconColor('success')
+                        ->send();
+                    $this->buy_id='';
+                    $this->buyForm->reset();$this->buyTranForm->reset();
+                    $this->buyFormBlade->fill($this->buyForm->toArray());
+                    $this->buytranFormBlade->fill($this->buyTranForm->toArray());
+                }
+                else
+            {
+            $this->buy_id=$state;
+            $this->id=$state;
+            $this->buyForm->loadFromBuy($this->buy_id);
+            $this->buyFormBlade->fill($this->buyForm->toArray());}
+
+          })
           ->live(),
-        ])->columns(4)->collapsible(),
+        ])->columns(4)->collapsible()->collapsed(function (){
+                return $this->buy_id != null;
+            }),
         Section::make()
           ->schema([
-
             DatePicker::make('order_date')
               ->extraAttributes([
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'supplier_id' })",
@@ -145,124 +181,29 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->autofocus()
               ->label('التاريخ')
               ->afterStateUpdated(function ($state){
-                $res=Buys_work::find($this->buy_id);
+                $res=Buy::find($this->buy_id);
                 $res->order_date=$state;
                 $res->save();
               })
               ->columnSpan(2)
               ->inlineLabel()
               ->required(),
-            Select::make('supplier_id')
+            TextInput::make('Supplier_name')
               ->label('المورد')
-              ->relationship('Supplier','name')
-              ->live()
-              ->required()
               ->inlineLabel()
               ->columnSpan(3)
-              ->afterStateUpdated(function ($state){
-                $res=Buys_work::find($this->buy_id);
-                $res->supplier_id=$state;
-                $res->save();
-              })
-              ->createOptionForm([
-                Section::make('ادخال مورد جديد')
-                  ->schema([
-                    TextInput::make('name')
-                      ->required()
-
-                      ->label('الاسم'),
-                    TextInput::make('address')
-                      ->label('العنوان'),
-                    TextInput::make('mdar')
-                      ->label('مدار'),
-                    TextInput::make('libyana')
-                      ->label('لبيانا'),
-                    Hidden::make('user_id')
-                    ,
-
-                  ])
-              ])
-              ->editOptionForm([
-                Section::make('تعديل بيانات مورد')
-                  ->schema([
-                    TextInput::make('name')
-                      ->required()
-
-                      ->label('الاسم'),
-                    TextInput::make('address')
-                      ->label('العنوان'),
-                    TextInput::make('mdar')
-                      ->label('مدار'),
-                    TextInput::make('libyana')
-                      ->label('لبيانا'),
-                    Hidden::make('user_id')
-                      ->default(Auth::id()),
-
-                  ])->columns(2)
-              ])
-              ->extraAttributes([
-                'wire:change' => "\$dispatch('goto', { test: 'place_id' })",
-                'wire:keydown.enter' => "\$dispatch('goto', { test: 'place_id' })",
-              ])
-              ->id('supplier_id'),
-            Select::make('place_id')
-              ->label('مكان التخزين')
-              ->relationship('Place','name')
-              ->live()
-              ->required()
-              ->inlineLabel()
-              ->columnSpan(3)
-              ->afterStateUpdated(function ($state){
-                $res=Buys_work::find($this->buy_id);
-                $res->place_id=$state;
-                $res->save();
-              })
-              ->createOptionForm([
-                Section::make('ادخال مكان تخزين')
-                  ->schema([
-                    TextInput::make('name')
-                      ->required()
-                      ->unique()
-                      ->label('الاسم'),
-                    Radio::make('place_type')
-                      ->inline()
-                      ->options(PlaceType::class)
-                  ])
-              ])
-              ->editOptionForm([
-                Section::make('تعديل وحدات كبري')
-                  ->schema([
-                    TextInput::make('name')
-                      ->required()
-                      ->unique()
-                      ->label('الاسم'),
-                    Radio::make('place_type')
-                      ->inline()
-                      ->options(PlaceType::class)
-                  ])->columns(2)
-              ])
-              ->extraAttributes([
-                'wire:change' => "\$dispatch('goto', { test: 'price_type_id' })",
-                'wire:keydown..enter' => "\$dispatch('goto', { test: 'price_type_id' })",
-              ])
-              ->id('place_id'),
-            Select::make('price_type_id')
+              ->disabled(),
+            TextInput::make('Place_name')
+                ->label('مكان التخزين')
+                ->columnSpan(3)
+                ->inlineLabel()
+                ->disabled()
+                ->visible(Setting::find(Auth::user()->company)->many_place),
+            TextInput::make('Price_name')
               ->label('طريقة الدفع')
               ->columnSpan(2)
               ->inlineLabel()
-              ->default(1)
-              ->relationship('Price_type','name')
-              ->required()
-              ->afterStateUpdated(function ($state){
-                $res=Buys_work::find($this->buy_id);
-                $res->price_type_id=$state;
-                $res->save();
-              })
-              ->extraAttributes([
-                'wire:change' => "\$dispatch('goto', { test: 'pay' })",
-                'wire:keydown.enter' => "\$dispatch('goto', { test: 'pay' })",
-              ])
-              ->id('price_type_id'),
+              ->disabled(),
             TextInput::make('tot')
               ->label('إجمالي الفاتورة')
               ->columnSpan(2)
@@ -280,7 +221,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->afterStateUpdated(function (Set $set,Get $get,$state){
                 if (!$state) $set('pay',0);
                 $set('baky',$get('tot')-$get('pay'));
-                $res=Buys_work::find($this->buy_id);
+                $res=Buy::find($this->buy_id);
                 $res->pay=$get('pay');
                 $res->baky=$get('baky');
                 $res->save();
@@ -297,14 +238,13 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
           ])
           ->columns(8)
           ->collapsible()
-
-          ->collapsed(function (){
-            return $this->id==null;
+          ->reactive()
+          ->hidden(function (){
+              return $this->buy_id==null;
           })
-
       ])
       ->statePath('buyData')
-      ->model(Buys_work::class);
+      ->model(Buy::class);
   }
 
   public function buytranFormBlade(Form $form): Form
@@ -325,7 +265,6 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
                   $rec=Item::find($res->item_id);
                   $set('item_id',$res->item_id) ;
                   $set('price_input', $rec->price_buy);
-                  $set('name', $rec->name);
                 }
               })
               ->extraAttributes([
@@ -342,19 +281,24 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->live()
               ->reactive()
               ->required()
-
               ->afterStateUpdated(function (Set $set,$state){
-
                 $res=Item::find($state);
                 $set('barcode_id',$res->barcode) ;
                 $set('price_input', $res->price_buy);
               })
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'q1' })",
-
                 'wire:keydown..enter' => "\$dispatch('goto', { test: 'q1' })",
               ])
               ->id('item_id'),
+              DatePicker::make('exp_date')
+                  ->label('تاريخ الصلاحية')
+                  ->inlineLabel()
+                  ->extraAttributes([
+                      'wire:keydown.enter' => "\$dispatch('goto', { test: 'q1' })",
+                  ])
+                  ->visible(Setting::find(Auth::user()->company)->has_exp),
+
             TextInput::make('price_input')
               ->label('السعر')
               ->inlineLabel()
@@ -375,57 +319,21 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
                 'wire:keydown.enter' => "add_rec",
               ])
               ->id('q1'),
-          ]),
-        Section::make()
-          ->schema([
-            \Filament\Forms\Components\Actions::make([
-              \Filament\Forms\Components\Actions\Action::make('تخزين')
-                ->icon('heroicon-m-plus')
-                ->button()
-                ->visible(Buy_tran_work::where('buy_id',$this->buy_id)->count()>0)
-                ->color('success')
-                ->requiresConfirmation()
-                ->action(function () {
-                  $buy=Buys_work::find($this->buy_id);
-                  $buytran=Buy_tran_work::where('buy_id',$this->buy_id)->get();
-                  if ($buytran->count()==0)
-                    Notification::make()
-                      ->title('لم يتم ادخال اصناف بعد !! ')
-                      ->icon('heroicon-o-exclamation-triangle')
-                      ->iconColor('warning')
-                      ->send();
-                  $this->buyForm->copyToSave($buy);
-                  $id=Buy::create($this->buyForm->all());
-                  foreach ($buytran as $item) {
-                    $this->buyTranForm->copyToSave($id->id, $item);
-                    $this->buyTranForm->place_id=$this->buyForm->place_id;
-                    Buy_tran::create($this->buyTranForm->all());
-                  }
-                  Buy_tran_work::where('buy_id',$this->buy_id)->delete();
-                  $buy->tot=0;  $buy->pay=0; $buy->baky=0;  $buy->save();
-                }),
-              \Filament\Forms\Components\Actions\Action::make('مسح')
-                ->icon('heroicon-m-trash')
-                ->button()
-                ->color('danger')
-                ->requiresConfirmation()
-                ->action(function () {
-                  return true;
-                })
-            ])->extraAttributes(['class' => 'items-center justify-between']),
-
           ])
+            ->hidden(function (){
+                return $this->buy_id==null;
+            })
 
       ])
       ->statePath('buytranData')
-      ->model(Buy_tran_work::class);
+      ->model(Buy_tran::class);
   }
 
   public function table(Table $table):Table
   {
     return $table
-      ->query(function (Buy_tran_work $buy_tran)  {
-        $buy_tran=Buy_tran_work::where('user_id',Auth::id()) ;
+      ->query(function (Buy_tran $buy_tran)  {
+        $buy_tran=Buy_tran::where('buy_id',$this->buy_id) ;
         return  $buy_tran;
       })
       ->columns([
@@ -454,42 +362,72 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
       ])
       ->actions([
         \Filament\Tables\Actions\Action::make('delete')
-          ->action(function (Buy_tran_work $record){
+          ->action(function (Buy_tran $record){
             $record->delete();
-            $res=Buy_tran_work::where('buy_id',$this->buy_id)->orderBy('sort')->get();
+            $res=Buy_tran::where('buy_id',$this->buy_id)->orderBy('sort')->get();
             $i=0;
             foreach ($res as $item) {$item->sort=++$i;$item->save();}
+
+            $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
+            $baky=$tot-Buy::find($this->buy_id)->pay;
+            Buy::find($this->buy_id)->update([
+              'tot'=>$tot,
+              'baky'=>$baky,
+
+            ]);
+
+              $this->buyForm->loadFromBuy($this->buy_id);
+              $this->buyFormBlade->fill($this->buyForm->toArray());
           })
           ->icon('heroicon-m-trash')
           ->iconButton()->color('danger')
           ->hiddenLabel()
+            ->hidden(function (){
+                return Buy_tran::where('buy_id',$this->buy_id)->count()==1;
+            })
           ->requiresConfirmation(),
         \Filament\Tables\Actions\Action::make('edit')
-          ->action(function (Buy_tran_work $record){
+          ->action(function (Buy_tran $record){
             $this->buytranFormBlade->fill($record->toArray());
             $this->dispatch('goto',  test: 'q1' );
           })
           ->icon('heroicon-m-pencil')
           ->iconButton()->color('info')
           ->hiddenLabel()
+
       ])
       ->bulkActions([
 
         BulkAction::make('deleteAll')
           ->action(function (Collection $records){
             $records->each->delete();
-            $res=Buy_tran_work::where('buy_id',$this->buy_id)->orderBy('sort')->get();
+            $res=Buy_tran::where('buy_id',$this->buy_id)->orderBy('sort')->get();
             $i=0;
             foreach ($res as $item) {$item->sort=++$i;$item->save();}
+
+            $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
+            $baky=$tot-Buy::find($this->buy_id)->pay;
+            Buy::find($this->buy_id)->update([
+                  'tot'=>$tot,
+                  'baky'=>$baky,
+
+              ]);
+
+            $this->buyForm->loadFromBuy($this->buy_id);
+            $this->buyFormBlade->fill($this->buyForm->toArray());
           })
           ->icon('heroicon-m-trash')
           ->color('danger')
           ->Label('الغاء المحدد')
+            ->hidden(function (){
+                return Buy_tran::where('buy_id',$this->buy_id)->count()==1;
+            })
           ->requiresConfirmation(),
 
       ])
 
-      ->striped();
+      ->striped()
+        ;
   }
 
   public function mount(){

@@ -33,6 +33,10 @@ class BuyResource extends Resource
     protected static ?string $model = Buy::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    
+    protected static ?string $pluralModelLabel='استفسار عن فاتورة';
+    protected static ?string $navigationGroup='فواتير شراء';
+    protected static ?int $navigationSort=3;
 
     public static function form(Form $form): Form
     {

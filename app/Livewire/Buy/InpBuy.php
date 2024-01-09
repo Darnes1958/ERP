@@ -15,6 +15,7 @@ use App\Models\Item;
 
 use App\Models\Place_stock;
 use App\Models\Price_buy;
+use App\Models\Setting;
 use App\Models\Supplier;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -206,7 +207,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ])
               ])
               ->editOptionForm([
-                Section::make('تعديل وحدات كبري')
+                Section::make('تعديل مكان تخزين')
                   ->schema([
                     TextInput::make('name')
                       ->required()
@@ -221,7 +222,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 'wire:change' => "\$dispatch('goto', { test: 'price_type_id' })",
                 'wire:keydown..enter' => "\$dispatch('goto', { test: 'price_type_id' })",
               ])
-              ->id('place_id'),
+              ->id('place_id')
+                ->visible(Setting::find(Auth::user()->company)->many_place),
             Select::make('price_type_id')
               ->label('طريقة الدفع')
               ->columnSpan(2)
@@ -239,6 +241,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'pay' })",
               ])
               ->id('price_type_id'),
+
             TextInput::make('tot')
               ->label('إجمالي الفاتورة')
               ->columnSpan(2)
@@ -325,6 +328,14 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                     'wire:keydown..enter' => "\$dispatch('goto', { test: 'q1' })",
                   ])
                   ->id('item_id'),
+            DatePicker::make('exp_date')
+             ->label('تاريخ الصلاحية')
+             ->inlineLabel()
+                ->extraAttributes([
+                    'wire:keydown.enter' => "\$dispatch('goto', { test: 'q1' })",
+                ])
+             ->visible(Setting::find(Auth::user()->company)->has_exp) ,
+
             TextInput::make('price_input')
               ->label('السعر')
               ->inlineLabel()
