@@ -5,6 +5,7 @@ namespace App\Livewire\Sell;
 use App\Enums\PlaceType;
 use App\Livewire\Forms\SellForm;
 use App\Livewire\Forms\SellTranForm;
+use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
 
 use App\Models\Item;
@@ -24,6 +25,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
@@ -34,12 +36,13 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class InpSell extends Component implements HasForms,HasTable,HasActions
 {
   use InteractsWithForms, InteractsWithTable, InteractsWithActions;
-
+  use Raseed;
   public ?array $sellData = [];
   public ?array $selltranData = [];
 
@@ -57,6 +60,54 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
       'selltranFormBlade',
     ];
   }
+  public function is_two(){
+      if (isset($this->selltranData['item_id']) && $this->selltranData['item_id']!='') {
+      return Setting::find(Auth::user()->company)->has_two && Item::find($this->selltranData['item_id'])->two_unit==1;}
+      else return false;
+  }
+    public function chkQuant(){
+        if ($this->is_two())
+            $this->dispatch('goto', test: 'q2');
+        else $this->add_rec();
+    }
+
+    public function ChkBarcode(){
+        $res=Barcode::find($this->selltranData['barcode_id']);
+
+        if (! $res)
+            Notification::make()
+                ->title('هذا الباركود غير مخزون ')
+                ->icon('heroicon-o-check')
+                ->iconColor('success')
+                ->send();
+        else $this->dispatch('goto', test: 'q1');
+    }
+    public function add_rec()
+    {
+
+        $this->sellTranForm->loadForm($this->sell_id, $this->sell_id2, $this->selltranData);
+
+        $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
+            ->where('item_id', $this->sellTranForm->item_id)->get();
+
+        if ($res->count() > 0)
+            Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
+                ->where('item_id', $this->sellTranForm->item_id)
+                ->update($this->sellTranForm->all());
+        else  Sell_tran_work::create($this->sellTranForm->all());
+
+        $this->sellTranForm->reset();
+        $this->selltranFormBlade->fill($this->sellTranForm->toArray());
+        $tot = Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)->sum('sub_tot');
+        $baky = $tot - Sell_work::find([$this->sell_id,$this->sell_id2])->pay;
+        Sell_work::find([$this->sell_id,$this->sell_id2])->update([
+            'tot' => $tot,
+            'baky' => $baky,
+        ]);
+        $this->sellForm->tot=$tot;
+        $this->sellForm->baky=$baky;
+        $this->sellFormBlade->fill($this->sellForm->toArray());
+    }
 
   public function sellFormBlade(Form $form): Form
   {
@@ -188,6 +239,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ])
               ->id('price_type_id'),
 
+
             TextInput::make('tot')
               ->label('إجمالي الفاتورة')
               ->columnSpan(2)
@@ -217,6 +269,15 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->inlineLabel()
               ->disabled()
               ->default('0'),
+              Radio::make('single')
+                  ->hiddenLabel()
+                  ->inline()
+                  ->columnSpan(2)
+                  ->visible(Setting::find(Auth::user()->company)->two_price)
+                  ->options([
+                      1 => 'قطاعي',
+                      0 => 'جملة'
+                  ]),
 
 
           ])
@@ -240,13 +301,14 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->live(onBlur: true)
               ->afterStateUpdated(function (Set $set,$state) {
                 $res=Barcode::find($state);
-
                 if ($res) {
                   $rec=Item::find($res->item_id);
+                  $this->two_unit=$rec->two_unit;
+                  $this->price_input=$rec->price_input;
+
                   $set('item_id',$res->item_id) ;
                   $set('price1', $rec->price1);
                   $set('price2', $rec->price2);
-                  $set('name', $rec->name);
                 }
               })
               ->extraAttributes([
@@ -260,16 +322,17 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->preload()
               ->relationship('Item','name')
               ->inlineLabel()
+
               ->live()
-              ->reactive()
+
               ->required()
               ->afterStateUpdated(function (Set $set,$state){
                 $res=Item::find($state);
+                $this->two_unit=$res->two_unit;
+                $this->price_input=$res->price_input;
                 $set('barcode_id',$res->barcode) ;
                 $set('price1', $res->price1);
                 $set('price2', $res->price2);
-
-
               })
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'q1' })",
@@ -288,12 +351,15 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'q1' })",
               ]),
             TextInput::make('price2')
-              ->label('السعر')
+              ->label('سعر الصغري')
               ->inlineLabel()
               ->numeric()
               ->live()
               ->required()
               ->id('price2')
+              ->visible(function (){
+                  return $this->is_two();
+              })
               ->extraAttributes([
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'q1' })",
               ]),
@@ -303,20 +369,21 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->inlineLabel()
               ->numeric()
               ->required()
-              ->extraAttributes([
-                'wire:keydown.enter' => "add_rec",
-              ])
+              ->extraAttributes(['wire:keydown.enter' => "chkQuant",])
               ->id('q1'),
+
             TextInput::make('q2')
-              ->label('الكمية')
+              ->label('الكمية صغري')
               ->inlineLabel()
               ->numeric()
               ->required()
+               ->visible(function (){
+                    return $this->is_two();
+                })
               ->extraAttributes([
                 'wire:keydown.enter' => "add_rec",
               ])
               ->id('q2'),
-
           ]),
         Section::make()
           ->schema([
@@ -386,19 +453,35 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
           ->color('info')
           ->sortable(),
         TextColumn::make('q1')
-          ->label('الكمية')
-          ->sortable(),
+          ->label('الكمية'),
+
+        TextColumn::make('q2')
+              ->label('صغري')
+              ->visible(Setting::find(Auth::user()->company)->has_two)
+              ->formatStateUsing(function (string $state) {
+                  if ($state=='0') return '';
+                  return $state;
+              }),
         TextColumn::make('price1')
-          ->label('سعر البيع')
-          ->sortable(),
+          ->label('سعر البيع'),
+
+          TextColumn::make('price2')
+              ->label('سعر الصغري')
+              ->visible(Setting::find(Auth::user()->company)->has_two)
+              ->formatStateUsing(function (string $state) {
+                  if ($state=='0.0') return '';
+                  return $state;
+              }),
         TextColumn::make('sub_tot')
-          ->label('المجموع')
-          ->sortable(),
+          ->label('المجموع'),
+
       ])
       ->actions([
         \Filament\Tables\Actions\Action::make('delete')
           ->action(function (Sell_tran_work $record){
             $record->delete();
+            $this->sellForm->fillForm($this->sell_id,$this->sell_id2);
+            $this->sellFormBlade->fill($this->sellForm->toArray());
           })
           ->icon('heroicon-m-trash')
           ->iconButton()->color('danger')

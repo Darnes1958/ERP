@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Models\Sell_tran_work;
 use App\Models\Sell_work;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Form;
@@ -33,8 +34,14 @@ class SellForm extends Form
 
 
   public function fillForm($id,$id2){
+      $tot = Sell_tran_work::where('sell_id', $id)->where('sell_id2', $id2)->sum('sub_tot');
+      $baky = $tot - Sell_work::find([$id,$id2])->pay;
+      Sell_work::find([$id,$id2])->update([
+          'tot' => $tot,
+          'baky' => $baky,
+      ]);
     $rec=Sell_work::find([$id,$id2]);
-    info($rec);
+
     $this->order_date = $rec->order_date;
     $this->customer_id = $rec->customer_id;
     $this->price_type_id = $rec->price_type_id;

@@ -7,6 +7,7 @@ use App\Models\Buy_tran_work;
 use App\Models\Buys_work;
 use App\Models\Sell_tran_work;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Rule;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 
@@ -15,6 +16,7 @@ class SellTranForm extends Form
 
   public $sell_id = '' ;
   public $sell_id2 = '' ;
+
   public $item_id = '' ;
   public $barcode_id = '' ;
   public $q1 = 0 ;
@@ -35,7 +37,9 @@ class SellTranForm extends Form
     $this->q2 = $rec['q2'];
     $this->price1 = $rec['price1'];
     $this->price2 = $rec['price2'];
-    $this->sub_tot = $this->q1*$this->price1+$this->q2*$this->price2;
+
+    $this->sub_tot = ($this->q1*$this->price1)+($this->q2*$this->price2);
+
     $this->profit=0;
     $this->user_id = Auth::id();
   }
@@ -51,5 +55,9 @@ class SellTranForm extends Form
       $this->sub_tot = $rec->sub_tot;
       $this->profit = $rec->profit;
       $this->user_id = $rec->user_id;
+    }
+
+    public function chkRaseed(){
+
     }
 }

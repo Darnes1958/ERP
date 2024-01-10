@@ -49,6 +49,7 @@
             }if (postid == 'q1') {
                 $("#q1").focus();
                 $("#q1").select();
+            }
                 if (postid == 'q2') {
                     $("#q2").focus();
                     $("#q2").select();
@@ -60,6 +61,7 @@
                     $("#price2").focus();
                     $("#price2").select();
                 }
+        });
         });
     </script>
 @endpush

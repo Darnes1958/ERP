@@ -33,7 +33,7 @@ class BuyResource extends Resource
     protected static ?string $model = Buy::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    
+
     protected static ?string $pluralModelLabel='استفسار عن فاتورة';
     protected static ?string $navigationGroup='فواتير شراء';
     protected static ?int $navigationSort=3;
@@ -41,7 +41,6 @@ class BuyResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-
             ->schema([
               Section::make()
               ->schema([
@@ -69,7 +68,6 @@ class BuyResource extends Resource
                           ->label('لبيانا'),
                         Hidden::make('user_id')
                           ->default(Auth::id()),
-
                       ])
                   ])
                   ->editOptionForm([
@@ -87,7 +85,6 @@ class BuyResource extends Resource
                           ->label('لبيانا'),
                         Hidden::make('user_id')
                           ->default(Auth::id()),
-
                       ])->columns(2)
                   ]),
                 Select::make('place_id')
