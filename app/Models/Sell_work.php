@@ -5,13 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Thiagoprz\CompositeKey\HasCompositeKey;
 
-class Buys_work extends Model
+
+class Sell_work extends Model
 {
+  use HasCompositeKey;
   protected $connection = 'other';
 
-  public function worksupplier(){
-    return $this->belongsTo(Supplier::class);
+  protected $primaryKey = ['id', 'id2'];
+
+  public function Customer(){
+    return $this->belongsTo(Customer::class);
   }
   public function Price_type(){
     return $this->belongsTo(Price_type::class);
@@ -20,11 +25,11 @@ class Buys_work extends Model
     return $this->belongsTo(Place::class);
   }
 
-  public function Buy_tran_work(){
-    return $this->hasMany(Buy_tran_work::class);
+  public function Sell_tran_work(){
+    return $this->hasMany(Sell_tran_work::class);
   }
-  public function Tar_Buy(){
-    return $this->hasMany(Tar_buy::class);
+  public function Tar_Sell(){
+    return $this->hasMany(Tar_Sell::class);
   }
   public function __construct(array $attributes = [])
   {

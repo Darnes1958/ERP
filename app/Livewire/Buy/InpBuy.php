@@ -135,7 +135,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->required(),
             Select::make('supplier_id')
               ->label('المورد')
-              ->relationship('Supplier','name')
+              ->relationship('worksupplier','name')
               ->live()
               ->required()
               ->inlineLabel()
@@ -150,6 +150,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->schema([
                     TextInput::make('name')
                       ->required()
+                      ->unique()
                       ->label('الاسم'),
                     TextInput::make('address')
                       ->label('العنوان'),
@@ -157,7 +158,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                       ->label('مدار'),
                     TextInput::make('libyana')
                       ->label('لبيانا'),
-                    Hidden::make('user_id'),
+                    Hidden::make('user_id')
+                    ->default(Auth::id()),
                   ])
               ])
               ->editOptionForm([

@@ -38,7 +38,7 @@ class BuyTranForm extends Form
     $this->price_input = $rec['price_input'];
     $this->sub_input = $this->q1*$this->price_input;
     $this->exp_date = $rec['exp_date'];
-    info($this->exp_date);
+
     $this->user_id = Auth::id();
 
   }
