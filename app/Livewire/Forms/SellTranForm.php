@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Forms;
 
+use App\Livewire\Traits\Raseed;
 use App\Models\Buy_tran;
 use App\Models\Buy_tran_work;
 use App\Models\Buys_work;
+use App\Models\Item;
 use App\Models\Sell_tran_work;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Rule;
 use Livewire\Attributes\Validate;
@@ -13,7 +16,7 @@ use Livewire\Form;
 
 class SellTranForm extends Form
 {
-
+ use Raseed;
   public $sell_id = '' ;
   public $sell_id2 = '' ;
 
@@ -56,8 +59,25 @@ class SellTranForm extends Form
       $this->profit = $rec->profit;
       $this->user_id = $rec->user_id;
     }
+    public function raseedplace(){
+      return $this->retRaseedPlace($this->item_id,$this->place_id);
+    }
+    public function raseedTwo(){
+      return $this->retRaseedTwo($this->item_id,$this->place_id);
+    }
+    public function quantTwo(){
+     return $this->retQuant($this->item_id,$this->q1,$this->q2);
+    }
+    public function chkRaseed(): bool{
+     return $this->raseedTwo()-$this->quantTwo()>=0;
+    }
+    public function chkData(){
 
-    public function chkRaseed(){
+    if ($this->item_id=='') return 'يجب ادخال الصنف';
 
+      if ($this->q1==null || $this->q1<=0) return 'يجب ادخال الكمية الكبري';
+      if (Setting::find(Auth::user()->company)->has_two && Item::find($this->item_id)->two_unit && ($this->q2 == null || $this->q2<=0)) return 'يجب ادخال الكمية';
+      if (!$this->chkRaseed()) return 'الرصيد لا يسمح !!';
+      return 'ok';
     }
 }

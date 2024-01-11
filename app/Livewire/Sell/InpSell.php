@@ -43,12 +43,14 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
 {
   use InteractsWithForms, InteractsWithTable, InteractsWithActions;
   use Raseed;
+
   public ?array $sellData = [];
   public ?array $selltranData = [];
 
   public $sell_id;
   public $sell_id2;
 
+  public $has_two;
   public SellForm $sellForm;
   public SellTranForm $sellTranForm;
 
@@ -84,9 +86,12 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
     }
     public function add_rec()
     {
-
         $this->sellTranForm->loadForm($this->sell_id, $this->sell_id2, $this->selltranData);
-
+        $chk=$this->sellTranForm->chkData();
+        if ($chk != 'ok') {
+          Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
+          return;
+        }
         $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
             ->where('item_id', $this->sellTranForm->item_id)->get();
 
@@ -273,13 +278,11 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                   ->hiddenLabel()
                   ->inline()
                   ->columnSpan(2)
-                  ->visible(Setting::find(Auth::user()->company)->two_price)
+                  ->visible(Setting::find(Auth::user()->company)->jomla)
                   ->options([
                       1 => 'قطاعي',
                       0 => 'جملة'
                   ]),
-
-
           ])
           ->columns(8)
       ])
@@ -295,6 +298,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
           ->schema([
             TextInput::make('barcode_id')
               ->label('الباركود')
+              ->columnSpan(2)
               ->required()
               ->inlineLabel()
               ->exists()
@@ -303,12 +307,17 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 $res=Barcode::find($state);
                 if ($res) {
                   $rec=Item::find($res->item_id);
-                  $this->two_unit=$rec->two_unit;
-                  $this->price_input=$rec->price_input;
-
                   $set('item_id',$res->item_id) ;
                   $set('price1', $rec->price1);
                   $set('price2', $rec->price2);
+
+
+                  $this->sellTranForm->place_id=$this->sellForm->place_id;
+                  $this->sellTranForm->item_id=$res->item_id;
+                  $set('raseed_all',$rec->stock1);
+                  $q1=$this->sellTranForm->raseedplace();
+
+                 $set('raseed_place',$this->sellTranForm->raseedplace()['q1']);
                 }
               })
               ->extraAttributes([
@@ -318,27 +327,33 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
 
             Select::make('item_id')
               ->label('الصنف')
+              ->columnSpan(2)
               ->searchable()
               ->preload()
               ->relationship('Item','name')
               ->inlineLabel()
-
               ->live()
-
               ->required()
               ->afterStateUpdated(function (Set $set,$state){
                 $res=Item::find($state);
-                $this->two_unit=$res->two_unit;
-                $this->price_input=$res->price_input;
                 $set('barcode_id',$res->barcode) ;
                 $set('price1', $res->price1);
                 $set('price2', $res->price2);
+                $this->sellTranForm->place_id=$this->sellForm->place_id;
               })
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'q1' })",
                 'wire:keydown..enter' => "\$dispatch('goto', { test: 'q1' })",
               ])
               ->id('item_id'),
+            TextInput::make('raseed_all')
+             ->hiddenLabel()
+             ->prefix('الرصيد الكلي')
+             ->disabled(),
+            TextInput::make('raseed_place')
+              ->hiddenLabel()
+              ->prefix('رصيد المكان')
+              ->disabled(),
 
             TextInput::make('price1')
               ->label('السعر')
@@ -351,8 +366,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'q1' })",
               ]),
             TextInput::make('price2')
-              ->label('سعر الصغري')
-              ->inlineLabel()
+              ->hiddenLabel()
               ->numeric()
               ->live()
               ->required()
@@ -371,10 +385,8 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->required()
               ->extraAttributes(['wire:keydown.enter' => "chkQuant",])
               ->id('q1'),
-
             TextInput::make('q2')
-              ->label('الكمية صغري')
-              ->inlineLabel()
+              ->hiddenLabel()
               ->numeric()
               ->required()
                ->visible(function (){
@@ -384,7 +396,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 'wire:keydown.enter' => "add_rec",
               ])
               ->id('q2'),
-          ]),
+          ])->columns(2),
         Section::make()
           ->schema([
             \Filament\Forms\Components\Actions::make([
@@ -513,6 +525,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
   }
 
   public function mount(){
+    $this->has_two=Setting::find(Auth::user()->company)->has_two;
     $res=Sell_work::where('user_id',Auth::id())
       ->whereDate('created_at', '=', date('Y-m-d'))->first();
     if ($res){
