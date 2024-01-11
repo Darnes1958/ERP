@@ -40,9 +40,7 @@ class SellTranForm extends Form
     $this->q2 = $rec['q2'];
     $this->price1 = $rec['price1'];
     $this->price2 = $rec['price2'];
-
-    $this->sub_tot = ($this->q1*$this->price1)+($this->q2*$this->price2);
-
+    $this->place_id = $rec['place_id'];
     $this->profit=0;
     $this->user_id = Auth::id();
   }
@@ -63,21 +61,37 @@ class SellTranForm extends Form
       return $this->retRaseedPlace($this->item_id,$this->place_id);
     }
     public function raseedTwo(){
+
       return $this->retRaseedTwo($this->item_id,$this->place_id);
     }
     public function quantTwo(){
      return $this->retQuant($this->item_id,$this->q1,$this->q2);
     }
     public function chkRaseed(): bool{
-     return $this->raseedTwo()-$this->quantTwo()>=0;
+
+     return ($this->raseedTwo()-$this->quantTwo())>=0;
     }
+
     public function chkData(){
+      $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($this->item_id)->two_unit;
+      if ($this->item_id=='') return 'يجب ادخال الصنف';
 
-    if ($this->item_id=='') return 'يجب ادخال الصنف';
+      if (!$has_two && $this->q1<=0) return 'يجب ادخال الكمية';
+      if ($has_two &&  $this->q2<=0 && $this->q1<=0) return 'يجب ادخال الكمية';
 
-      if ($this->q1==null || $this->q1<=0) return 'يجب ادخال الكمية الكبري';
-      if (Setting::find(Auth::user()->company)->has_two && Item::find($this->item_id)->two_unit && ($this->q2 == null || $this->q2<=0)) return 'يجب ادخال الكمية';
       if (!$this->chkRaseed()) return 'الرصيد لا يسمح !!';
       return 'ok';
+    }
+
+    public function Setuant() {
+      $q=$this->retSetQuant($this->item_id,$this->q1,$this->q2);
+      $this->q1=$q['q1'];
+      $this->q2=$q['q2'];
+      $this->sub_tot = ($this->q1*$this->price1)+($this->q2*$this->price2);
+    }
+
+    public function DoDecALl()
+    {
+        $this->decAll($this->sell_id,$this->sell_id2,$this->item_id,$this->place_id,$this->q1,$this->q2);
     }
 }

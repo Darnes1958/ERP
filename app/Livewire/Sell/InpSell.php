@@ -36,6 +36,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -84,14 +85,20 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 ->send();
         else $this->dispatch('goto', test: 'q1');
     }
+
     public function add_rec()
     {
         $this->sellTranForm->loadForm($this->sell_id, $this->sell_id2, $this->selltranData);
+        $this->sellTranForm->place_id=$this->sellForm->place_id;
+
         $chk=$this->sellTranForm->chkData();
         if ($chk != 'ok') {
           Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
           return;
         }
+
+        $this->sellTranForm->Setuant();
+
         $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
             ->where('item_id', $this->sellTranForm->item_id)->get();
 
@@ -112,6 +119,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         $this->sellForm->tot=$tot;
         $this->sellForm->baky=$baky;
         $this->sellFormBlade->fill($this->sellForm->toArray());
+        $this->dispatch('goto', test: 'barcode_id');
     }
 
   public function sellFormBlade(Form $form): Form
@@ -146,6 +154,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
                 $res->customer_id=$state;
                 $res->save();
+                $this->sellForm->customer_id=$state;
               })
               ->createOptionForm([
                 Section::make('ادخال زبون جديد')
@@ -195,6 +204,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
                 $res->place_id=$state;
                 $res->save();
+                $this->sellForm->place_id=$state;
               })
               ->createOptionForm([
                 Section::make('ادخال مكان تخزين')
@@ -237,6 +247,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
                 $res->price_type_id=$state;
                 $res->save();
+                $this->sellForm->price_type_id=$state;
               })
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'pay' })",
@@ -266,6 +277,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 $res->pay=$get('pay');
                 $res->baky=$get('baky');
                 $res->save();
+                $this->sellForm->pay=$state;
               })
               ->id('pay'),
             TextInput::make('baky')
@@ -317,7 +329,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                   $set('raseed_all',$rec->stock1);
                   $q1=$this->sellTranForm->raseedplace();
 
-                 $set('raseed_place',$this->sellTranForm->raseedplace()['q1']);
+                  $set('raseed_place',$this->sellTranForm->raseedplace()['q1']);
                 }
               })
               ->extraAttributes([
@@ -340,6 +352,11 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 $set('price1', $res->price1);
                 $set('price2', $res->price2);
                 $this->sellTranForm->place_id=$this->sellForm->place_id;
+                $this->sellTranForm->item_id=$res->id;
+                  $set('raseed_all',$res->stock1);
+                  $q1=$this->sellTranForm->raseedplace();
+
+                  $set('raseed_place',$this->sellTranForm->raseedplace()['q1']);
               })
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'q1' })",
@@ -383,13 +400,23 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->inlineLabel()
               ->numeric()
               ->required()
+              ->afterStateUpdated(function (Set $set,Get $get){
+                  if ($get('q2')==null) $set('q2',0);
+                  if ($get('q1')==null) $set('q1',0);
+
+              })
               ->extraAttributes(['wire:keydown.enter' => "chkQuant",])
               ->id('q1'),
             TextInput::make('q2')
               ->hiddenLabel()
               ->numeric()
               ->required()
-               ->visible(function (){
+                ->afterStateUpdated(function (Set $set,Get $get){
+                    if ($get('q2')==null) $set('q2',0);
+                    if ($get('q1')==null) $set('q1',0);
+                })
+
+                ->visible(function (){
                     return $this->is_two();
                 })
               ->extraAttributes([
@@ -418,15 +445,40 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                       ->iconColor('warning')
                       ->send();
                   $this->sellForm->copyToSave($sell);
-                  $id=Sell::create($this->sellForm->all());
-                  foreach ($selltran as $item) {
-                    $this->sellTranForm->copyToSave($id->id,$id->id2, $item);
-                    $this->sellTranForm->place_id=$this->sellForm->place_id;
-                    Sell_tran::create($this->sellTranForm->all());
-                  }
-                  Sell_tran_work::where('sell_id',$this->sell_id)
-                    ->where('sell_id2',$this->sell_id2)->delete();
-                  $sell->tot=0;  $sell->pay=0; $sell->baky=0;  $sell->save();
+                    DB::connection(Auth()->user()->company)->beginTransaction();
+                    try {
+                      $this->sell_id=Sell::max('id')+1;
+                      $this->sellForm->id=$this->sell_id;
+
+                      $sell=Sell::create($this->sellForm->all());
+
+                      foreach ($selltran as $item) {
+                        $this->sellTranForm->copyToSave($this->sell_id,$this->sell_id2, $item);
+                        $this->sellTranForm->place_id=$this->sellForm->place_id;
+                        $this->sellTranForm->sell_id=$this->sell_id;
+
+                        Sell_tran::create($this->sellTranForm->all());
+
+                        $this->sellTranForm->DoDecALl();
+
+                      }
+                      Sell_tran_work::where('sell_id',$this->sell_id)
+                        ->where('sell_id2',$this->sell_id2)->delete();
+
+
+                      $this->sell_id=$sell->id;
+                      $sell->tot=0;  $sell->pay=0; $sell->baky=0;  $sell->save();
+                      DB::connection(Auth()->user()->company)->commit();
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('حدث خطأ !!')
+                            ->color('danger')
+                            ->icon('heroicon-o-x-circle')
+                            ->danger()
+                            ->send();
+                        info($e);
+                        DB::connection(Auth()->user()->company)->rollback();
+                    }
                 }),
               \Filament\Forms\Components\Actions\Action::make('مسح')
                 ->icon('heroicon-m-trash')
@@ -502,6 +554,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         \Filament\Tables\Actions\Action::make('edit')
           ->action(function (Sell_tran_work $record){
             $this->selltranFormBlade->fill($record->toArray());
+            $this->sellTranForm->loadForm($this->sell_id,$this->sell_id2,$record);
             $this->dispatch('goto',  test: 'q1' );
           })
           ->icon('heroicon-m-pencil')
