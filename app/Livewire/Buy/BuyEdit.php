@@ -124,7 +124,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
           ->schema([
         Select::make('id')
           ->label('رقم الفاتورة')
-          ->options(DB::connection('other')->table('buys')
+          ->options(DB::connection(Auth::user()->company)->table('buys')
             ->join('suppliers','buys.supplier_id','=','suppliers.id')
             ->selectRaw('\'المورد : \'+suppliers.name+\'  اجمالي الفاتورة : \'+str(tot) as name,buys.id') ->latest('buys.created_at')->pluck('name','id'))
           ->searchable()

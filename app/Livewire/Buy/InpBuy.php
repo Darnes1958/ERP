@@ -72,6 +72,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
   public BuyTranForm $buyTranForm;
 
   public function ChkBarcode(){
+    if ($this->buytranData['barcode_id']==null) return;
     $res=Barcode::find($this->buytranData['barcode_id']);
 
     if (! $res)
@@ -365,7 +366,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   \Filament\Forms\Components\Actions\Action::make('تخزين')
                       ->icon('heroicon-m-plus')
                       ->button()
-                      ->visible(Buy_tran_work::where('buy_id',$this->buy_id)->count()>0)
+                      ->visible(function (){return Buy_tran_work::where('buy_id',$this->buy_id)->count()>0;})
                       ->color('success')
                       ->requiresConfirmation()
                       ->action(function () {
@@ -393,7 +394,16 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(function () {
-                            return true;
+                            Buy_tran_work::where('buy_id',$this->buy_id)->delete();
+                            Buys_work::find($this->buy_id)->update([
+                              'tot'=>0,'pay'=>0,'baky'=>0,
+                            ]);
+                            $this->buyForm->fillForm($this->buy_id);
+                            $this->buyTranForm->reset();
+                          $this->buyFormBlade->fill($this->buyForm->toArray());
+                          $this->buytranFormBlade->fill($this->buyTranForm->toArray());
+
+
                         })
               ])->extraAttributes(['class' => 'items-center justify-between']),
 
