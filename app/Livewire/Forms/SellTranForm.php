@@ -4,7 +4,7 @@ namespace App\Livewire\Forms;
 
 use App\Livewire\Traits\Raseed;
 use App\Models\Buy_tran;
-use App\Models\Buy_tran_work;
+
 use App\Models\Buys_work;
 use App\Models\Item;
 use App\Models\Sell_tran;
@@ -19,7 +19,7 @@ class SellTranForm extends Form
 {
  use Raseed;
   public $sell_id = '' ;
-  public $sell_id2 = '' ;
+  public $sell_id2 = 1 ;
 
   public $item_id = '' ;
   public $barcode_id = '' ;
@@ -32,6 +32,20 @@ class SellTranForm extends Form
   public $user_id = '' ;
   public $place_id=0;
 
+    public function loadForm($sell_id,$sell_id2,$rec){
+        $this->sell_id=$sell_id;
+        $this->sell_id2=$sell_id2;
+        $this->item_id = $rec['item_id'];
+        $this->barcode_id = $rec['barcode_id'];
+        $this->q1 = $rec['q1'];
+        $this->q2 = $rec['q2'];
+        $this->price1 = $rec['price1'];
+        $this->price2 = $rec['price2'];
+        $this->sub_tot = ($this->q1*$this->price1)+($this->q2*$this->price2);
+
+        $this->user_id = Auth::id();
+
+    }
 
     public function copyToSave($sell_id,$sell_id2,$rec){
       $this->sell_id=$sell_id;
@@ -63,6 +77,11 @@ class SellTranForm extends Form
 
      return ($this->raseedTwo()-$this->quantTwo())>=0;
     }
+    public function chkRaseedEdit($g1,$q2): bool{
+
+        return ($this->TwoToOne($this->q1,$q2)+$this->raseedTwo()-$this->quantTwo())>=0;
+    }
+
 
     public function chkData(){
       $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($this->item_id)->two_unit;
@@ -74,7 +93,21 @@ class SellTranForm extends Form
       if (!$this->chkRaseed()) return 'الرصيد لا يسمح !!';
       return 'ok';
     }
+    public function chkDataEdit(){
+        $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($this->item_id)->two_unit;
+        if ($this->item_id=='') return 'يجب ادخال الصنف';
 
+        if (!$has_two && $this->q1<=0) return 'يجب ادخال الكمية';
+        if ($has_two &&  $this->q2<=0 && $this->q1<=0) return 'يجب ادخال الكمية';
+        $res=Sell_tran::where('sell_id',$this->sell_id)
+            ->where('sell_id2',$this->sell_id2)
+            ->where('item_id',$this->item_id)->first();
+        if ($res)
+          if (!$this->chkRaseedEdit($res->q1,$res->q2)) return 'الرصيد لا يسمح !!';
+        else
+          if (!$this->chkRaseed()) return 'الرصيد لا يسمح !!';
+        return 'ok';
+    }
     public function SetQuant() {
       $q=$this->retSetQuant($this->item_id,$this->q1,$this->q2);
       $this->q1=$q['q1'];

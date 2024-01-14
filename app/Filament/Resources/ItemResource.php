@@ -7,6 +7,7 @@ use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Item;
 use App\Models\Setting;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -202,21 +203,43 @@ class ItemResource extends Resource
                     ->label('الوحدة')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('two_unit')
+                    ->hidden(),
+                TextColumn::make('count')
+                    ->label('العدد')
+                    ->sortable()
+                    ->formatStateUsing(function (string $state) {
+                        if ($state==1) return '';
+                        return $state;
+                    })
+                    ->searchable()
+                    ->visible(Setting::find(Auth::user()->company)->has_two),
                 TextColumn::make('Unitb.name')
                     ->label('الوحدة الصغري')
                     ->sortable()
                     ->searchable()
-                    ->visible(Setting::find(Auth::user()->company)->many_place),
+                    ->visible(Setting::find(Auth::user()->company)->has_two),
+
                 TextColumn::make('stock1')
                     ->label('الرصيد'),
                 TextColumn::make('stock2')
                     ->label('رصيد الصغري')
-                    ->visible(Setting::find(Auth::user()->company)->many_place),
+                    ->formatStateUsing(function (string $state) {
+                        if ($state==0) return '';
+                        return $state;
+                    })
+                    ->visible(Setting::find(Auth::user()->company)->has_two),
                 TextColumn::make('price1')
                     ->label('السعر'),
                 TextColumn::make('price2')
                     ->label('سعر الصغري')
-                    ->visible(Setting::find(Auth::user()->company)->many_place),
+                    ->formatStateUsing(function (string $state) {
+                        if ($state==0) return '';
+                        return $state;
+                    })
+                    ->visible(Setting::find(Auth::user()->company)->has_two),
+
+
             ])
             ->filters([
                 //

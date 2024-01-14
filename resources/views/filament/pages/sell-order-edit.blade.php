@@ -4,7 +4,13 @@
             {{$this->form}}
         </div>
         <div class="w-8/12">
-            {{$this->table}}
+            <div class="py-2">
+                {{ $this->SellInfolist }}
+            </div>
+            <div>
+                {{$this->table}}
+            </div>
+
         </div>
     </div>
 </x-filament-panels::page>

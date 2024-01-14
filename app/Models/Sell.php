@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Jomla;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,12 @@ class Sell extends Model
   use HasCompositeKey;
   protected $connection = 'other';
 
+
   protected $primaryKey = ['id', 'id2'];
+
+    protected $casts =[
+         'Jomla' => Jomla::class,
+        ];
 
   public function Customer(){
     return $this->belongsTo(Customer::class);

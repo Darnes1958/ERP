@@ -35,7 +35,8 @@ class SellForm extends Form
 
   public function loadForm($id,$id2){
     $rec=Sell::find([$id,$id2]);
-
+    $this->id=$id;
+    $this->id2=$id2;
     $this->order_date = $rec->order_date;
     $this->customer_id = $rec->customer_id;
     $this->price_type_id = $rec->price_type_id;
@@ -59,7 +60,6 @@ class SellForm extends Form
           'baky' => $baky,
       ]);
     $rec=Sell_work::find([$id,$id2]);
-
     $this->order_date = $rec->order_date;
     $this->customer_id = $rec->customer_id;
     $this->price_type_id = $rec->price_type_id;

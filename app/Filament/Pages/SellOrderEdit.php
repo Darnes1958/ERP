@@ -2,18 +2,22 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\Jomla;
 use App\Livewire\Forms\SellForm;
 use App\Livewire\Forms\SellTranForm;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
 use App\Models\Buy;
 use App\Models\Buy_tran;
+use App\Models\Customer;
 use App\Models\Item;
+use App\Models\Place;
 use App\Models\Place_stock;
+use App\Models\Price_type;
 use App\Models\Sell;
 use App\Models\Sell_tran;
-use App\Models\Sell_tran_work;
-use App\Models\Sell_work;
+
+
 use App\Models\Setting;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -25,6 +29,10 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Concerns\InteractsWithInfolists;
+use Filament\Infolists\Contracts\HasInfolists;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Tables\Actions\BulkAction;
@@ -37,9 +45,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 
-class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
+class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInfolists
+
 {
-  use InteractsWithForms, InteractsWithTable, InteractsWithActions;
+  use InteractsWithForms, InteractsWithTable, InteractsWithActions,InteractsWithInfolists;
   use Raseed;
 
   protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -50,9 +59,12 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
   public ?array $selltranData = [];
 
   public $sell_id;
-  public $sell_id2;
+  public $sell_id2=1;
 
-  public $customer_id;
+  public $showInfo = false;
+  public $Jomla='قطاعي';
+
+  public $customer_id=1;
 
   public $has_two;
   public $is_filled='false';
@@ -61,20 +73,24 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
 
 
   public function is_two(){
-    if (isset($this->data['item_id']) && $this->data['item_id']!='') {
-      return Setting::find(Auth::user()->company)->has_two && Item::find($this->data['item_id'])->two_unit==1;}
+    if (isset($this->selltranData['item_id']) && $this->selltranData['item_id']!='') {
+      return Setting::find(Auth::user()->company)->has_two && Item::find($this->selltranData['item_id'])->two_unit==1;}
     else return false;
   }
 
   public function chkOrder($state){
     $this->sell_id=$state;
-    $this->sellForm->loadForm($state,1);
+    $this->sellForm->loadForm($this->sell_id,1);
+    if ($this->sellForm->single==1) $this->Jomla='قطاعي'; else $this->Jomla='جملة';
     $this->customer_id=$this->sellForm->customer_id;
     $this->sellTranForm->sell_id=$this->sell_id;
+    $this->showInfo=true;
     $this->dispatch('goto', test: 'barcode_id');
   }
   public function chkQuant(){
-
+      if ($this->is_two())
+          $this->dispatch('goto', test: 'q2');
+      else $this->add_rec();
   }
 
   public function itemFill($item,$barcode,$stock1){
@@ -101,7 +117,7 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
   }
   public function ChkBarcode(){
 
-    if ($this->selltranData['barcode_id  ']==null) return;
+    if ($this->selltranData['barcode_id']==null) return;
     $res=Barcode::with('Item')->find($this->selltranData['barcode_id']);
 
     if (! $res)
@@ -115,13 +131,47 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
       $this->dispatch('goto', test: 'q1');
     }
   }
-  public function ChkItem(){
-
+  public function ChkItem($state){
+      $res=Item::find($state);
+      $this->itemFill($res->id,$res->barcode,$res->stock1);
+      $this->dispatch('goto', test: 'q1');
 
   }
   public function add_rec()
   {
+      $this->sellTranForm->loadForm($this->sell_id, $this->sell_id2, $this->selltranData);
+      $this->sellTranForm->place_id=$this->sellForm->place_id;
 
+      $chk=$this->sellTranForm->chkData();
+      if ($chk != 'ok') {
+          Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
+          return;
+      }
+
+      $this->sellTranForm->SetQuant();
+
+      $res = Sell_tran::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
+          ->where('item_id', $this->sellTranForm->item_id)->get();
+
+      if ($res->count() > 0)
+          Sell_tran::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
+              ->where('item_id', $this->sellTranForm->item_id)
+              ->update($this->sellTranForm->all());
+      else  Sell_tran::create($this->sellTranForm->all());
+
+      $this->sellTranForm->reset();
+      $this->form->fill($this->sellTranForm->toArray());
+      $tot = Sell_tran::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)->sum('sub_tot');
+      $baky = $tot - Sell::find([$this->sell_id,$this->sell_id2])->pay;
+      Sell::find([$this->sell_id,$this->sell_id2])->update([
+          'tot' => $tot,
+          'baky' => $baky,
+      ]);
+      $this->sellForm->tot=$tot;
+      $this->sellForm->baky=$baky;
+      //$this->sellFormBlade->fill($this->sellForm->toArray());
+      $this->is_filled=true;
+      $this->dispatch('goto', test: 'barcode_id');
   }
 
 
@@ -137,7 +187,7 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
                 ->join('Customers','sells.customer_id','=','customers.id')
                 ->selectRaw('\'الزبون : \'+customers.name+\'  اجمالي الفاتورة : \'+str(tot) as name,sells.id')
                 ->latest('sells.created_at')->pluck('name','id'))
-                ->searchable()
+              ->searchable()
               ->live()
               ->preload()
               ->inlineLabel()
@@ -171,8 +221,8 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
               ->required()
 
               ->extraAttributes([
-                'wire:change' => "ChkItem",
-                'wire:keydown..enter' => "ChkItem",
+                'wire:change' => "ChkItem(state)",
+                'wire:keydown..enter' => "ChkItem(state)",
               ])
               ->id('item_id'),
             TextInput::make('raseed_all')
@@ -242,13 +292,13 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
               \Filament\Forms\Components\Actions\Action::make('تخزين')
                 ->icon('heroicon-m-plus')
                 ->button()
-                ->visible(function () {return Sell_tran_work::where('sell_id',$this->sell_id)
+                ->visible(function () {return Sell_tran::where('sell_id',$this->sell_id)
                     ->where('sell_id2',$this->sell_id2)->count()>0;})
                 ->color('success')
                 ->requiresConfirmation()
                 ->action(function () {
-                  $sell=Sell_work::find([$this->sell_id,$this->sell_id2]);
-                  $selltran=Sell_tran_work::with('Item')->where('sell_id',$this->sell_id)
+                  $sell=Sell::find([$this->sell_id,$this->sell_id2]);
+                  $selltran=Sell_tran::with('Item')->where('sell_id',$this->sell_id)
                     ->where('sell_id2',$this->sell_id2)->get();
                   if ($selltran->count()==0)
                     Notification::make()
@@ -294,7 +344,7 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
 
                     }
                     $this->sell_id=Auth::id();
-                    Sell_tran_work::where('sell_id',$this->sell_id)
+                    Sell_tran::where('sell_id',$this->sell_id)
                       ->where('sell_id2',$this->sell_id2)->delete();
 
                     $this->is_filled=false;
@@ -318,8 +368,8 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
                 ->color('danger')
                 ->requiresConfirmation()
                 ->action(function () {
-                  Sell_tran_work::where('sell_id',$this->sell_id)->delete();
-                  Sell_work::find([$this->sell_id,$this->sell_id2])->update([
+                  Sell_tran::where('sell_id',$this->sell_id)->delete();
+                  Sell::find([$this->sell_id,$this->sell_id2])->update([
                     'tot'=>0,'pay'=>0,'baky'=>0,
                   ]);
                   $this->is_filled=false;
@@ -334,9 +384,60 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
 
       ])
       ->statePath('selltranData')
-      ->model(Sell_tran_work::class);
+      ->model(Sell_tran::class);
   }
 
+  public function Sellinfolist(Infolist $infolist): Infolist
+    {
+           return $infolist
+               ->state([
+                   'sell_id' => $this->sell_id,
+                   'customer' =>  Customer::find($this->customer_id)->name,
+                   'place' =>  Place::find($this->sellForm->place_id)->name,
+                   'price' =>  Price_type::find($this->sellForm->price_type_id)->name,
+                   'order_date' => $this->sellForm->order_date,
+                   'tot' => $this->sellForm->tot,
+                   'pay' => $this->sellForm->pay,
+                   'baky' => $this->sellForm->baky,
+                   'single' => $this->Jomla,
+               ])
+               ->schema([
+                   \Filament\Infolists\Components\Section::make()
+                   ->schema([
+                       TextEntry::make('customer')
+                       ->label('اسم الزبون')
+                       ->color('info')
+                       ->columnSpan(2),
+                       TextEntry::make('order_date')
+                           ->label('تاريخ الفاتورة'),
+                       TextEntry::make('sell_id')
+                           ->color('info')
+                           ->label('رقم الفاتورة'),
+
+                       TextEntry::make('price')
+                           ->label('طريقة الدفع')
+
+                           ->badge(),
+                       TextEntry::make('place')
+                           ->label('نقطة البيع'),
+
+                       TextEntry::make('tot')
+                           ->label('الاجمالي'),
+                       TextEntry::make('pay')
+                           ->label('المدفوع'),
+                       TextEntry::make('baky')
+                           ->label('الباقي'),
+                       TextEntry::make('single')
+                           ->badge()
+                           ->label('البيع'),
+
+
+                   ])->columns(6)
+                     ->visible($this->showInfo)
+
+
+               ]);
+    }
   public function table(Table $table):Table
   {
     return $table
@@ -386,6 +487,7 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions
   }
 
   public function mount(){
+
     $this->has_two=Setting::find(Auth::user()->company)->has_two;
 
   }
