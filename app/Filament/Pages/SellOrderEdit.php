@@ -151,13 +151,15 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
       $this->sellTranForm->SetQuant();
 
       $res = Sell_tran::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
-          ->where('item_id', $this->sellTranForm->item_id)->get();
+          ->where('item_id', $this->sellTranForm->item_id)->first();
+      if ($res){
+        $this->incAll($this->sell_id,$this->sell_id2,$this->sellTranForm->item_id,$this->sellTranForm->place_id,$res->q1,$res->q2);
+        $res->delete();}
+      info('form q1 '.$this->sellTranForm->q1);
+      info('form q2 '.$this->sellTranForm->q2);
+      Sell_tran::create($this->sellTranForm->all());
 
-      if ($res->count() > 0)
-          Sell_tran::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
-              ->where('item_id', $this->sellTranForm->item_id)
-              ->update($this->sellTranForm->all());
-      else  Sell_tran::create($this->sellTranForm->all());
+      $this->decAll($this->sell_id,$this->sell_id2,$this->sellTranForm->item_id,$this->sellTranForm->place_id,$this->sellTranForm->q1,$this->sellTranForm->q2);
 
       $this->sellTranForm->reset();
       $this->form->fill($this->sellTranForm->toArray());

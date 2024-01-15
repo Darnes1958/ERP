@@ -42,7 +42,6 @@ class SellTranForm extends Form
         $this->price1 = $rec['price1'];
         $this->price2 = $rec['price2'];
         $this->sub_tot = ($this->q1*$this->price1)+($this->q2*$this->price2);
-
         $this->user_id = Auth::id();
 
     }
@@ -119,4 +118,9 @@ class SellTranForm extends Form
     {
         $this->decAll($this->sell_id,$this->sell_id2,$this->item_id,$this->place_id,$this->q1,$this->q2);
     }
+  public function DoIncALl()
+  {
+    $this->incAll($this->sell_id,$this->sell_id2,$this->item_id,$this->place_id,$this->q1,$this->q2);
+  }
+
 }

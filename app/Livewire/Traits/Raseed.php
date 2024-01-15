@@ -19,7 +19,7 @@ trait Raseed {
 
       if ($Price_type->inc_dec->value==0)
       {
-        info('yes');
+
        $rec=Price_sell::where('item_id',$item)->where('price_type_id',$price_type)->first();
 
        if ($rec) {
@@ -117,10 +117,35 @@ trait Raseed {
 
         $this->decQs($sell_id,$sell_id2,$item_id,$count,$quant);
     }
+    public function incAll($sell_id,$sell_id2,$item_id,$place_id,$q1,$q2){
+      info('sell_id '.$sell_id);
+      info('sell_id2 '.$sell_id2);
+      info('item_id '.$item_id);
+      info('place_id '.$place_id);
+      info('q1 '.$q1);
+      info('q2 '.$q2);
+    $item=Item::find($item_id);
+    $count=$item->count;
+
+    $quant=$q2+($q1*$count);
+
+    $quantItem=($item->stock2+($item->stock1*$count)) + $quant;
+    $item->stock1=intdiv($quantItem,$count);
+    $item->stock2=$quantItem%$count;
+    $item->save();
+
+    $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
+    $quantPlace=($place->stock2+($place->stock1*$count)) + $quant;
+    $place->stock1=intdiv($quantPlace,$count);
+    $place->stock2=$quantPlace%$count;
+    $place->save();
+
+    $this->incQs($sell_id,$sell_id2,$item_id,$count);
+  }
    public function OneToTwo($count,$quant){
        return ['q1'=>intdiv($quant,$count),'q2' => $quant % $count];
    }
-    public function TwoToOne($count,$q1,$q2){
+   public function TwoToOne($count,$q1,$q2){
         return $q2+($q1*$count);
     }
    public function decQs($sell_id,$sell_id2,$item,$count,$quant){
@@ -156,5 +181,30 @@ trait Raseed {
 
       }
    }
+   public function incQs($sell_id,$sell_id2,$item,$count){
+   $buysell= BuySell::where('sell_id',$sell_id)
+             ->where('sell_id2',$sell_id2)
+             ->where('item_id',$item)
+             ->get();
+    foreach ($buysell as $tran) {
+      $q=$this->TwoToOne($count,$tran->q1,$tran->q2);
+      $Buy=Buy_tran::where('buy_id',$tran->buy_id)
+                ->where('item_id',$item)->first();
+      info('$Buy->qs1 '.$Buy->qs1);
+      info('$Buy->qs2 '.$Buy->qs2);
+      $qs=$q+$this->TwoToOne($count,$Buy->qs1,$Buy->qs2);
+      info('qs '.$qs);
+      info($this->OneToTwo($count,$qs)['q1']);
+      info($this->OneToTwo($count,$qs)['q2']);
+      $Buy->qs1=$this->OneToTwo($count,$qs)['q1'];
+      $Buy->qs1=$this->OneToTwo($count,$qs)['q2'];
+      $Buy->save();
+
+    }
+     BuySell::where('sell_id',$sell_id)
+       ->where('sell_id2',$sell_id2)
+       ->where('item_id',$item)
+       ->delete();
+  }
 
 }
