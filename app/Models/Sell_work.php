@@ -10,10 +10,10 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
 
 class Sell_work extends Model
 {
-  use HasCompositeKey;
+
   protected $connection = 'other';
 
-  protected $primaryKey = ['id', 'id2'];
+
 
   public function Customer(){
     return $this->belongsTo(Customer::class);

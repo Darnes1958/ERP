@@ -7,8 +7,7 @@ use App\Livewire\Forms\SellForm;
 use App\Livewire\Forms\SellTranForm;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
-use App\Models\Buy;
-use App\Models\Buy_tran;
+
 use App\Models\Customer;
 use App\Models\Item;
 use App\Models\Place;
@@ -59,7 +58,6 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
   public ?array $selltranData = [];
 
   public $sell_id;
-  public $sell_id2=1;
 
   public $showInfo = false;
   public $Jomla='قطاعي';
@@ -80,7 +78,7 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
 
   public function chkOrder($state){
     $this->sell_id=$state;
-    $this->sellForm->loadForm($this->sell_id,1);
+    $this->sellForm->loadForm($this->sell_id);
     if ($this->sellForm->single==1) $this->Jomla='قطاعي'; else $this->Jomla='جملة';
     $this->customer_id=$this->sellForm->customer_id;
     $this->sellTranForm->sell_id=$this->sell_id;
@@ -96,8 +94,6 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
   public function itemFill($item,$barcode,$stock1){
     $this->sellTranForm->item_id=$item;
     $this->sellTranForm->barcode_id=$barcode;
-    $this->sellTranForm->place_id=$this->sellForm->place_id;
-
     $rec=$this->retPrice($item,$this->sellForm->single,$this->sellForm->price_type_id);
 
     $this->sellTranForm->price1=$rec['price1'];
@@ -139,10 +135,9 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
   }
   public function add_rec()
   {
-      $this->sellTranForm->loadForm($this->sell_id, $this->sell_id2, $this->selltranData);
-      $this->sellTranForm->place_id=$this->sellForm->place_id;
+      $this->sellTranForm->loadForm($this->sell_id, $this->selltranData);
 
-      $chk=$this->sellTranForm->chkData();
+      $chk=$this->sellTranForm->chkDataEdit($this->sellForm->place_id);
       if ($chk != 'ok') {
           Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
           return;
@@ -150,22 +145,19 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
 
       $this->sellTranForm->SetQuant();
 
-      $res = Sell_tran::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
-          ->where('item_id', $this->sellTranForm->item_id)->first();
+      $res = Sell_tran::where('sell_id', $this->sell_id)->where('item_id', $this->sellTranForm->item_id)->first();
       if ($res){
-        $this->incAll($this->sell_id,$this->sell_id2,$this->sellTranForm->item_id,$this->sellTranForm->place_id,$res->q1,$res->q2);
+        $this->incAll($this->sell_id,$this->sellTranForm->item_id,$this->sellForm->place_id,$res->q1,$res->q2);
         $res->delete();}
-      info('form q1 '.$this->sellTranForm->q1);
-      info('form q2 '.$this->sellTranForm->q2);
       Sell_tran::create($this->sellTranForm->all());
 
-      $this->decAll($this->sell_id,$this->sell_id2,$this->sellTranForm->item_id,$this->sellTranForm->place_id,$this->sellTranForm->q1,$this->sellTranForm->q2);
+      $this->decAll($this->sell_id,$this->sellTranForm->item_id,$this->sellForm->place_id,$this->sellTranForm->q1,$this->sellTranForm->q2);
 
       $this->sellTranForm->reset();
       $this->form->fill($this->sellTranForm->toArray());
-      $tot = Sell_tran::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)->sum('sub_tot');
-      $baky = $tot - Sell::find([$this->sell_id,$this->sell_id2])->pay;
-      Sell::find([$this->sell_id,$this->sell_id2])->update([
+      $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
+      $baky = $tot - Sell::find($this->sell_id)->pay;
+      Sell::find($this->sell_id)->update([
           'tot' => $tot,
           'baky' => $baky,
       ]);
@@ -175,7 +167,6 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
       $this->is_filled=true;
       $this->dispatch('goto', test: 'barcode_id');
   }
-
 
   public function form(Form $form): Form
   {
@@ -291,94 +282,26 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
         Section::make()
           ->schema([
             \Filament\Forms\Components\Actions::make([
-              \Filament\Forms\Components\Actions\Action::make('تخزين')
-                ->icon('heroicon-m-plus')
-                ->button()
-                ->visible(function () {return Sell_tran::where('sell_id',$this->sell_id)
-                    ->where('sell_id2',$this->sell_id2)->count()>0;})
-                ->color('success')
-                ->requiresConfirmation()
-                ->action(function () {
-                  $sell=Sell::find([$this->sell_id,$this->sell_id2]);
-                  $selltran=Sell_tran::with('Item')->where('sell_id',$this->sell_id)
-                    ->where('sell_id2',$this->sell_id2)->get();
-                  if ($selltran->count()==0)
-                    Notification::make()
-                      ->title('لم يتم ادخال اصناف بعد !! ')
-                      ->icon('heroicon-o-exclamation-triangle')
-                      ->iconColor('warning')
-                      ->send();
-                  $minus=false;
-                  foreach ($selltran as $tran) {
-                    $placeRaseed=$this->retRaseedPlace($tran->item_id,$this->sellForm->place_id);
-                    if (
-                      $this->TwoToOne($tran->item->count,$tran->q1,$tran->q2) >
-                      $this->TwoToOne($tran->item->count,$placeRaseed['q1'],$placeRaseed['q2'])
-                    ){
-                      Notification::make()
-                        ->title('الصنف : ('.$tran->item->name.') رصيده لا يسمح !!')
-                        ->icon('heroicon-o-exclamation-triangle')
-                        ->iconColor('warning')
-                        ->send();
-                      $minus=true;
-                      break;
 
-                    }
-                  }
-                  if ($minus) return;
-
-                  $this->sellForm->copyToSave($sell);
-                  DB::connection(Auth()->user()->company)->beginTransaction();
-                  try {
-
-                    $this->sell_id=Sell::max('id')+1;
-                    $this->sellForm->id=$this->sell_id;
-
-                    $sell=Sell::create($this->sellForm->all());
-
-                    foreach ($selltran as $item) {
-                      $this->sellTranForm->copyToSave($this->sell_id,$this->sell_id2, $item);
-                      $this->sellTranForm->place_id=$this->sellForm->place_id;
-
-                      Sell_tran::create($this->sellTranForm->all());
-
-                      $this->sellTranForm->DoDecALl();
-
-                    }
-                    $this->sell_id=Auth::id();
-                    Sell_tran::where('sell_id',$this->sell_id)
-                      ->where('sell_id2',$this->sell_id2)->delete();
-
-                    $this->is_filled=false;
-
-                    $sell->tot=0;  $sell->pay=0; $sell->baky=0;  $sell->save();
-                    DB::connection(Auth()->user()->company)->commit();
-                  } catch (\Exception $e) {
-                    Notification::make()
-                      ->title('حدث خطأ !!')
-                      ->color('danger')
-                      ->icon('heroicon-o-x-circle')
-                      ->danger()
-                      ->send();
-                    info($e);
-                    DB::connection(Auth()->user()->company)->rollback();
-                  }
-                }),
-              \Filament\Forms\Components\Actions\Action::make('مسح')
+              \Filament\Forms\Components\Actions\Action::make('الغاء الفاتورة')
                 ->icon('heroicon-m-trash')
                 ->button()
                 ->color('danger')
                 ->requiresConfirmation()
                 ->action(function () {
+                  $selltran=Sell_tran::where('sell_id',$this->sell_id)->get();
+                    foreach ($selltran as $tran)
+                        $this->incAll($this->sell_id,$tran->item_id,$this->sellForm->place_id,$tran->q1,$tran->q2);
+
                   Sell_tran::where('sell_id',$this->sell_id)->delete();
-                  Sell::find([$this->sell_id,$this->sell_id2])->update([
-                    'tot'=>0,'pay'=>0,'baky'=>0,
-                  ]);
+                  Sell::find($this->sell_id)->delete();
                   $this->is_filled=false;
-                  $this->sellForm->fillForm($this->sell_id,$this->sell_id2);
+                  $this->sell_id='';
+                  $this->sellForm->reset();
                   $this->sellTranForm->reset();
-                  $this->sellFormBlade->fill($this->sellForm->toArray());
-                  $this->selltranFormBlade->fill($this->sellTranForm->toArray());
+
+                  $this->form->fill($this->sellForm->toArray());
+
                 })
             ])->extraAttributes(['class' => 'items-center justify-between']),
 
@@ -484,6 +407,31 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
 
       ])
 
+      ->actions([
+          \Filament\Tables\Actions\Action::make('delete')
+              ->action(function (Sell_tran $record){
+                  $this->incAll($this->sell_id,$record->item_id,$this->sellForm->place_id,$record->q1,$record->q2);
+                  $record->delete();
+
+                  $tot=Sell_tran::where('sell_id',$this->sell_id)->sum('sub_tot');
+                  $baky=$tot-Sell::find($this->sell_id)->pay;
+                  Sell::find($this->sell_id)->update([
+                      'tot'=>$tot,
+                      'baky'=>$baky,
+
+                  ]);
+
+                  $this->sellForm->loadForm($this->sell_id);
+                  $this->form->fill($this->sellForm->toArray());
+              })
+              ->icon('heroicon-m-trash')
+              ->iconButton()->color('danger')
+              ->hiddenLabel()
+              ->hidden(function (){
+                  return Sell_tran::where('sell_id',$this->sell_id)->count()==1;
+              })
+              ->requiresConfirmation(),
+      ])
 
       ->striped();
   }

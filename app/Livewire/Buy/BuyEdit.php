@@ -4,6 +4,7 @@ namespace App\Livewire\Buy;
 
 use App\Livewire\Forms\BuyFormEdit;
 use App\Livewire\Forms\BuyTranFormEdit;
+use App\Livewire\Traits\Raseed;
 use App\Models\Place;
 use App\Models\Price_type;
 use App\Models\Setting;
@@ -57,7 +58,7 @@ use Livewire\Attributes\Rule;
 class BuyEdit extends Component implements HasForms,HasTable,HasActions
 {
   use InteractsWithForms,InteractsWithTable,InteractsWithActions;
-
+  use Raseed;
   public ?array $buyData = [];
   public ?array $buytranData = [];
 
@@ -88,7 +89,6 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
   }
   public function add_rec(){
     $this->buyTranForm->loadFromBuyTran($this->buy_id,$this->buytranData);
-    $this->buyTranForm->place_id=$this->buyForm->place_id;
 
     $res=Buy_tran::where('buy_id',$this->buy_id)
       ->where('item_id',$this->buyTranForm->item_id)->get();
@@ -337,9 +337,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
         return  $buy_tran;
       })
       ->columns([
-        TextColumn::make('sort')
-          ->label('ت')
-          ->sortable(),
+
         TextColumn::make('item_id')
           ->label('رقم الصنف')
           ->sortable(),
@@ -364,9 +362,8 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
         \Filament\Tables\Actions\Action::make('delete')
           ->action(function (Buy_tran $record){
             $record->delete();
-            $res=Buy_tran::where('buy_id',$this->buy_id)->orderBy('sort')->get();
-            $i=0;
-            foreach ($res as $item) {$item->sort=++$i;$item->save();}
+              $this->decAllBuy($record->item_id,$this->buyForm->place_id,$record->q1,$record->q2);
+
 
             $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
             $baky=$tot-Buy::find($this->buy_id)->pay;
@@ -400,10 +397,11 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
 
         BulkAction::make('deleteAll')
           ->action(function (Collection $records){
+            foreach ($records as $item)
+                $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2);
+
             $records->each->delete();
-            $res=Buy_tran::where('buy_id',$this->buy_id)->orderBy('sort')->get();
-            $i=0;
-            foreach ($res as $item) {$item->sort=++$i;$item->save();}
+
 
             $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
             $baky=$tot-Buy::find($this->buy_id)->pay;

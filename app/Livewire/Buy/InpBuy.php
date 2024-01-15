@@ -5,6 +5,7 @@ namespace App\Livewire\Buy;
 use App\Enums\PlaceType;
 use App\Livewire\Forms\BuyForm;
 use App\Livewire\Forms\BuyTranForm;
+use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
 use App\Models\Buy;
 use App\Models\Buy_tran;
@@ -52,7 +53,7 @@ use Livewire\Component;
 class InpBuy extends Component implements HasForms,HasTable,HasActions
 {
   use InteractsWithForms,InteractsWithTable,InteractsWithActions;
-
+  use Raseed;
   public ?array $buyData = [];
   public ?array $buytranData = [];
 
@@ -382,8 +383,10 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                           $id=Buy::create($this->buyForm->all());
                           foreach ($buytran as $item) {
                               $this->buyTranForm->copyToSave($id->id, $item);
-                              $this->buyTranForm->place_id=$this->buyForm->place_id;
+
                               Buy_tran::create($this->buyTranForm->all());
+                              $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2);
+
                           }
                           Buy_tran_work::where('buy_id',$this->buy_id)->delete();
                           $buy->tot=0;  $buy->pay=0; $buy->baky=0;  $buy->save();
@@ -422,9 +425,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
         return  $buy_tran;
       })
       ->columns([
-        TextColumn::make('sort')
-          ->label('ت')
-          ->sortable(),
+
         TextColumn::make('item_id')
             ->label('رقم الصنف')
             ->sortable(),
@@ -449,9 +450,6 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
             \Filament\Tables\Actions\Action::make('delete')
                ->action(function (Buy_tran_work $record){
                    $record->delete();
-                   $res=Buy_tran_work::where('buy_id',$this->buy_id)->orderBy('sort')->get();
-                   $i=0;
-                   foreach ($res as $item) {$item->sort=++$i;$item->save();}
                })
                ->icon('heroicon-m-trash')
                 ->iconButton()->color('danger')
@@ -471,9 +469,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
          BulkAction::make('deleteAll')
            ->action(function (Collection $records){
              $records->each->delete();
-             $res=Buy_tran_work::where('buy_id',$this->buy_id)->orderBy('sort')->get();
-             $i=0;
-             foreach ($res as $item) {$item->sort=++$i;$item->save();}
+
            })
            ->icon('heroicon-m-trash')
            ->color('danger')

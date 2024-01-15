@@ -18,8 +18,9 @@ use Livewire\Form;
 class SellTranForm extends Form
 {
  use Raseed;
+
   public $sell_id = '' ;
-  public $sell_id2 = 1 ;
+
 
   public $item_id = '' ;
   public $barcode_id = '' ;
@@ -30,11 +31,11 @@ class SellTranForm extends Form
   public $profit = 0;
   public $sub_tot = 0 ;
   public $user_id = '' ;
-  public $place_id=0;
 
-    public function loadForm($sell_id,$sell_id2,$rec){
+
+    public function loadForm($sell_id,$rec){
         $this->sell_id=$sell_id;
-        $this->sell_id2=$sell_id2;
+
         $this->item_id = $rec['item_id'];
         $this->barcode_id = $rec['barcode_id'];
         $this->q1 = $rec['q1'];
@@ -46,9 +47,9 @@ class SellTranForm extends Form
 
     }
 
-    public function copyToSave($sell_id,$sell_id2,$rec){
+    public function copyToSave($sell_id,$rec){
       $this->sell_id=$sell_id;
-      $this->sell_id2=$sell_id2;
+
       $this->item_id = $rec->item_id;
       $this->barcode_id = $rec->barcode_id;
       $this->q1 = $rec->q1;
@@ -62,49 +63,53 @@ class SellTranForm extends Form
     public function prices($single,$price_type){
      $this->retPrice($this->item_id,$single,$price_type);
     }
-    public function raseedplace(){
-      return $this->retRaseedPlace($this->item_id,$this->place_id);
+    public function raseedplace($place_id){
+      return $this->retRaseedPlace($this->item_id,$place_id);
     }
-    public function raseedTwo(){
+    public function raseedTwo($place_id){
 
-      return $this->retRaseedTwo($this->item_id,$this->place_id);
+      return $this->retRaseedTwo($this->item_id,$place_id);
     }
     public function quantTwo(){
      return $this->retQuant($this->item_id,$this->q1,$this->q2);
     }
-    public function chkRaseed(): bool{
+    public function chkRaseed($place_id): bool{
 
-     return ($this->raseedTwo()-$this->quantTwo())>=0;
+     return ($this->raseedTwo($place_id)-$this->quantTwo())>=0;
     }
-    public function chkRaseedEdit($g1,$q2): bool{
+    public function chkRaseedEdit($place_id,$q1,$q2): bool{
 
-        return ($this->TwoToOne($this->q1,$q2)+$this->raseedTwo()-$this->quantTwo())>=0;
+          $raseed=$this->TwoToOne(Item::find($this->item_id)->count, $q1 ,$q2) + $this->raseedTwo($place_id);
+
+        return $raseed-$this->quantTwo()  >= 0;
     }
 
 
-    public function chkData(){
+    public function chkData($place_id){
       $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($this->item_id)->two_unit;
       if ($this->item_id=='') return 'يجب ادخال الصنف';
 
       if (!$has_two && $this->q1<=0) return 'يجب ادخال الكمية';
       if ($has_two &&  $this->q2<=0 && $this->q1<=0) return 'يجب ادخال الكمية';
 
-      if (!$this->chkRaseed()) return 'الرصيد لا يسمح !!';
+      if (!$this->chkRaseed($place_id)) return 'الرصيد لا يسمح !!';
       return 'ok';
     }
-    public function chkDataEdit(){
+    public function chkDataEdit($place_id){
         $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($this->item_id)->two_unit;
         if ($this->item_id=='') return 'يجب ادخال الصنف';
 
         if (!$has_two && $this->q1<=0) return 'يجب ادخال الكمية';
         if ($has_two &&  $this->q2<=0 && $this->q1<=0) return 'يجب ادخال الكمية';
-        $res=Sell_tran::where('sell_id',$this->sell_id)
-            ->where('sell_id2',$this->sell_id2)
-            ->where('item_id',$this->item_id)->first();
-        if ($res)
-          if (!$this->chkRaseedEdit($res->q1,$res->q2)) return 'الرصيد لا يسمح !!';
-        else
-          if (!$this->chkRaseed()) return 'الرصيد لا يسمح !!';
+        $res=Sell_tran::where('sell_id',$this->sell_id)->where('item_id',$this->item_id)->first();
+        if ($res) {
+            info($this->chkRaseedEdit($place_id,$res->q1,$res->q2));
+            if (!$this->chkRaseedEdit($place_id,$res->q1,$res->q2)) return 'الرصيد لا يسمح !!';
+        }
+
+        else {
+          if (!$this->chkRaseed($place_id)) return 'الرصيد لا يسمح !!';}
+
         return 'ok';
     }
     public function SetQuant() {
@@ -114,13 +119,13 @@ class SellTranForm extends Form
       $this->sub_tot = ($this->q1*$this->price1)+($this->q2*$this->price2);
     }
 
-    public function DoDecALl()
+    public function DoDecALl($place_id)
     {
-        $this->decAll($this->sell_id,$this->sell_id2,$this->item_id,$this->place_id,$this->q1,$this->q2);
+        $this->decAll($this->sell_id,$this->item_id,$place_id,$this->q1,$this->q2);
     }
-  public function DoIncALl()
+  public function DoIncALl($place_id)
   {
-    $this->incAll($this->sell_id,$this->sell_id2,$this->item_id,$this->place_id,$this->q1,$this->q2);
+    $this->incAll($this->sell_id,$this->item_id,$place_id,$this->q1,$this->q2);
   }
 
 }

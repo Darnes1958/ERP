@@ -11,7 +11,7 @@ use Livewire\Form;
 
 class BuyTranFormEdit extends Form
 {
-  public $sort = '' ;
+
   public $buy_id = '' ;
   public $item_id = '' ;
   public $barcode_id = '' ;
@@ -26,12 +26,11 @@ class BuyTranFormEdit extends Form
 
   public $exp_date = '' ;
   public $user_id = '' ;
-  public $place_id=0;
+
 
 
     public function loadFromBuyTran($buy_id,$rec){
         $this->buy_id=$buy_id;
-        $this->sort = Buy_tran_work::where('buy_id',$buy_id)->max('sort')+1;
         $this->item_id = $rec['item_id'];
         $this->barcode_id = $rec['barcode_id'];
         $this->q1 = $rec['q1'];

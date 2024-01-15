@@ -11,11 +11,7 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
 
 class Sell extends Model
 {
-  use HasCompositeKey;
   protected $connection = 'other';
-
-
-  protected $primaryKey = ['id', 'id2'];
 
     protected $casts =[
          'Jomla' => Jomla::class,

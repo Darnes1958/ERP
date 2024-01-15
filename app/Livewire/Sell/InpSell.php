@@ -52,8 +52,6 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
   public ?array $selltranData = [];
 
   public $sell_id;
-  public $sell_id2;
-
 
   public $has_two;
   public $is_filled='false';
@@ -81,7 +79,6 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
   public function itemFill($item,$barcode,$stock1){
       $this->sellTranForm->item_id=$item;
       $this->sellTranForm->barcode_id=$barcode;
-      $this->sellTranForm->place_id=$this->sellForm->place_id;
 
       $rec=$this->retPrice($item,$this->sellForm->single,$this->sellForm->price_type_id);
 
@@ -96,7 +93,6 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         'raseed_all'=>$stock1,
         'raseed_place'=>Place_stock::where('item_id',$item)
           ->where('place_id',$this->sellForm->place_id)->first()->stock1,
-        'place_id'=>$this->sellForm->place_id,
       ]);
 
     }
@@ -123,36 +119,28 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
   }
   public function add_rec()
     {
-        $this->sellTranForm->loadForm($this->sell_id, $this->sell_id2, $this->selltranData);
-        $this->sellTranForm->place_id=$this->sellForm->place_id;
+        $this->sellTranForm->loadForm($this->sell_id, $this->selltranData);
 
-        $chk=$this->sellTranForm->chkData();
+        $chk=$this->sellTranForm->chkData($this->sellForm->place_id);
         if ($chk != 'ok') {
           Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
           return;
         }
-
         $this->sellTranForm->SetQuant();
-
-        $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
-            ->where('item_id', $this->sellTranForm->item_id)->get();
-
+        $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('item_id', $this->sellTranForm->item_id)->get();
         if ($res->count() > 0)
-            Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)
-                ->where('item_id', $this->sellTranForm->item_id)
-                ->update($this->sellTranForm->all());
+            Sell_tran_work::where('sell_id', $this->sell_id)->where('item_id', $this->sellTranForm->item_id)->update($this->sellTranForm->all());
         else  Sell_tran_work::create($this->sellTranForm->all());
-
         $this->sellTranForm->reset();
         $this->selltranFormBlade->fill($this->sellTranForm->toArray());
-        $tot = Sell_tran_work::where('sell_id', $this->sell_id)->where('sell_id2', $this->sell_id2)->sum('sub_tot');
-        $baky = $tot - Sell_work::find([$this->sell_id,$this->sell_id2])->pay;
-        Sell_work::find([$this->sell_id,$this->sell_id2])->update([
-            'tot' => $tot,
-            'baky' => $baky,
-        ]);
+        $tot = Sell_tran_work::where('sell_id', $this->sell_id)->sum('sub_tot');
+        $baky = $tot - Sell_work::find($this->sell_id)->pay;
+        Sell_work::find($this->sell_id)->update(['tot' => $tot,'baky' => $baky,]);
+        info('form database '.Sell_work::find($this->sell_id)->tot);
         $this->sellForm->tot=$tot;
         $this->sellForm->baky=$baky;
+
+        info('when add '.$this->sellForm->tot);
         $this->sellFormBlade->fill($this->sellForm->toArray());
         $this->is_filled=true;
         $this->dispatch('goto', test: 'barcode_id');
@@ -172,7 +160,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->autofocus()
               ->label('التاريخ')
               ->afterStateUpdated(function ($state){
-                $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
+                $res=Sell_work::find($this->sell_id);
                 $res->order_date=$state;
                 $res->save();
               })
@@ -187,7 +175,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->inlineLabel()
               ->columnSpan(3)
               ->afterStateUpdated(function ($state){
-                $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
+                $res=Sell_work::find($this->sell_id);
                 $res->customer_id=$state;
                 $res->save();
                 $this->sellForm->customer_id=$state;
@@ -237,7 +225,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->inlineLabel()
               ->columnSpan(2)
               ->afterStateUpdated(function ($state){
-                $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
+                $res=Sell_work::find($this->sell_id);
                 $res->place_id=$state;
                 $res->save();
                 $this->sellForm->place_id=$state;
@@ -283,7 +271,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->relationship('Price_type','name')
               ->required()
               ->afterStateUpdated(function ($state){
-                $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
+                $res=Sell_work::find($this->sell_id);
                 $res->price_type_id=$state;
                 $res->save();
                 $this->sellForm->price_type_id=$state;
@@ -312,7 +300,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->afterStateUpdated(function (Set $set,Get $get,$state){
                 if (!$state) $set('pay',0);
                 $set('baky',$get('tot')-$get('pay'));
-                $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
+                $res=Sell_work::find($this->sell_id);
                 $res->pay=$get('pay');
                 $res->baky=$get('baky');
                 $res->save();
@@ -332,7 +320,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                   ->disabled(fn(): bool=>$this->is_filled)
                   ->visible(Setting::find(Auth::user()->company)->jomla)
                 ->afterStateUpdated(function ($state){
-                  $res=Sell_work::find([$this->sell_id,$this->sell_id2]);
+                  $res=Sell_work::find($this->sell_id);
                   $res->single=$state;
                   $res->save();
                   $this->sellForm->single=$state;
@@ -451,14 +439,12 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               \Filament\Forms\Components\Actions\Action::make('تخزين')
                 ->icon('heroicon-m-plus')
                 ->button()
-                ->visible(function () {return Sell_tran_work::where('sell_id',$this->sell_id)
-                    ->where('sell_id2',$this->sell_id2)->count()>0;})
+                ->visible(function () {return Sell_tran_work::where('sell_id',$this->sell_id)->count()>0;})
                 ->color('success')
                 ->requiresConfirmation()
                 ->action(function () {
-                  $sell=Sell_work::find([$this->sell_id,$this->sell_id2]);
-                  $selltran=Sell_tran_work::with('Item')->where('sell_id',$this->sell_id)
-                    ->where('sell_id2',$this->sell_id2)->get();
+                  $sell=Sell_work::find($this->sell_id);
+                  $selltran=Sell_tran_work::with('Item')->where('sell_id',$this->sell_id)->get();
                   if ($selltran->count()==0)
                     Notification::make()
                       ->title('لم يتم ادخال اصناف بعد !! ')
@@ -485,30 +471,29 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                   if ($minus) return;
 
                     $this->sellForm->copyToSave($sell);
+
                     DB::connection(Auth()->user()->company)->beginTransaction();
                     try {
 
-                      $this->sell_id=Sell::max('id')+1;
-                      $this->sellForm->id=$this->sell_id;
+                      $Sell=Sell::create($this->sellForm->except('id'));
 
-                      $sell=Sell::create($this->sellForm->all());
+
+                      $this->sellForm->id=$Sell->id;
 
                       foreach ($selltran as $item) {
-                        $this->sellTranForm->copyToSave($this->sell_id,$this->sell_id2, $item);
-                        $this->sellTranForm->place_id=$this->sellForm->place_id;
-
+                        $this->sellTranForm->copyToSave($this->sellForm->id, $item);
                         Sell_tran::create($this->sellTranForm->all());
-
-                        $this->sellTranForm->DoDecALl();
-
+                        $this->sellTranForm->DoDecALl($this->sellForm->place_id);
                       }
                       $this->sell_id=Auth::id();
-                      Sell_tran_work::where('sell_id',$this->sell_id)
-                        ->where('sell_id2',$this->sell_id2)->delete();
-
+                      $this->sellForm->id=$this->sell_id;
+                      $this->sellTranForm->sell_id=$this->sell_id;
+                      Sell_tran_work::where('sell_id',$this->sell_id)->delete();
                       $this->is_filled=false;
-
                       $sell->tot=0;  $sell->pay=0; $sell->baky=0;  $sell->save();
+                      $this->sellForm->copyToSave($sell);
+                      $this->sellFormBlade->fill($this->sellForm->toArray());
+
                       DB::connection(Auth()->user()->company)->commit();
                     } catch (\Exception $e) {
                         Notification::make()
@@ -528,11 +513,9 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 ->requiresConfirmation()
                 ->action(function () {
                   Sell_tran_work::where('sell_id',$this->sell_id)->delete();
-                  Sell_work::find([$this->sell_id,$this->sell_id2])->update([
-                    'tot'=>0,'pay'=>0,'baky'=>0,
-                  ]);
+                  Sell_work::find($this->sell_id)->update(['tot'=>0,'pay'=>0,'baky'=>0,]);
                   $this->is_filled=false;
-                  $this->sellForm->fillForm($this->sell_id,$this->sell_id2);
+                  $this->sellForm->fillForm($this->sell_id);
                   $this->sellTranForm->reset();
                   $this->sellFormBlade->fill($this->sellForm->toArray());
                   $this->selltranFormBlade->fill($this->sellTranForm->toArray());
@@ -550,8 +533,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
   {
     return $table
       ->query(function (Sell_tran_work $sell_tran)  {
-        $sell_tran=Sell_tran_work::where('user_id',Auth::id())->where('sell_id',$this->sell_id)
-          ->where('sell_id2',$this->sell_id2) ;
+        $sell_tran=Sell_tran_work::where('user_id',Auth::id())->where('sell_id',$this->sell_id)   ;
         return  $sell_tran;
       })
       ->columns([
@@ -593,10 +575,9 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         \Filament\Tables\Actions\Action::make('delete')
           ->action(function (Sell_tran_work $record){
             $record->delete();
-            $this->sellForm->fillForm($this->sell_id,$this->sell_id2);
+            $this->sellForm->fillForm($this->sell_id);
             $this->sellFormBlade->fill($this->sellForm->toArray());
-            $this->is_filled=Sell_tran_work::where('sell_id',$this->sell_id)
-              ->where('sell_id2',$this->sell_id2)->count()>0;
+            $this->is_filled=Sell_tran_work::where('sell_id',$this->sell_id)->count()>0;
           })
           ->icon('heroicon-m-trash')
           ->iconButton()->color('danger')
@@ -605,7 +586,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         \Filament\Tables\Actions\Action::make('edit')
           ->action(function (Sell_tran_work $record){
             $this->selltranFormBlade->fill($record->toArray());
-            $this->sellTranForm->loadForm($this->sell_id,$this->sell_id2,$record);
+            $this->sellTranForm->loadForm($this->sell_id,$record);
             $this->dispatch('goto',  test: 'q1' );
           })
           ->icon('heroicon-m-pencil')
@@ -617,19 +598,15 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         BulkAction::make('deleteAll')
           ->action(function (Collection $records){
             $records->each->delete();
-            $this->sellForm->fillForm($this->sell_id,$this->sell_id2);
+            $this->sellForm->fillForm($this->sell_id);
             $this->sellFormBlade->fill($this->sellForm->toArray());
-            $this->is_filled=Sell_tran_work::where('sell_id',$this->sell_id)
-                ->where('sell_id2',$this->sell_id2)->count()>0;
-
+            $this->is_filled=Sell_tran_work::where('sell_id',$this->sell_id)->count()>0;
           })
           ->icon('heroicon-m-trash')
           ->color('danger')
           ->Label('الغاء المحدد')
           ->requiresConfirmation(),
-
       ])
-
       ->striped();
   }
 
@@ -638,9 +615,8 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
     $res=Sell_work::where('user_id',Auth::id())
       ->whereDate('created_at', '=', date('Y-m-d'))->first();
     if ($res){
-      $this->sellForm->fillForm($res->id,$res->id2);
+      $this->sellForm->fillForm($res->id);
       $this->sell_id=$res->id;
-      $this->sell_id2=$res->id2;
       }
     else {
       Sell_tran_work::where('sell_id',Auth::id())->delete();
@@ -648,11 +624,8 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
       $this->sellForm->mountForm();
       $res=Sell_work::create($this->sellForm->all());
       $this->sell_id=$res->id;
-      $this->sell_id2=$res->id2;
-
     }
-    $this->is_filled=Sell_tran_work::where('sell_id',$this->sell_id)
-        ->where('sell_id2',$this->sell_id2)->count()>0;
+    $this->is_filled=Sell_tran_work::where('sell_id',$this->sell_id)->count()>0;
     $this->sellFormBlade->fill($this->sellForm->toArray());
     $this->selltranFormBlade->fill($this->sellTranForm->toArray());
   }
