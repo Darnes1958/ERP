@@ -16,6 +16,9 @@ class Customer extends Model
   public function Sells_work(){
     return $this->hasMany(Sell_work::class);
   }
+    public function Receipt(){
+        return $this->hasMany(Receipt::class);
+    }
 
   public function __construct(array $attributes = [])
   {

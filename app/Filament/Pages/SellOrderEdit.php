@@ -52,6 +52,9 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
 
   protected static ?string $navigationIcon = 'heroicon-o-document-text';
   protected static string $view = 'filament.pages.sell-order-edit';
+  protected static ?string $navigationLabel='تعديل او الغاء فاتورة';
+  protected static ?string $navigationGroup='فواتير مبيعات';
+  protected static ?int $navigationSort=2;
   protected ?string $heading="";
 
   public ?array $selltranData = [];

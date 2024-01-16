@@ -28,7 +28,11 @@ class Price_type extends Model
     public function Price_sell(){
         return $this->hasMany(Price_sell::class);
     }
-  public function __construct(array $attributes = [])
+    public function Receipt(){
+        return $this->hasMany(Receipt::class);
+    }
+
+    public function __construct(array $attributes = [])
   {
     parent::__construct($attributes);
     if (Auth::check()) {

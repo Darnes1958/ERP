@@ -33,6 +33,10 @@ class Sell extends Model
   public function Tar_sell(){
     return $this->hasMany(Tar_sell::class);
   }
+  public function Receipt(){
+        return $this->hasMany(Receipt::class);
+    }
+
   public function __construct(array $attributes = [])
   {
     parent::__construct($attributes);

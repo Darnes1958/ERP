@@ -136,11 +136,8 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         $tot = Sell_tran_work::where('sell_id', $this->sell_id)->sum('sub_tot');
         $baky = $tot - Sell_work::find($this->sell_id)->pay;
         Sell_work::find($this->sell_id)->update(['tot' => $tot,'baky' => $baky,]);
-        info('form database '.Sell_work::find($this->sell_id)->tot);
         $this->sellForm->tot=$tot;
         $this->sellForm->baky=$baky;
-
-        info('when add '.$this->sellForm->tot);
         $this->sellFormBlade->fill($this->sellForm->toArray());
         $this->is_filled=true;
         $this->dispatch('goto', test: 'barcode_id');

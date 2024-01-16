@@ -35,6 +35,8 @@ class SellTranForm extends Form
 
     public function loadForm($sell_id,$rec){
         $this->sell_id=$sell_id;
+        info($this->sell_id);
+        info($rec['item_id']);
 
         $this->item_id = $rec['item_id'];
         $this->barcode_id = $rec['barcode_id'];
