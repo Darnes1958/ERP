@@ -9,6 +9,7 @@ use App\Models\Place_stock;
 
 use App\Models\Price_sell;
 use App\Models\Price_type;
+use App\Models\Sell_tran;
 use Illuminate\Database\Eloquent\Builder;
 
 trait Raseed {
@@ -98,7 +99,7 @@ trait Raseed {
 
 
 
-    public function decAll($sell_id,$item_id,$place_id,$q1,$q2){
+    public function decAll($sell_tran_id,$sell_id,$item_id,$place_id,$q1,$q2){
         $item=Item::find($item_id);
         $count=$item->count;
 
@@ -115,7 +116,7 @@ trait Raseed {
         $place->stock2=$quantPlace%$count;
         $place->save();
 
-        $this->decQs($sell_id,$item_id,$count,$quant);
+        $this->decQs($sell_tran_id,$sell_id,$item_id,$count,$quant);
     }
     public function incAll($sell_id,$item_id,$place_id,$q1,$q2){
 
@@ -175,7 +176,7 @@ trait Raseed {
    public function TwoToOne($count,$q1,$q2){
         return $q2+($q1*$count);
     }
-   public function decQs($sell_id,$item,$count,$quant){
+   public function decQs($sell_tran_id,$sell_id,$item,$count,$quant){
       $buyTran=Buy_tran::where('item_id',$item)
           ->Where(function (Builder $query) {
               $query->where('qs1', '>',0)
@@ -184,6 +185,8 @@ trait Raseed {
          ->orderBy('created_at','asc')
          ->get();
       $tank=0;
+      $sell_tran=Sell_tran::find($sell_tran_id);
+      $profit=0;
       foreach ($buyTran as $tran) {
         $qs=$this->TwoToOne($count,$tran->qs1,$tran->qs2);
         if ( $qs > ($quant-$tank)) $decQuant=$quant-$tank;
@@ -194,19 +197,24 @@ trait Raseed {
           $tran->qs2=$qs['q2'];
           $tran->save();
 
+          $decQ=$this->OneToTwo($count,$decQuant);
           BuySell::create([
               'buy_id' => $tran->buy_id,
               'sell_id' => $sell_id,
 
               'item_id' => $item,
-              'q1' => $this->OneToTwo($count,$decQuant)['q1'],
-              'q2' => $this->OneToTwo($count,$decQuant)['q2'],
+              'q1' => $decQ['q1'],
+              'q2' => $decQ['q2'],
           ]);
 
+          $sub_input=($tran->price_input*$decQ['q1']) + (($tran->price_input/$count)*$decQ['q2']);
+          $sub_tot=($sell_tran->price1*$decQ['q1']) + ($sell_tran->price2*$decQ['q2']);
+          $profit+=$sub_tot-$sub_input;
           $tank+=$decQuant;
           if ($tank==$quant) break;
 
       }
+      Sell_tran::find($sell_tran_id)->update(['profit'=>$profit]);
    }
    public function incQs($sell_id,$item,$count){
 

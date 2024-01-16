@@ -474,16 +474,12 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
 
                     DB::connection(Auth()->user()->company)->beginTransaction();
                     try {
-
                       $Sell=Sell::create($this->sellForm->except('id'));
-
-
                       $this->sellForm->id=$Sell->id;
-
                       foreach ($selltran as $item) {
                         $this->sellTranForm->copyToSave($this->sellForm->id, $item);
-                        Sell_tran::create($this->sellTranForm->all());
-                        $this->sellTranForm->DoDecALl($this->sellForm->place_id);
+                        $sell_tran_id=Sell_tran::create($this->sellTranForm->all());
+                        $this->sellTranForm->DoDecALl($this->sellForm->place_id,$sell_tran_id->id);
                       }
                       $this->sell_id=Auth::id();
                       $this->sellForm->id=$this->sell_id;

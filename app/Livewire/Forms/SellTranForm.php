@@ -119,9 +119,9 @@ class SellTranForm extends Form
       $this->sub_tot = ($this->q1*$this->price1)+($this->q2*$this->price2);
     }
 
-    public function DoDecALl($place_id)
+    public function DoDecALl($place_id,$sell_tran_id)
     {
-        $this->decAll($this->sell_id,$this->item_id,$place_id,$this->q1,$this->q2);
+        $this->decAll($sell_tran_id,$this->sell_id,$this->item_id,$place_id,$this->q1,$this->q2);
     }
   public function DoIncALl($place_id)
   {
