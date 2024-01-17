@@ -90,11 +90,11 @@ class ReceiptResource extends Resource
                 ->label('رقم الفاتورة')
                 ->options(fn (Get $get): Collection => Sell::query()
                   ->where('customer_id', $get('customer_id'))
-                  ->selectRaw('\' إجمالي الفاتورة \'+str(tot)+\' بتاريخ \'+convert(varchar,order_date) as name,id ')
+                  ->selectRaw('\'الرقم \'+str(id)+\' الإجمالي \'+str(tot)+\' بتاريخ \'+convert(varchar,order_date) as name,id')
                   ->pluck('name', 'id'))
                 ->searchable()
-                ->requiredIf('rec_who',3,)
-                ->visible(fn(Get $get): bool =>$get('rec_who')==3)
+                ->requiredIf('rec_who',[3,4])
+                ->visible(fn(Get $get): bool =>($get('rec_who')==3 || $get('rec_who') ==4))
                 ->preload(),
 
                 Select::make('price_type_id')
