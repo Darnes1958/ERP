@@ -6,6 +6,7 @@ use App\Enums\RecWho;
 use App\Filament\Resources\ReceiptResource\Pages;
 
 use App\Models\Receipt;
+use App\Models\Sell;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
@@ -20,13 +21,17 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\DatePicker;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Get;
 
 class ReceiptResource extends Resource
 {
     protected static ?string $model = Receipt::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'ايصالات قبض ودفع';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -34,13 +39,19 @@ class ReceiptResource extends Resource
             ->schema([
                Radio::make('rec_who')
                 ->inline()
-                ->hiddenLabel()
+                ->inlineLabel(false)
+                ->label('نوع الايصال')
+                ->default(1)
+                ->live()
+                ->columnSpan(2)
                 ->options(RecWho::class),
+
                Select::make('customer_id')
                 ->label('الزبون')
                 ->relationship('Customer','name')
                 ->searchable()
                 ->required()
+                ->live()
                 ->preload()
                 ->createOptionForm([
                        Section::make('ادخال زبون جديد')
@@ -75,6 +86,17 @@ class ReceiptResource extends Resource
 
                            ])->columns(2)
                    ]),
+              Select::make('sell_id')
+                ->label('رقم الفاتورة')
+                ->options(fn (Get $get): Collection => Sell::query()
+                  ->where('customer_id', $get('customer_id'))
+                  ->selectRaw('\' إجمالي الفاتورة \'+str(tot)+\' بتاريخ \'+convert(varchar,order_date) as name,id ')
+                  ->pluck('name', 'id'))
+                ->searchable()
+                ->requiredIf('rec_who',3,)
+                ->visible(fn(Get $get): bool =>$get('rec_who')==3)
+                ->preload(),
+
                 Select::make('price_type_id')
                     ->label('طريقة الدفع')
                     ->relationship('Price_type','name')
@@ -91,12 +113,13 @@ class ReceiptResource extends Resource
                    ->required()
                    ->numeric(),
                 TextInput::make('notes')
+                 ->columnSpan(3)
                  ->label('ملاحظات'),
                 Hidden::make('imp_exp')
                 ->default(0),
                 Hidden::make('user_id')
                     ->default(Auth::id())
-            ]);
+            ])->columns(3);
     }
 
     public static function table(Table $table): Table
