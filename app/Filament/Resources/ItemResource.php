@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
+use App\Models\Buy_tran;
 use App\Models\Item;
 use App\Models\Setting;
 use Filament\Actions\DeleteAction;
@@ -244,7 +245,9 @@ class ItemResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->iconButton(),
-              Tables\Actions\DeleteAction::make()->iconButton(),
+              Tables\Actions\DeleteAction::make()
+                  ->hidden(fn(Item $record): bool =>Buy_tran::where('item_id',$record->id)->count()>0)
+                  ->iconButton(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

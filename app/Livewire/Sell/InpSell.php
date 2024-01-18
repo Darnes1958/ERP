@@ -8,8 +8,10 @@ use App\Livewire\Forms\SellTranForm;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
 
+use App\Models\Customer;
 use App\Models\Item;
 use App\Models\Place_stock;
+use App\Models\Receipt;
 use App\Models\Sell;
 use App\Models\Sell_tran;
 use App\Models\Sell_tran_work;
@@ -166,7 +168,8 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
               ->required(),
             Select::make('customer_id')
               ->label('الزبون')
-              ->relationship('Customer','name')
+              ->options(Customer::where('id','!=',1)->pluck('name','id'))
+              ->searchable()
               ->live()
               ->required()
               ->inlineLabel()
@@ -177,38 +180,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                 $res->save();
                 $this->sellForm->customer_id=$state;
               })
-              ->createOptionForm([
-                Section::make('ادخال زبون جديد')
-                  ->schema([
-                    TextInput::make('name')
-                      ->required()
-                      ->label('الاسم'),
-                    TextInput::make('address')
-                      ->label('العنوان'),
-                    TextInput::make('mdar')
-                      ->label('مدار'),
-                    TextInput::make('libyana')
-                      ->label('لبيانا'),
-                    Hidden::make('user_id'),
-                  ])
-              ])
-              ->editOptionForm([
-                Section::make('تعديل بيانات زبون')
-                  ->schema([
-                    TextInput::make('name')
-                      ->required()
-                      ->label('الاسم'),
-                    TextInput::make('address')
-                      ->label('العنوان'),
-                    TextInput::make('mdar')
-                      ->label('مدار'),
-                    TextInput::make('libyana')
-                      ->label('لبيانا'),
-                    Hidden::make('user_id')
-                      ->default(Auth::id()),
 
-                  ])->columns(2)
-              ])
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'place_id' })",
                 'wire:keydown.enter' => "\$dispatch('goto', { test: 'place_id' })",
@@ -478,6 +450,19 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
                         $sell_tran_id=Sell_tran::create($this->sellTranForm->all());
                         $this->sellTranForm->DoDecALl($this->sellForm->place_id,$sell_tran_id->id);
                       }
+                      if ($this->sellForm->pay !=0){
+                          Receipt::create([
+                            'receipt_date'=>$this->sellForm->order_date,
+                            'customer_id'=>$this->sellForm->customer_id,
+                            'sell_id'=>$this->sellForm->id,
+                            'price_type_id'=>$this->sellForm->price_type_id,
+                            'rec_who'=>3,
+                            'imp_exp'=>0,
+                            'val'=>$this->sellForm->pay,
+                            'notes'=>'فاتورة مبيعات رقم '.strval($this->sellForm->id),
+                            'user_id'=>Auth::id()
+                          ]);
+                      }
                       $this->sell_id=Auth::id();
                       $this->sellForm->id=$this->sell_id;
                       $this->sellTranForm->sell_id=$this->sell_id;
@@ -606,6 +591,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
   public function mount(){
     $this->has_two=Setting::find(Auth::user()->company)->has_two;
     $res=Sell_work::where('user_id',Auth::id())
+      ->where('customer_id','!=',1)
       ->whereDate('created_at', '=', date('Y-m-d'))->first();
     if ($res){
       $this->sellForm->fillForm($res->id);
@@ -615,6 +601,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
       Sell_tran_work::where('sell_id',Auth::id())->delete();
       Sell_work::where('id',Auth::id())->delete();
       $this->sellForm->mountForm();
+      $this->sellForm->customer_id=2;
       $res=Sell_work::create($this->sellForm->all());
       $this->sell_id=$res->id;
     }

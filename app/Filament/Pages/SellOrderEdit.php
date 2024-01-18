@@ -180,7 +180,8 @@ class SellOrderEdit extends Page implements HasForms,HasTable,HasActions, HasInf
              ->label('رقم الفاتورة')
               ->options(DB::connection(Auth::user()->company)->table('sells')
                 ->join('Customers','sells.customer_id','=','customers.id')
-                ->selectRaw('\'الزبون : \'+customers.name+\'  اجمالي الفاتورة : \'+str(tot) as name,sells.id')
+
+                ->selectRaw('customers.name+\'.. الألي \'+str(sells.id)+\' الإجمالي \'+str(tot) as name,sells.id')
                 ->latest('sells.created_at')->pluck('name','id'))
               ->searchable()
               ->live()

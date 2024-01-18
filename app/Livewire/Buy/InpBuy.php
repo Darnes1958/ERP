@@ -16,6 +16,8 @@ use App\Models\Item;
 
 use App\Models\Place_stock;
 use App\Models\Price_buy;
+
+use App\Models\Recsupp;
 use App\Models\Setting;
 use App\Models\Supplier;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -387,6 +389,19 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                               Buy_tran::create($this->buyTranForm->all());
                               $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2);
 
+                          }
+                          if ($this->buyForm->pay !=0){
+                              Recsupp::create([
+                                  'receipt_date'=>$this->buyForm->order_date,
+                                  'supplier_id'=>$this->buyForm->supplier_id,
+                                  'buy_id'=>$id->id,
+                                  'price_type_id'=>$this->buyForm->price_type_id,
+                                  'rec_who'=>4,
+                                  'imp_exp'=>1,
+                                  'val'=>$this->buyForm->pay,
+                                  'notes'=>'فاتورة مشتريات رقم '.strval($id->id),
+                                  'user_id'=>Auth::id()
+                              ]);
                           }
                           Buy_tran_work::where('buy_id',$this->buy_id)->delete();
                           $buy->tot=0;  $buy->pay=0; $buy->baky=0;  $buy->save();

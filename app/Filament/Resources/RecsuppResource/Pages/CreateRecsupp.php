@@ -12,6 +12,7 @@ class CreateRecsupp extends CreateRecord
 {
     protected static string $resource = RecsuppResource::class;
   protected ?string $heading="";
+    protected static bool $canCreateAnother = false;
   protected function getRedirectUrl(): string
   {
     return $this->getResource()::getUrl('create');
@@ -19,6 +20,12 @@ class CreateRecsupp extends CreateRecord
 
   protected function mutateFormDataBeforeCreate(array $data): array
   {
+      switch ($data['rec_who']) {
+          case 1: $data['imp_exp']=0;break;
+          case 2: $data['imp_exp']=1;break;
+          case 3: $data['imp_exp']=0;break;
+          case 4: $data['imp_exp']=1;break;
+      }
     if ($data['rec_who'] == 3 || $data['rec_who'] == 4)
     {   $val=$data['val'];
       $sum=Recsupp::where('buy_id',$data['buy_id'])->sum('val');

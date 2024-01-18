@@ -44,6 +44,9 @@ class SellRep extends Page implements HasForms,HasTable
          ->label('المدفوع'),
        TextColumn::make('baky')
          ->label('الباقي'),
+         TextColumn::make('sell_tran_sum_profit')
+             ->sum('Sell_tran','profit')
+             ->label('الربح'),
        TextColumn::make('notes')
          ->label('ملاحظات'),
 

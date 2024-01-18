@@ -8,6 +8,7 @@ use App\Filament\Resources\ReceiptResource\Pages;
 use App\Models\Customer;
 use App\Models\Receipt;
 use App\Models\Sell;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
@@ -152,6 +153,7 @@ class ReceiptResource extends Resource
                 ->label('زبون معين'),
               Tables\Filters\Filter::make('is_sell')
                 ->label('ايصالات فاتورة')
+
                 ->query(fn (Builder $query): Builder => $query->whereIn('rec_who', [3,4])),
               Tables\Filters\Filter::make('is_imp')
                 ->label('ايصالات قبض')
@@ -166,6 +168,17 @@ class ReceiptResource extends Resource
                   Forms\Components\DatePicker::make('Date2')
                    ->label('إلي تاريخ'),
                 ])
+                  ->indicateUsing(function (array $data): ?string {
+                      if (! $data['Date1'] && ! $data['Date2']) { return null;   }
+                      if ( $data['Date1'] && !$data['Date2'])
+                       return 'ادخلت بتاريخ  ' . Carbon::parse($data['Date1'])->toFormattedDateString();
+                      if ( !$data['Date1'] && $data['Date2'])
+                          return 'حتي تاريخ  ' . Carbon::parse($data['Date2'])->toFormattedDateString();
+                      if ( $data['Date1'] && $data['Date2'])
+                          return 'ادخلت في الفترة من  ' . Carbon::parse($data['Date1'])->toFormattedDateString()
+                              .' إلي '. Carbon::parse($data['Date1'])->toFormattedDateString();
+
+                  })
                 ->query(function (Builder $query, array $data): Builder {
                   return $query
                     ->when(
@@ -184,13 +197,12 @@ class ReceiptResource extends Resource
                 ->modalHeading('حذف الإيصال')
                 ->after(function (Receipt $record) {
                   if ($record->rec_who==3 || $record->rec_who==4) {
-                    $val=$record->val;
-                    $sum=Receipt::where('sell_id',$record->sell_id)->sum('val');
-                    if ($record->rec_who == 3) $val=$sum-$val;
-                    if ($record->rec_who == 4) $val+=$sum;
+
+                    $sum=Receipt::where('sell_id',$record->sell_id)->where('rec_who',3)->sum('val');
+                    $sub=Receipt::where('sell_id',$record->sell_id)->where('rec_who',4)->sum('val');
                     $sell=Sell::find($record->sell_id);
-                    $sell->pay=$val;
-                    $sell->baky=$sell->tot-$sell->pay;
+                    $sell->pay=$sum-$sub;
+                    $sell->baky=$sell->tot-$sum+$sub;
                     $sell->save();
 
                   }

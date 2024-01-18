@@ -430,6 +430,7 @@ class SellDaily extends Page implements HasForms,HasTable,HasActions, HasInfolis
       Sell_tran_work::where('sell_id',Auth::id())->delete();
       Sell_work::where('id',Auth::id())->delete();
       $this->sellForm->mountForm();
+
       $res=Sell_work::create($this->sellForm->all());
       $this->sell_id=$res->id;
     }
