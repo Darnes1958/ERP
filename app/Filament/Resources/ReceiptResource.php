@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\RecWho;
 use App\Filament\Resources\ReceiptResource\Pages;
 
+use App\Models\Customer;
 use App\Models\Receipt;
 use App\Models\Sell;
 use Filament\Forms;
@@ -13,6 +14,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -30,8 +32,9 @@ class ReceiptResource extends Resource
     protected static ?string $model = Receipt::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'ايصالات قبض ودفع';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationLabel = 'ايصالات زبائن';
+    protected static ?string $navigationGroup = 'ايصالات قبض ودفع';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -143,10 +146,56 @@ class ReceiptResource extends Resource
                     ->label('ملاحظات'),
             ])
             ->filters([
-                //
+              SelectFilter::make('customer_id')
+                ->options(Customer::all()->pluck('name', 'id'))
+                ->searchable()
+                ->label('زبون معين'),
+              Tables\Filters\Filter::make('is_sell')
+                ->label('ايصالات فاتورة')
+                ->query(fn (Builder $query): Builder => $query->whereIn('rec_who', [3,4])),
+              Tables\Filters\Filter::make('is_imp')
+                ->label('ايصالات قبض')
+                ->query(fn (Builder $query): Builder => $query->where('rec_who', 1)),
+              Tables\Filters\Filter::make('is_exp')
+                ->label('ايصالات دقع')
+                ->query(fn (Builder $query): Builder => $query->where('rec_who', 2)),
+              Tables\Filters\Filter::make('created_at')
+                ->form([
+                  Forms\Components\DatePicker::make('Date1')
+                   ->label('من تاريخ'),
+                  Forms\Components\DatePicker::make('Date2')
+                   ->label('إلي تاريخ'),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                  return $query
+                    ->when(
+                      $data['Date1'],
+                      fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                    )
+                    ->when(
+                      $data['Date2'],
+                      fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                    );
+                })
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+              Tables\Actions\EditAction::make()->iconButton()->color('blue'),
+              Tables\Actions\DeleteAction::make()->iconButton()
+                ->modalHeading('حذف الإيصال')
+                ->after(function (Receipt $record) {
+                  if ($record->rec_who==3 || $record->rec_who==4) {
+                    $val=$record->val;
+                    $sum=Receipt::where('sell_id',$record->sell_id)->sum('val');
+                    if ($record->rec_who == 3) $val=$sum-$val;
+                    if ($record->rec_who == 4) $val+=$sum;
+                    $sell=Sell::find($record->sell_id);
+                    $sell->pay=$val;
+                    $sell->baky=$sell->tot-$sell->pay;
+                    $sell->save();
+
+                  }
+
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
