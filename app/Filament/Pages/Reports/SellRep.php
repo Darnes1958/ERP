@@ -2,15 +2,21 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Buy;
+use App\Models\Customer;
 use App\Models\Sell;
+use Filament\Actions\StaticAction;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
 
 
 class SellRep extends Page implements HasForms,HasTable
@@ -33,12 +39,20 @@ class SellRep extends Page implements HasForms,HasTable
 
      ->columns([
        TextColumn::make('id')
-        ->label('الرقم الالي'),
+         ->searchable()
+         ->sortable()
+         ->label('الرقم الالي'),
        TextColumn::make('Customer.name')
+         ->searchable()
+         ->sortable()
          ->label('اسم الزبون'),
        TextColumn::make('order_date')
+         ->searchable()
+         ->sortable()
          ->label('التاريخ'),
        TextColumn::make('tot')
+         ->searchable()
+         ->sortable()
          ->label('اجمالي الفاتورة'),
        TextColumn::make('pay')
          ->label('المدفوع'),
@@ -50,6 +64,27 @@ class SellRep extends Page implements HasForms,HasTable
        TextColumn::make('notes')
          ->label('ملاحظات'),
 
+     ])
+     ->actions([
+
+       Action::make('عرض')
+         ->modalHeading(false)
+         ->action(fn (Sell $record) => $record->id())
+         ->modalSubmitAction(false)
+         ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+         ->modalContent(fn (Sell $record): View => view(
+           'filament.pages.reports.views.view-sell-tran',
+           ['record' => $record],
+         ))
+         ->icon('heroicon-o-eye')
+         ->iconButton()
+
+     ])
+     ->filters([
+       SelectFilter::make('customer_id')
+         ->options(Customer::all()->pluck('name', 'id'))
+         ->searchable()
+         ->label('زبون معين'),
      ]);
  }
 

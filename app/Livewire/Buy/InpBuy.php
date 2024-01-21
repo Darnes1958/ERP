@@ -372,6 +372,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                       ->visible(function (){return Buy_tran_work::where('buy_id',$this->buy_id)->count()>0;})
                       ->color('success')
                       ->requiresConfirmation()
+
                       ->action(function () {
                           $buy=Buys_work::find($this->buy_id);
                           $buytran=Buy_tran_work::where('buy_id',$this->buy_id)->get();
@@ -405,12 +406,20 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                           }
                           Buy_tran_work::where('buy_id',$this->buy_id)->delete();
                           $buy->tot=0;  $buy->pay=0; $buy->baky=0;  $buy->save();
+                        $this->buyForm->fillForm($this->buy_id);
+                        $this->buyTranForm->reset();
+                        $this->buyFormBlade->fill($this->buyForm->toArray());
+                        $this->dispatch('goto',  test: 'barcode_id' );
+
                       }),
                     \Filament\Forms\Components\Actions\Action::make('مسح')
                         ->icon('heroicon-m-trash')
                         ->button()
                         ->color('danger')
                         ->requiresConfirmation()
+                        ->after(function (){
+                          $this->dispatch('goto',  test: 'barcode_id' );
+                        })
                         ->action(function () {
                             Buy_tran_work::where('buy_id',$this->buy_id)->delete();
                             Buys_work::find($this->buy_id)->update([
@@ -420,7 +429,6 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                             $this->buyTranForm->reset();
                           $this->buyFormBlade->fill($this->buyForm->toArray());
                           $this->buytranFormBlade->fill($this->buyTranForm->toArray());
-
 
                         })
               ])->extraAttributes(['class' => 'items-center justify-between']),

@@ -9,7 +9,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditItem extends EditRecord
 {
     protected static string $resource = ItemResource::class;
-
+  protected ?string $heading="";
     protected function getHeaderActions(): array
     {
         return [

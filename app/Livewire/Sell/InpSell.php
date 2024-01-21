@@ -121,6 +121,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
   }
   public function add_rec()
     {
+
         $this->sellTranForm->loadForm($this->sell_id, $this->selltranData);
 
         $chk=$this->sellTranForm->chkData($this->sellForm->place_id);
@@ -131,7 +132,9 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
         $this->sellTranForm->SetQuant();
         $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('item_id', $this->sellTranForm->item_id)->get();
         if ($res->count() > 0)
-            Sell_tran_work::where('sell_id', $this->sell_id)->where('item_id', $this->sellTranForm->item_id)->update($this->sellTranForm->all());
+            Sell_tran_work::where('sell_id', $this->sell_id)
+              ->where('item_id', $this->sellTranForm->item_id)
+              ->update($this->sellTranForm->all());
         else  Sell_tran_work::create($this->sellTranForm->all());
         $this->sellTranForm->reset();
         $this->selltranFormBlade->fill($this->sellTranForm->toArray());

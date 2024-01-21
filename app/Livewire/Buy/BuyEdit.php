@@ -96,16 +96,13 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
     if ($res->count()>0)
     {
         $this->decAllBuy($res->item_id,$this->buyForm->place_id,$res->q1,$res->q2);
-        $this->incAllBuy($res->item_id,$this->buyForm->place_id,$res->q1,$res->q2);
         Buy_tran::where('buy_id',$this->buy_id)
             ->where('item_id',$this->buyTranForm->item_id)
             ->update($this->buyTranForm->all());}
-    else {
+    else
         Buy_tran::create($this->buyTranForm->all());
-        $this->incAllBuy($this->buyTranForm->item_id,$this->buyForm->place_id,$this->buyTranForm->q1,$this->buyTranForm->q2);
-    }
 
-
+     $this->incAllBuy($this->buyTranForm->item_id,$this->buyForm->place_id,$this->buyTranForm->q1,$this->buyTranForm->q2);
 
     $this->buyTranForm->reset();
     $this->buytranFormBlade->fill($this->buyTranForm->toArray());
@@ -341,18 +338,18 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
                           ->color('danger')
                           ->requiresConfirmation()
                           ->action(function () {
-                              $buytran=Buy_tran::where('buy_id',$this->buy_id_id)->get();
+                              $buytran=Buy_tran::where('buy_id',$this->buy_id)->get();
                               foreach ($buytran as $tran)
-                                  $this->incAll($this->sell_id,$tran->item_id,$this->sellForm->place_id,$tran->q1,$tran->q2);
+                                  $this->decAllBuy($tran->item_id,$this->buyForm->place_id,$tran->q1,$tran->q2);
 
-                              Buy_tran::where('sell_id',$this->buy_id)->delete();
+                              Buy_tran::where('buy_id',$this->buy_id)->delete();
                               Buy::find($this->buy_id)->delete();
                               $this->is_filled=false;
                               $this->buy_id='';
                               $this->buyForm->reset();
                               $this->buyTranForm->reset();
 
-                              $this->form->fill($this->buyForm->toArray());
+                            $this->buyFormBlade->fill($this->buyForm->toArray());
 
                           })
                   ])->extraAttributes(['class' => 'items-center justify-between']),
@@ -433,7 +430,8 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
         BulkAction::make('deleteAll')
           ->action(function (Collection $records){
             foreach ($records as $item)
-                $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2);
+
+                $this->decAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2);
 
             $records->each->delete();
 

@@ -3,4 +3,8 @@
     padding-top: .3rem !important;
     padding-bottom: .3rem !important;
 }
+.fi-sidebar-nav-groups  {
+
+    @apply gap-y-2;
+}
 @config 'tailwind.config.js';

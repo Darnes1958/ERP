@@ -6,6 +6,7 @@ use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Buy_tran;
 use App\Models\Item;
+use App\Models\Sell_tran;
 use App\Models\Setting;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Hidden;
@@ -33,6 +34,10 @@ class ItemResource extends Resource
     {
         return $form
             ->schema([
+                TextInput::make('id')
+                 ->hidden(fn(string $operation)=>$operation=='create')
+                 ->disabled()
+                 ->label('الرقم الألي'),
                 TextInput::make('name')
                  ->label('اسم الصنف')
                  ->required()
@@ -44,6 +49,7 @@ class ItemResource extends Resource
                 TextInput::make('barcode')
                     ->label('الباركود')
                     ->required()
+                    ->disabled(fn(string $operation)=>$operation=='edit')
                     ->live()
                     ->unique(ignoreRecord: true)
                   ->validationMessages([
@@ -53,12 +59,19 @@ class ItemResource extends Resource
                 Radio::make('two_unit')
                     ->label('مستوي الوحدات')
                     ->inline()
+                    ->inlineLabel(false)
                     ->options([
                         false => 'أحادي',
                         true => 'ثنائي',
                     ])
                     ->default(false)
                     ->required()
+                    ->disabled(function ($operation,$state, Get $get){
+                      return
+                        $operation=='edit'
+                        && $state
+                        && Sell_tran::where('item_id',$get('id'))->where('q2','>',0)->exists();
+                    })
                     ->visible(Setting::find(Auth::user()->company)->has_two),
                 Select::make('unita_id')
                     ->label('الوحدة')
