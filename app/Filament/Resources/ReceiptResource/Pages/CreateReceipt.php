@@ -28,11 +28,13 @@ class CreateReceipt extends CreateRecord
         }
         if ($data['rec_who'] == 3 || $data['rec_who'] == 4)
         {   $val=$data['val'];
-            $sum=Receipt::where('sell_id',$data['sell_id'])->sum('val');
-            if ($data['rec_who'] == 3) $val+=$sum;
-            if ($data['rec_who'] == 4) $val=$sum-$val;
+            $imp=Receipt::where('sell_id',$data['sell_id'])->where('rec_who',3)->sum('val');
+            $exp=Receipt::where('sell_id',$data['sell_id'])->where('rec_who',4)->sum('val');
+
+            if ($data['rec_who'] == 3) $imp+=$val;
+            if ($data['rec_who'] == 4) $exp+=$val;
             $sell=Sell::find($data['sell_id']);
-            $sell->pay=$val;
+            $sell->pay=$imp-$exp;
             $sell->baky=$sell->tot-$sell->pay;
             $sell->save();
         }

@@ -53,6 +53,11 @@ class RecsuppResource extends Resource
           ->live()
           ->columnSpan(2)
           ->options(RecWho::class),
+        TextInput::make('id')
+         ->label('الرقم الألي')
+         ->disabled()
+         ->hidden(fn(string $operation)=>$operation=='create') ,
+
 
         Select::make('supplier_id')
           ->label('المورد')
@@ -203,8 +208,8 @@ class RecsuppResource extends Resource
                 $sum=Recsupp::where('buy_id',$record->buy_id)->where('rec_who',3)->sum('val');
                 $sub=Recsupp::where('buy_id',$record->buy_id)->where('rec_who',4)->sum('val');
               $buy=Buy::find($record->buy_id);
-              $buy->pay=$sum-$sub;
-              $buy->baky=$buy->tot-$sum+$sub;
+              $buy->pay=$sub-$sum;
+              $buy->baky=$buy->tot-$sub+$sum;
               $buy->save();
 
             }

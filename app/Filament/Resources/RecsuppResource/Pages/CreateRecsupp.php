@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RecsuppResource\Pages;
 
 use App\Filament\Resources\RecsuppResource;
 use App\Models\Buy;
+use App\Models\Receipt;
 use App\Models\Recsupp;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
@@ -28,11 +29,13 @@ class CreateRecsupp extends CreateRecord
       }
     if ($data['rec_who'] == 3 || $data['rec_who'] == 4)
     {   $val=$data['val'];
-      $sum=Recsupp::where('buy_id',$data['buy_id'])->sum('val');
-      if ($data['rec_who'] == 3) $val+=$sum;
-      if ($data['rec_who'] == 4) $val=$sum-$val;
+        $imp=Recsupp::where('buy_id',$data['buy_id'])->where('rec_who',3)->sum('val');
+        $exp=Recsupp::where('buy_id',$data['buy_id'])->where('rec_who',4)->sum('val');
+
+        if ($data['rec_who'] == 3) $imp+=$val;
+        if ($data['rec_who'] == 4) $exp+=$val;
       $buy=Buy::find($data['buy_id']);
-      $buy->pay=$val;
+      $buy->pay=$exp-$imp;
       $buy->baky=$buy->tot-$buy->pay;
       $buy->save();
     }

@@ -7,6 +7,7 @@ use App\Livewire\Forms\BuyTranFormEdit;
 use App\Livewire\Traits\Raseed;
 use App\Models\Place;
 use App\Models\Price_type;
+use App\Models\Recsupp;
 use App\Models\Setting;
 use Illuminate\Support\HtmlString;
 use Livewire\Component;
@@ -104,6 +105,9 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
 
      $this->incAllBuy($this->buyTranForm->item_id,$this->buyForm->place_id,$this->buyTranForm->q1,$this->buyTranForm->q2);
 
+
+
+
     $this->buyTranForm->reset();
     $this->buytranFormBlade->fill($this->buyTranForm->toArray());
     $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
@@ -138,6 +142,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
           ->inlineLabel()
           ->columnSpan(2)
           ->afterStateUpdated(function ($state){
+            if (!Buy::find($state)) return;
             if(Buy_tran::where('buy_id',$state)
                           ->where('q1','!=',DB::raw('qs1'))->exists()) {
 
@@ -226,10 +231,36 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->afterStateUpdated(function (Set $set,Get $get,$state){
                 if (!$state) $set('pay',0);
                 $set('baky',$get('tot')-$get('pay'));
+                $this->buyForm->pay=$state;
+                $this->buyForm->baky=$get('tot')-$get('pay');
                 $res=Buy::find($this->buy_id);
                 $res->pay=$get('pay');
                 $res->baky=$get('baky');
                 $res->save();
+                  if ((!$state || $state<=0) &&  $this->buyForm->recipt_id)
+                  {Recsupp::find($this->buyForm->recipt_id)->delete();
+                   $this->buyForm->recipt_id='';
+                   Buy::find($this->buyForm->id)->update(['receipt_id'=>null]);}
+                  else {
+                      if ($this->buyForm->recipt_id)
+                          Recsupp::find($this->buyForm->recipt_id)->update(['val'=>$this->buyForm->pay]);
+                      else {
+                          $recipt= Recsupp::create([
+                              'receipt_date'=>$this->buyForm->order_date,
+                              'supplier_id'=>$this->buyForm->supplier_id,
+                              'buy_id'=>$this->buyForm->id,
+                              'price_type_id'=>$this->buyForm->price_type_id,
+                              'rec_who'=>4,
+                              'imp_exp'=>1,
+                              'val'=>$this->buyForm->pay,
+                              'notes'=>'فاتورة مشتريات رقم '.strval($this->buyForm->id),
+                              'user_id'=>Auth::id()
+                          ]);
+                          Buy::find($this->buyForm->id)->update(['receipt_id'=>$recipt->id]);
+                          $this->buyForm->recipt_id=$recipt->id;
+                      }
+
+                  }
               })
               ->id('pay'),
             TextInput::make('baky')
@@ -342,14 +373,17 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
                               foreach ($buytran as $tran)
                                   $this->decAllBuy($tran->item_id,$this->buyForm->place_id,$tran->q1,$tran->q2);
 
+                              Recsupp::where('buy_id',$this->buy_id)->delete();
                               Buy_tran::where('buy_id',$this->buy_id)->delete();
                               Buy::find($this->buy_id)->delete();
+
                               $this->is_filled=false;
                               $this->buy_id='';
                               $this->buyForm->reset();
                               $this->buyTranForm->reset();
 
-                            $this->buyFormBlade->fill($this->buyForm->toArray());
+
+                              $this->buyFormBlade->fill($this->buyForm->toArray());
 
                           })
                   ])->extraAttributes(['class' => 'items-center justify-between']),

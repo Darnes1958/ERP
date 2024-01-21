@@ -392,7 +392,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
 
                           }
                           if ($this->buyForm->pay !=0){
-                              Recsupp::create([
+                            $recipt= Recsupp::create([
                                   'receipt_date'=>$this->buyForm->order_date,
                                   'supplier_id'=>$this->buyForm->supplier_id,
                                   'buy_id'=>$id->id,
@@ -403,6 +403,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                                   'notes'=>'فاتورة مشتريات رقم '.strval($id->id),
                                   'user_id'=>Auth::id()
                               ]);
+                            Buy::find($id->id)->update(['receipt_id'=>$recipt->id]);
                           }
                           Buy_tran_work::where('buy_id',$this->buy_id)->delete();
                           $buy->tot=0;  $buy->pay=0; $buy->baky=0;  $buy->save();

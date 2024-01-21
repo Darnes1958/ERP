@@ -30,12 +30,14 @@ class BuyFormEdit extends Form
   public $Price_name = '';
   public $Place_name = '';
   public $Supplier_name = '';
+  public $recipt_id = '';
 
 
   public function mountForEdit(){
     $this->supplier_id='';
     $this->price_type_id='';
     $this->place_id='';
+    $this->recipt_id='';
   }
 
 
@@ -54,6 +56,7 @@ class BuyFormEdit extends Form
         $this->not_pay_date = $rec->not_pay_date;
         $this->notes = $rec->notes;
         $this->user_id = $rec->user_id;
+        $this->recipt_id=$rec->receipt_id;
         $this->Place_name=Place::find($this->place_id)->name;
         $this->Price_name=Price_type::find($this->price_type_id)->name;
         $this->Supplier_name=Supplier::find($this->supplier_id)->name;
