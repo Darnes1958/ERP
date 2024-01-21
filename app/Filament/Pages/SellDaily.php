@@ -42,7 +42,7 @@ class SellDaily extends Page implements HasForms,HasTable,HasActions, HasInfolis
   protected static ?string $navigationIcon = 'heroicon-o-document-text';
   protected static string $view = 'filament.pages.sell-daily';
   protected static ?string $navigationLabel='مبيعات يومية';
-
+  protected static ?int $navigationSort=1;
   protected ?string $heading="";
 
   public ?array $selltranData = [];

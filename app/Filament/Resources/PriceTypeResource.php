@@ -23,6 +23,10 @@ use Filament\Tables\Columns\IconColumn;
 
 class PriceTypeResource extends Resource
 {
+  public static function shouldRegisterNavigation(): bool
+  {
+    return  auth()->user()->id==1;
+  }
     protected static ?string $model = Price_type::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
