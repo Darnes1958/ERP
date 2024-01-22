@@ -70,10 +70,12 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
   }
 
 
-
   public BuyForm $buyForm;
   public BuyTranForm $buyTranForm;
 
+  public function ChkItem(){
+      $this->dispatch('goto', test: 'q1');
+  }
   public function ChkBarcode(){
     if ($this->buytranData['barcode_id']==null) return;
     $res=Barcode::find($this->buytranData['barcode_id']);
@@ -87,6 +89,17 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
    else $this->dispatch('goto', test: 'q1');
   }
   public function add_rec(){
+      if (!$this->buytranData['q1'] || $this->buytranData['q1']<=0)    return;
+      if (!$this->buytranData['item_id']) {
+          Notification::make()
+              ->title('يجب اختيار الصنف')
+              ->icon('heroicon-o-check')
+              ->iconColor('success')
+              ->send();
+          return;
+      }
+
+
    $this->buyTranForm->loadForm($this->buy_id,$this->buytranData);
    $this->buyTranForm->qs1=$this->buyTranForm->q1;
 
@@ -111,9 +124,10 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
 
     $this->buyForm->fillForm($this->buy_id);
     $this->buyFormBlade->fill($this->buyForm->toArray());
-
-
-    $this->dispatch('goto', test: 'barcode_id');
+    if (Setting::find(Auth::user()->company)->barcode)
+     $this->dispatch('goto', test: 'barcode_id');
+    else
+     $this->dispatch('goto', test: 'item_id');
   }
 
   public function buyFormBlade(Form $form): Form
@@ -297,9 +311,9 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->required()
                   ->exists()
                   ->live(onBlur: true)
+                  ->visible(Setting::find(Auth::user()->company)->barcode)
                   ->afterStateUpdated(function (Set $set,$state) {
                     $res=Barcode::find($state);
-
                     if ($res) {
                       $rec=Item::find($res->item_id);
                       $set('item_id',$res->item_id) ;
@@ -315,23 +329,22 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 Select::make('item_id')
                   ->label('الصنف')
                   ->searchable()
+                  
                   ->preload()
                   ->relationship('Item','name')
                   ->inlineLabel()
                   ->live()
                   ->reactive()
                   ->required()
-
                   ->afterStateUpdated(function (Set $set,$state){
-
                     $res=Item::find($state);
                     $set('barcode_id',$res->barcode) ;
                     $set('price_input', $res->price_buy);
                   })
                   ->extraAttributes([
-                    'wire:change' => "\$dispatch('goto', { test: 'q1' })",
+                    'wire:change' => "ChkItem",
 
-                    'wire:keydown..enter' => "\$dispatch('goto', { test: 'q1' })",
+                    'wire:keydown..enter' => "ChkItem",
                   ])
                   ->id('item_id'),
             DatePicker::make('exp_date')
@@ -359,6 +372,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->numeric()
                   ->required()
                   ->extraAttributes([
+
                     'wire:keydown.enter' => "add_rec",
                   ])
                   ->id('q1'),

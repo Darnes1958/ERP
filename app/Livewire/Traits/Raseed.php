@@ -148,11 +148,20 @@ trait Raseed {
         $item->stock2=$quantItem%$count;
         $item->save();
 
+
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
-        $quantPlace=($place->stock2+($place->stock1*$count)) + $quant;
-        $place->stock1=intdiv($quantPlace,$count);
-        $place->stock2=$quantPlace%$count;
-        $place->save();
+        if ($place) {
+            $quantPlace=($place->stock2+($place->stock1*$count)) + $quant;
+            $place->stock1=intdiv($quantPlace,$count);
+            $place->stock2=$quantPlace%$count;
+            $place->save();
+        }
+        else Place_stock::create([
+           'place_id'=>$place_id,
+            'item_id'=>$item_id,
+           'stock1'=>$q1,
+           'stock2'=>$q2,
+        ]);
     }
     public function decAllBuy($item_id,$place_id,$q1,$q2){
 

@@ -49,6 +49,7 @@ class ItemResource extends Resource
                 TextInput::make('barcode')
                     ->label('الباركود')
                     ->required()
+                    ->hidden(!Setting::find(Auth::user()->company)->barcode)
                     ->disabled(fn(string $operation)=>$operation=='edit')
                     ->live()
                     ->unique(ignoreRecord: true)
@@ -123,7 +124,7 @@ class ItemResource extends Resource
                             ])->columns(2)
                     ])
                     ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-                TextInput::make('count')
+              TextInput::make('count')
                     ->label('العدد')
                     ->required()
                     ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
@@ -132,14 +133,15 @@ class ItemResource extends Resource
                 ->required(),
 
                 TextInput::make('price1')
-                    ->label('السعر قطاعي')
+                    ->label('السعر البيع قطاعي')
                     ->required(),
                 TextInput::make('price2')
                     ->label('سعر الصغري قطاعي')
                     ->required()
                     ->hidden(fn(Get $get): bool => ! $get('two_unit')),
               TextInput::make('pricej1')
-                ->label('السعر جملة')
+                ->label('سعر البيع جملة')
+                ->hidden(!Setting::find(Auth::user()->company)->jomla)
                 ->required(),
               TextInput::make('pricej2')
                 ->label('سعر الصغري جملة')
