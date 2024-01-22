@@ -150,6 +150,7 @@ trait Raseed {
 
 
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
+        info($place);
         if ($place) {
             $quantPlace=($place->stock2+($place->stock1*$count)) + $quant;
             $place->stock1=intdiv($quantPlace,$count);

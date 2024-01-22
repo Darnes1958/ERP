@@ -87,14 +87,18 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
       $this->sellTranForm->price1=$rec['price1'];
       $this->sellTranForm->price2=$rec['price2'];
 
+
+      $stock=Place_stock::where('item_id',$item)
+        ->where('place_id',$this->sellForm->place_id)->first();
+
+      if ($stock) $placestock=$stock->stock1;else $placestock=0;
       $this->selltranFormBlade->fill([
         'item_id'=>$item,
         'price1'=>$rec['price1'],
         'price2'=>$rec['price2'],
         'barcode_id'=>$barcode,
         'raseed_all'=>$stock1,
-        'raseed_place'=>Place_stock::where('item_id',$item)
-          ->where('place_id',$this->sellForm->place_id)->first()->stock1,
+        'raseed_place'=>$placestock,
       ]);
 
     }

@@ -14,8 +14,6 @@
 </div>
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <script>
 
         document.addEventListener('livewire:initialized', () => {
@@ -47,12 +45,11 @@
                 $("#barcode_id").focus();
                 $("#barcode_id").select();
             }if (postid == 'item_id') {
-
-
-                $("#item_id").dropdown();
+                $("#item_id").focus();
                 $("#item_id").select();
 
             }if (postid == 'q1') {
+               
                 $("#q1").focus();
                 $("#q1").select();
             }if (postid == 'price_input') {

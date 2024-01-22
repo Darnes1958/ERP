@@ -74,6 +74,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
   public BuyTranForm $buyTranForm;
 
   public function ChkItem(){
+
       $this->dispatch('goto', test: 'q1');
   }
   public function ChkBarcode(){
@@ -124,10 +125,9 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
 
     $this->buyForm->fillForm($this->buy_id);
     $this->buyFormBlade->fill($this->buyForm->toArray());
-    if (Setting::find(Auth::user()->company)->barcode)
+
      $this->dispatch('goto', test: 'barcode_id');
-    else
-     $this->dispatch('goto', test: 'item_id');
+
   }
 
   public function buyFormBlade(Form $form): Form
@@ -292,7 +292,6 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->disabled()
               ->default('0'),
 
-
           ])
           ->columns(8)
       ])
@@ -311,7 +310,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->required()
                   ->exists()
                   ->live(onBlur: true)
-                  ->visible(Setting::find(Auth::user()->company)->barcode)
+
                   ->afterStateUpdated(function (Set $set,$state) {
                     $res=Barcode::find($state);
                     if ($res) {
@@ -329,7 +328,6 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 Select::make('item_id')
                   ->label('الصنف')
                   ->searchable()
-                  
                   ->preload()
                   ->relationship('Item','name')
                   ->inlineLabel()
@@ -343,7 +341,6 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   })
                   ->extraAttributes([
                     'wire:change' => "ChkItem",
-
                     'wire:keydown..enter' => "ChkItem",
                   ])
                   ->id('item_id'),

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource;
 use App\Models\Barcode;
 use App\Models\Item;
+use App\Models\Price_buy;
 use App\Models\Setting;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;

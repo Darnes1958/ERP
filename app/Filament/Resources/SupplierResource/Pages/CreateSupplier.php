@@ -8,5 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateSupplier extends CreateRecord
 {
+  protected ?string $heading="";
     protected static string $resource = SupplierResource::class;
 }
