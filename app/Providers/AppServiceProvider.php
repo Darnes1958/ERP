@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
+use Filament\Facades\Filament;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
@@ -25,6 +26,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+      Filament::registerNavigationGroups([
+        'فواتير شراء',
+        'فواتير مبيعات',
+        'ايصالات قبض ودفع',
+        'زبائن وموردين',
+        'تقارير',
+      ]);
       FilamentColor::register([
         'Fuchsia' =>  Color::Fuchsia,
         'green' =>  Color::Green,

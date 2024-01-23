@@ -95,8 +95,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
       $item=Item::find($this->buytranData['item_id']);
       if (!$item) return;
       $this->fill_item($item);
-
-      $this->dispatch('goto', test: 'q1');
+      if ($this->buyTranForm->price_input==0) $this->dispatch('goto', test: 'price_input');
+      else $this->dispatch('goto', test: 'q1');
   }
   public function ChkBarcode(){
     if ($this->buytranData['barcode_id']==null) return;
