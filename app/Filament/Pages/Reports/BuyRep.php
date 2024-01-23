@@ -26,7 +26,7 @@ class BuyRep extends Page implements HasForms,HasTable
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.reports.buy-rep';
-  protected static ?string $navigationLabel = 'قواتير مشتريات';
+  protected static ?string $navigationLabel = 'فواتير مشتريات';
   protected static ?string $navigationGroup = 'تقارير';
   protected ?string $heading = "";
 

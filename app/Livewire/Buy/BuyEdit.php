@@ -9,6 +9,7 @@ use App\Models\Place;
 use App\Models\Price_type;
 use App\Models\Recsupp;
 use App\Models\Setting;
+use Filament\Support\RawJs;
 use Illuminate\Support\HtmlString;
 use Livewire\Component;
 
@@ -216,11 +217,15 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->disabled(),
             TextInput::make('tot')
               ->label('إجمالي الفاتورة')
+              ->mask(RawJs::make('$money($input)'))
+              ->stripCharacters(',')
               ->columnSpan(2)
               ->inlineLabel()
               ->disabled(),
             TextInput::make('pay')
               ->label('المدفوع')
+              ->mask(RawJs::make('$money($input)'))
+              ->stripCharacters(',')
               ->columnSpan(2)
               ->live(onBlur: true)
               ->inlineLabel()
@@ -265,6 +270,8 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->id('pay'),
             TextInput::make('baky')
               ->label('المتبقي')
+              ->mask(RawJs::make('$money($input)'))
+              ->stripCharacters(',')
               ->columnSpan(2)
               ->inlineLabel()
               ->disabled()
@@ -419,9 +426,19 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
           ->sortable(),
         TextColumn::make('price_input')
           ->label('سعر الشراء')
+          ->numeric(
+            decimalPlaces: 2,
+            decimalSeparator: '.',
+            thousandsSeparator: ',',
+          )
           ->sortable(),
         TextColumn::make('sub_input')
           ->label('المجموع')
+          ->numeric(
+            decimalPlaces: 2,
+            decimalSeparator: '.',
+            thousandsSeparator: ',',
+          )
           ->sortable(),
       ])
       ->actions([

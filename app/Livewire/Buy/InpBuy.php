@@ -37,6 +37,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\RawJs;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\TextColumn;
@@ -47,6 +48,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
@@ -72,6 +74,12 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
 
   public BuyForm $buyForm;
   public BuyTranForm $buyTranForm;
+
+
+  public function hasMask(): bool
+  {
+    return true;
+  }
 
   public function ChkItem(){
 
@@ -265,11 +273,15 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
             TextInput::make('tot')
               ->label('إجمالي الفاتورة')
               ->columnSpan(2)
+              ->mask(RawJs::make('$money($input)'))
+              ->stripCharacters(',')
               ->inlineLabel()
               ->disabled(),
             TextInput::make('pay')
               ->label('المدفوع')
               ->columnSpan(2)
+              ->mask(RawJs::make('$money($input)'))
+              ->stripCharacters(',')
               ->live(onBlur: true)
               ->inlineLabel()
               ->default('0')
@@ -287,6 +299,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->id('pay'),
             TextInput::make('baky')
               ->label('المتبقي')
+              ->mask(RawJs::make('$money($input)'))
+              ->stripCharacters(',')
               ->columnSpan(2)
               ->inlineLabel()
               ->disabled()
@@ -476,9 +490,19 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->sortable(),
           TextColumn::make('price_input')
               ->label('سعر الشراء')
+            ->numeric(
+              decimalPlaces: 2,
+              decimalSeparator: '.',
+              thousandsSeparator: ',',
+            )
               ->sortable(),
           TextColumn::make('sub_input')
               ->label('المجموع')
+            ->numeric(
+              decimalPlaces: 2,
+              decimalSeparator: '.',
+              thousandsSeparator: ',',
+            )
               ->sortable(),
       ])
         ->actions([

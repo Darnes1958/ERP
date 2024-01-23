@@ -49,7 +49,7 @@
                 $("#item_id").select();
 
             }if (postid == 'q1') {
-               
+
                 $("#q1").focus();
                 $("#q1").select();
             }if (postid == 'price_input') {

@@ -133,7 +133,7 @@ class ItemResource extends Resource
                 ->required(),
 
                 TextInput::make('price1')
-                    ->label('السعر البيع قطاعي')
+                    ->label('سعر البيع قطاعي')
                     ->required(),
                 TextInput::make('price2')
                     ->label('سعر الصغري قطاعي')
@@ -245,8 +245,10 @@ class ItemResource extends Resource
                         return $state;
                     })
                     ->visible(Setting::find(Auth::user()->company)->has_two),
+              TextColumn::make('price_buy')
+                ->label('سعر الشراء'),
                 TextColumn::make('price1')
-                    ->label('السعر'),
+                    ->label('سعر البيع'),
                 TextColumn::make('price2')
                     ->label('سعر الصغري')
                     ->formatStateUsing(function (string $state) {
