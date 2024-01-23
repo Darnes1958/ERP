@@ -128,14 +128,16 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
 
         $this->sellTranForm->loadForm($this->sell_id, $this->selltranData);
 
+
+
         $chk=$this->sellTranForm->chkData($this->sellForm->place_id);
         if ($chk != 'ok') {
           Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
           return;
         }
         $this->sellTranForm->SetQuant();
-        $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('item_id', $this->sellTranForm->item_id)->get();
-        if ($res->count() > 0)
+        $res = Sell_tran_work::where('sell_id', $this->sell_id)->where('item_id', $this->sellTranForm->item_id)->first();
+        if ($res)
             Sell_tran_work::where('sell_id', $this->sell_id)
               ->where('item_id', $this->sellTranForm->item_id)
               ->update($this->sellTranForm->all());
@@ -610,6 +612,7 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
       $this->sellForm->mountForm();
       $this->sellForm->customer_id=2;
       $res=Sell_work::create($this->sellForm->all());
+
       $this->sell_id=$res->id;
     }
     $this->is_filled=Sell_tran_work::where('sell_id',$this->sell_id)->count()>0;

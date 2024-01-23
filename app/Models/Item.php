@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\TwoUnit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class Item extends Model
 {
     protected $connection = 'other';
+
+
+
     public function Place_stock(){
       return $this->hasMany(Place_stock::class);
     }
@@ -54,4 +58,12 @@ class Item extends Model
 
         }
     }
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts =[
+        'two_unit' => TwoUnit::class,
+    ];
 }

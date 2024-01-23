@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Traits;
 
+use App\Enums\TwoUnit;
 use App\Models\Buy_tran;
 use App\Models\BuySell;
 use App\Models\Item;
@@ -93,9 +94,12 @@ trait Raseed {
     }
 
     public function retSetQuant($item_id,$q1,$q2){
-        $count=Item::find($item_id)->count;
+        $res=Item::find($item_id);
+        $count=$res->count;
         $qq=$q2+($q1*$count);
-        return ['q1'=>intdiv($qq,$count),'q2' => $qq % $count];
+        if ($res->two_unit->value==1)
+         return ['q1'=>intdiv($qq,$count),'q2' => $qq % $count];
+        else return ['q1'=>$q1,'q2' => 0];
     }
 
 
@@ -104,17 +108,24 @@ trait Raseed {
         $item=Item::find($item_id);
         $count=$item->count;
 
-        $quant=$q2+($q1*$count);
+        if ($item->two_unit->value==1) {
+            $quant = $q2 + ($q1 * $count);
+            $quantItem = ($item->stock2 + ($item->stock1 * $count)) - $quant;
+            $item->stock1 = intdiv($quantItem, $count);
+            $item->stock2 = $quantItem % $count;
+        } else  {
+            $quant=$q1;
+            $item->stock1 -= $q1;
+        }
 
-        $quantItem=($item->stock2+($item->stock1*$count)) - $quant;
-        $item->stock1=intdiv($quantItem,$count);
-        $item->stock2=$quantItem%$count;
         $item->save();
 
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
-        $quantPlace=($place->stock2+($place->stock1*$count)) - $quant;
-        $place->stock1=intdiv($quantPlace,$count);
-        $place->stock2=$quantPlace%$count;
+        if ($item->two_unit->value==1) {
+            $quantPlace = ($place->stock2 + ($place->stock1 * $count)) - $quant;
+            $place->stock1 = intdiv($quantPlace, $count);
+            $place->stock2 = $quantPlace % $count;
+        } else $place->stock1 -= $q1;
         $place->save();
 
         $this->decQs($sell_tran_id,$sell_id,$item_id,$count,$quant);
@@ -123,31 +134,30 @@ trait Raseed {
 
     $item=Item::find($item_id);
     $count=$item->count;
+    $two_unit=$item->two_unit;
 
-    $quant=$q2+($q1*$count);
-
-    $quantItem=($item->stock2+($item->stock1*$count)) + $quant;
-    $item->stock1=intdiv($quantItem,$count);
-    $item->stock2=$quantItem%$count;
-    $item->save();
-
-    $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
-    $quantPlace=($place->stock2+($place->stock1*$count)) + $quant;
-    $place->stock1=intdiv($quantPlace,$count);
-    $place->stock2=$quantPlace%$count;
-    $place->save();
-
-    $this->incQs($sell_id,$item_id,$count);
-  }
-    public function incAllBuy($item_id,$place_id,$q1,$q2,$price_type,$price_input){
-
-        $item=Item::find($item_id);
-        $count=$item->count;
+    if ($two_unit->value==1){
         $quant=$q2+($q1*$count);
         $quantItem=($item->stock2+($item->stock1*$count)) + $quant;
         $item->stock1=intdiv($quantItem,$count);
         $item->stock2=$quantItem%$count;
+    } else $item->stock1+=$q1;
+    $item->save();
 
+    $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
+    if ($two_unit->value==1) {
+        $quantPlace = ($place->stock2 + ($place->stock1 * $count)) + $quant;
+        $place->stock1 = intdiv($quantPlace, $count);
+        $place->stock2 = $quantPlace % $count;
+    } else $place->stock1+=$q1;
+    $place->save();
+
+    $this->incQs($sell_id,$item_id,$count);
+  }
+    public function incAllBuy($item_id,$place_id,$q1,$price_type,$price_input){
+
+        $item=Item::find($item_id);
+        $item->stock1+=$q1;
         if ($price_type==1)   $item->price_buy=$price_input;
         $item->save();
 
@@ -167,32 +177,27 @@ trait Raseed {
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
 
         if ($place) {
-            $quantPlace=($place->stock2+($place->stock1*$count)) + $quant;
-            $place->stock1=intdiv($quantPlace,$count);
-            $place->stock2=$quantPlace%$count;
+
+            $place->stock1+=$q1;
             $place->save();
         }
         else Place_stock::create([
            'place_id'=>$place_id,
             'item_id'=>$item_id,
            'stock1'=>$q1,
-           'stock2'=>$q2,
+           'stock2'=>0,
         ]);
     }
-    public function decAllBuy($item_id,$place_id,$q1,$q2){
+    public function decAllBuy($item_id,$place_id,$q1){
 
         $item=Item::find($item_id);
-        $count=$item->count;
-        $quant=$q2+($q1*$count);
-        $quantItem=($item->stock2+($item->stock1*$count)) - $quant;
-        $item->stock1=intdiv($quantItem,$count);
-        $item->stock2=$quantItem%$count;
+
+        $item->stock1-=$q1;
         $item->save();
 
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
-        $quantPlace=($place->stock2+($place->stock1*$count)) - $quant;
-        $place->stock1=intdiv($quantPlace,$count);
-        $place->stock2=$quantPlace%$count;
+        $place->stock1-=$q1;
+
         $place->save();
     }
    public function OneToTwo($count,$quant){
@@ -212,28 +217,51 @@ trait Raseed {
       $tank=0;
       $sell_tran=Sell_tran::find($sell_tran_id);
       $profit=0;
+      $two_unit=Item::find($item)->two_unit;
       foreach ($buyTran as $tran) {
-        $qs=$this->TwoToOne($count,$tran->qs1,$tran->qs2);
-        if ( $qs > ($quant-$tank)) $decQuant=$quant-$tank;
-          else $decQuant=$qs;
 
+        if ($two_unit->value==1)
+         $qs=$this->TwoToOne($count,$tran->qs1,$tran->qs2);
+        else $qs=$tran->qs1;
+
+        if ( $qs > ($quant-$tank)) $decQuant=$quant-$tank;
+        else $decQuant=$qs;
+
+        if ($two_unit->value==1)  {
           $qs=$this->OneToTwo($count,$qs-$decQuant) ;
           $tran->qs1=$qs['q1'];
           $tran->qs2=$qs['q2'];
+
+        }else {
+            $qs =  $qs - $decQuant;
+            $tran->qs1 = $qs;
+        }
           $tran->save();
 
-          $decQ=$this->OneToTwo($count,$decQuant);
-          BuySell::create([
-              'buy_id' => $tran->buy_id,
-              'sell_id' => $sell_id,
+        if ($two_unit->value==1) {
+            $decQ = $this->OneToTwo($count, $decQuant);
+            BuySell::create([
+                'buy_id' => $tran->buy_id,
+                'sell_id' => $sell_id,
+                'item_id' => $item,
+                'q1' => $decQ['q1'],
+                'q2' => $decQ['q2'],
+            ]);
+            $sub_input=($tran->price_input*$decQ['q1']) + (($tran->price_input/$count)*$decQ['q2']);
+            $sub_tot=($sell_tran->price1*$decQ['q1']) + ($sell_tran->price2*$decQ['q2']);
+        } else {
+            BuySell::create([
+                'buy_id' => $tran->buy_id,
+                'sell_id' => $sell_id,
+                'item_id' => $item,
+                'q1' => $decQuant,
+                'q2' => 0,
+            ]);
+            $sub_input=($tran->price_input*$decQuant) ;
+            $sub_tot=($sell_tran->price1*$decQuant);
+        }
 
-              'item_id' => $item,
-              'q1' => $decQ['q1'],
-              'q2' => $decQ['q2'],
-          ]);
 
-          $sub_input=($tran->price_input*$decQ['q1']) + (($tran->price_input/$count)*$decQ['q2']);
-          $sub_tot=($sell_tran->price1*$decQ['q1']) + ($sell_tran->price2*$decQ['q2']);
           $profit+=$sub_tot-$sub_input;
           $tank+=$decQuant;
           if ($tank==$quant) break;
@@ -247,18 +275,23 @@ trait Raseed {
              ->where('item_id',$item)
              ->get();
     foreach ($buysell as $tran) {
-      $q=$this->TwoToOne($count,$tran->q1,$tran->q2);
+      $two_unit=Item::find($item)->two_unit;
+
+      if ($two_unit->value==1)
+       $q=$this->TwoToOne($count,$tran->q1,$tran->q2);
+      else $q=$tran->q1;
 
       $Buy=Buy_tran::where('buy_id',$tran->buy_id)
                 ->where('item_id',$item)->first();
 
-      $qs=$q+$this->TwoToOne($count,$Buy->qs1,$Buy->qs2);
+      if ($two_unit->value==1)
+       $qs=$q+$this->TwoToOne($count,$Buy->qs1,$Buy->qs2);
+      else $qs=$q+$Buy->qs1;
 
 
         Buy_tran::where('buy_id',$tran->buy_id)
             ->where('item_id',$item)->update([
-               'qs1'=>$this->OneToTwo($count,$qs)['q1'],
-               'qs2'=>$this->OneToTwo($count,$qs)['q2'],
+               'qs1'=>$qs,
             ]);
 
     }

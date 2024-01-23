@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\TwoUnit;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Buy_tran;
@@ -62,11 +63,8 @@ class ItemResource extends Resource
                     ->label('مستوي الوحدات')
                     ->inline()
                     ->inlineLabel(false)
-                    ->options([
-                        false => 'أحادي',
-                        true => 'ثنائي',
-                    ])
-                    ->default(false)
+                    ->options(TwoUnit::class)
+                    ->default(0)
                     ->required()
                     ->disabled(function ($operation,$state, Get $get){
                       return

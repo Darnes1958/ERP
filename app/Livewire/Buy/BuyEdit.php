@@ -134,14 +134,14 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
 
     if ($res)
     {
-        $this->decAllBuy($res->item_id,$this->buyForm->place_id,$res->q1,$res->q2);
+        $this->decAllBuy($res->item_id,$this->buyForm->place_id,$res->q1);
         Buy_tran::where('buy_id',$this->buy_id)
             ->where('item_id',$this->buyTranForm->item_id)
             ->update($this->buyTranForm->all());}
     else
         Buy_tran::create($this->buyTranForm->all());
 
-     $this->incAllBuy($this->buyTranForm->item_id,$this->buyForm->place_id,$this->buyTranForm->q1,$this->buyTranForm->q2
+     $this->incAllBuy($this->buyTranForm->item_id,$this->buyForm->place_id,$this->buyTranForm->q1
                       ,$this->buyForm->price_type_id,$this->buyTranForm->price_input);
 
     $this->buyTranForm->reset();
@@ -398,7 +398,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
                           ->action(function () {
                               $buytran=Buy_tran::where('buy_id',$this->buy_id)->get();
                               foreach ($buytran as $tran)
-                                  $this->decAllBuy($tran->item_id,$this->buyForm->place_id,$tran->q1,$tran->q2);
+                                  $this->decAllBuy($tran->item_id,$this->buyForm->place_id,$tran->q1);
 
                               Recsupp::where('buy_id',$this->buy_id)->delete();
                               Buy_tran::where('buy_id',$this->buy_id)->delete();
@@ -465,7 +465,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
         \Filament\Tables\Actions\Action::make('delete')
           ->action(function (Buy_tran $record){
             $record->delete();
-              $this->decAllBuy($record->item_id,$this->buyForm->place_id,$record->q1,$record->q2);
+              $this->decAllBuy($record->item_id,$this->buyForm->place_id,$record->q1);
 
 
             $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
@@ -502,7 +502,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
           ->action(function (Collection $records){
             foreach ($records as $item)
 
-                $this->decAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2);
+                $this->decAllBuy($item->item_id,$this->buyForm->place_id,$item->q1);
 
             $records->each->delete();
 

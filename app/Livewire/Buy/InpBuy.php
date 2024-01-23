@@ -427,7 +427,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                               $this->buyTranForm->copyToSave($id->id, $item);
 
                               Buy_tran::create($this->buyTranForm->all());
-                              $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2,$this->buyForm->price_type_id,$item->price_input);
+                              $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$this->buyForm->price_type_id,$item->price_input);
 
                           }
                           if ($this->buyForm->pay !=0){
