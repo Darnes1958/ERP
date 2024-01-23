@@ -17,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -246,10 +247,25 @@ class ItemResource extends Resource
                     })
                     ->visible(Setting::find(Auth::user()->company)->has_two),
               TextColumn::make('price_buy')
+                  ->numeric(
+                      decimalPlaces: 2,
+                      decimalSeparator: '.',
+                      thousandsSeparator: ',',
+                  )
                 ->label('سعر الشراء'),
                 TextColumn::make('price1')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('سعر البيع'),
                 TextColumn::make('price2')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('سعر الصغري')
                     ->formatStateUsing(function (string $state) {
                         if ($state==0) return '';

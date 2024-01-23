@@ -79,23 +79,60 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
   public BuyFormEdit $buyForm;
   public BuyTranFormEdit $buyTranForm;
 
-  public function ChkBarcode(){
-    $res=Barcode::find($this->buytranData['barcode_id']);
-    if (! $res)
-      Notification::make()
-        ->title('هذا الباركود غير مخزون ')
-        ->icon('heroicon-o-check')
-        ->iconColor('success')
-        ->send();
-    else $this->dispatch('goto', test: 'q1');
-  }
+    public function fill_item($item){
+        $this->buyTranForm->barcode_id=$item->barcode;
+        $this->buyTranForm->item_id=$item->id;
+        $price_buy=Price_buy::where('price_type_id',$this->buyForm->price_type_id)
+            ->where('item_id',$item->id)->first();
+        if ($price_buy) $this->buyTranForm->price_input=$price_buy->price;
+        else $this->buyTranForm->price_input=$item->price_buy;
+
+        $this->buytranFormBlade->fill($this->buyTranForm->toArray());
+    }
+    public function ChkItem(){
+
+        $item=Item::find($this->buytranData['item_id']);
+        if (!$item) return;
+        $this->fill_item($item);
+
+        $this->dispatch('goto', test: 'q1');
+    }
+    public function ChkBarcode(){
+        if ($this->buytranData['barcode_id']==null) return;
+        $res=Barcode::find($this->buytranData['barcode_id']);
+
+        if (! $res)
+            Notification::make()
+                ->title('هذا الباركود غير مخزون ')
+                ->icon('heroicon-o-check')
+                ->iconColor('success')
+                ->send();
+        else {
+
+            $this->fill_item(Item::find($res->item_id));
+            $this->dispatch('goto', test: 'q1');
+        }
+    }
   public function add_rec(){
+    if (!$this->buytranData['item_id']) {
+        Notification::make()->title('يجب اختيار الصنف ')->icon('heroicon-o-check')->iconColor('success')->send();
+        return;
+    }
+    if (!$this->buytranData['price_input'] || $this->buytranData['price_input']<=0) {
+        Notification::make()->title('يجب ادخال السعر ')->icon('heroicon-o-check')->iconColor('success')->send();
+        return;
+          }
+    if (!$this->buytranData['q1'] || $this->buytranData['q1']<=0) {
+        Notification::make()->title('يجب ادخال الكمية ')->icon('heroicon-o-check')->iconColor('success')->send();
+        return;
+    }
+
     $this->buyTranForm->loadFromBuyTran($this->buy_id,$this->buytranData);
 
     $res=Buy_tran::where('buy_id',$this->buy_id)
-      ->where('item_id',$this->buyTranForm->item_id)->get();
+      ->where('item_id',$this->buyTranForm->item_id)->first();
 
-    if ($res->count()>0)
+    if ($res)
     {
         $this->decAllBuy($res->item_id,$this->buyForm->place_id,$res->q1,$res->q2);
         Buy_tran::where('buy_id',$this->buy_id)
@@ -104,10 +141,8 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
     else
         Buy_tran::create($this->buyTranForm->all());
 
-     $this->incAllBuy($this->buyTranForm->item_id,$this->buyForm->place_id,$this->buyTranForm->q1,$this->buyTranForm->q2);
-
-
-
+     $this->incAllBuy($this->buyTranForm->item_id,$this->buyForm->place_id,$this->buyTranForm->q1,$this->buyTranForm->q2
+                      ,$this->buyForm->price_type_id,$this->buyTranForm->price_input);
 
     $this->buyTranForm->reset();
     $this->buytranFormBlade->fill($this->buyTranForm->toArray());
@@ -175,6 +210,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
             $this->buy_id=$state;
             $this->id=$state;
             $this->buyForm->loadFromBuy($this->buy_id);
+
             $this->buyFormBlade->fill($this->buyForm->toArray());}
 
           })
@@ -217,15 +253,11 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->disabled(),
             TextInput::make('tot')
               ->label('إجمالي الفاتورة')
-              ->mask(RawJs::make('$money($input)'))
-              ->stripCharacters(',')
               ->columnSpan(2)
               ->inlineLabel()
               ->disabled(),
             TextInput::make('pay')
               ->label('المدفوع')
-              ->mask(RawJs::make('$money($input)'))
-              ->stripCharacters(',')
               ->columnSpan(2)
               ->live(onBlur: true)
               ->inlineLabel()
@@ -235,6 +267,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ])
               ->afterStateUpdated(function (Set $set,Get $get,$state){
                 if (!$state) $set('pay',0);
+
                 $set('baky',$get('tot')-$get('pay'));
                 $this->buyForm->pay=$state;
                 $this->buyForm->baky=$get('tot')-$get('pay');
@@ -270,8 +303,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->id('pay'),
             TextInput::make('baky')
               ->label('المتبقي')
-              ->mask(RawJs::make('$money($input)'))
-              ->stripCharacters(',')
+
               ->columnSpan(2)
               ->inlineLabel()
               ->disabled()
@@ -301,15 +333,6 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->required()
               ->exists()
               ->live(onBlur: true)
-              ->afterStateUpdated(function (Set $set,$state) {
-                $res=Barcode::find($state);
-
-                if ($res) {
-                  $rec=Item::find($res->item_id);
-                  $set('item_id',$res->item_id) ;
-                  $set('price_input', $rec->price_buy);
-                }
-              })
               ->extraAttributes([
                 'wire:keydown.enter' => "ChkBarcode",
               ])
@@ -324,14 +347,10 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->live()
               ->reactive()
               ->required()
-              ->afterStateUpdated(function (Set $set,$state){
-                $res=Item::find($state);
-                $set('barcode_id',$res->barcode) ;
-                $set('price_input', $res->price_buy);
-              })
+
               ->extraAttributes([
-                'wire:change' => "\$dispatch('goto', { test: 'q1' })",
-                'wire:keydown..enter' => "\$dispatch('goto', { test: 'q1' })",
+                'wire:change' => "ChkItem",
+                'wire:keydown..enter' => "ChkItem",
               ])
               ->id('item_id'),
               DatePicker::make('exp_date')
@@ -346,6 +365,7 @@ class BuyEdit extends Component implements HasForms,HasTable,HasActions
               ->label('السعر')
               ->inlineLabel()
               ->numeric()
+
               ->live()
               ->required()
               ->id('price_input')

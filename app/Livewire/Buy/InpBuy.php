@@ -81,7 +81,20 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
     return true;
   }
 
+  public function fill_item($item){
+      $this->buyTranForm->barcode_id=$item->barcode;
+      $this->buyTranForm->item_id=$item->id;
+      $price_buy=Price_buy::where('price_type_id',$this->buyForm->price_type_id)
+          ->where('item_id',$item->id)->first();
+      if ($price_buy) $this->buyTranForm->price_input=$price_buy->price;
+      else $this->buyTranForm->price_input=$item->price_buy;
+      $this->buytranFormBlade->fill($this->buyTranForm->toArray());
+  }
   public function ChkItem(){
+
+      $item=Item::find($this->buytranData['item_id']);
+      if (!$item) return;
+      $this->fill_item($item);
 
       $this->dispatch('goto', test: 'q1');
   }
@@ -95,7 +108,11 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
         ->icon('heroicon-o-check')
         ->iconColor('success')
         ->send();
-   else $this->dispatch('goto', test: 'q1');
+   else {
+
+       $this->fill_item(Item::find($res->item_id));
+       $this->dispatch('goto', test: 'q1');
+   }
   }
   public function add_rec(){
       if (!$this->buytranData['q1'] || $this->buytranData['q1']<=0)    return;
@@ -107,15 +124,19 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->send();
           return;
       }
+      if (!$this->buytranData['price_input'] || $this->buytranData['price_input']<=0) {
+          Notification::make()->title('يجب ادخال السعر ')->icon('heroicon-o-check')->iconColor('success')->send();
+          return;
+      }
 
 
    $this->buyTranForm->loadForm($this->buy_id,$this->buytranData);
    $this->buyTranForm->qs1=$this->buyTranForm->q1;
 
    $res=Buy_tran_work::where('buy_id',$this->buy_id)
-       ->where('item_id',$this->buyTranForm->item_id)->get();
+       ->where('item_id',$this->buyTranForm->item_id)->first();
 
-   if ($res->count()>0)
+   if ($res)
        Buy_tran_work::where('buy_id',$this->buy_id)
            ->where('item_id',$this->buyTranForm->item_id)
            ->update($this->buyTranForm->all());
@@ -155,6 +176,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 $res=Buys_work::find($this->buy_id);
                 $res->order_date=$state;
                 $res->save();
+                $this->buyForm->order_date=$state;
               })
               ->columnSpan(2)
               ->inlineLabel()
@@ -170,6 +192,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 $res=Buys_work::find($this->buy_id);
                 $res->supplier_id=$state;
                 $res->save();
+                $this->buyForm->supplier_id=$state;
               })
               ->createOptionForm([
                 Section::make('ادخال مورد جديد')
@@ -221,6 +244,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 $res=Buys_work::find($this->buy_id);
                 $res->place_id=$state;
                 $res->save();
+                $this->buyForm->place_id=$state;
               })
               ->createOptionForm([
                 Section::make('ادخال مكان تخزين')
@@ -263,6 +287,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                 $res=Buys_work::find($this->buy_id);
                 $res->price_type_id=$state;
                 $res->save();
+                $this->buyForm->price_type_id=$state;
               })
               ->extraAttributes([
                 'wire:change' => "\$dispatch('goto', { test: 'pay' })",
@@ -273,15 +298,13 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
             TextInput::make('tot')
               ->label('إجمالي الفاتورة')
               ->columnSpan(2)
-              ->mask(RawJs::make('$money($input)'))
-              ->stripCharacters(',')
+
               ->inlineLabel()
               ->disabled(),
             TextInput::make('pay')
               ->label('المدفوع')
               ->columnSpan(2)
-              ->mask(RawJs::make('$money($input)'))
-              ->stripCharacters(',')
+
               ->live(onBlur: true)
               ->inlineLabel()
               ->default('0')
@@ -295,12 +318,14 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   $res->pay=$get('pay');
                   $res->baky=$get('baky');
                   $res->save();
+                  $this->buyForm->pay=$get('pay');
+                  $this->buyForm->baky=$get('baky');
+                  $this->buyForm->tot=$get('tot');
               })
               ->id('pay'),
             TextInput::make('baky')
               ->label('المتبقي')
-              ->mask(RawJs::make('$money($input)'))
-              ->stripCharacters(',')
+
               ->columnSpan(2)
               ->inlineLabel()
               ->disabled()
@@ -325,15 +350,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->exists()
                   ->live(onBlur: true)
 
-                  ->afterStateUpdated(function (Set $set,$state) {
-                    $res=Barcode::find($state);
-                    if ($res) {
-                      $rec=Item::find($res->item_id);
-                      $set('item_id',$res->item_id) ;
-                      $set('price_input', $rec->price_buy);
-                      $set('name', $rec->name);
-                    }
-                  })
+
                   ->extraAttributes([
                     'wire:keydown.enter' => "ChkBarcode",
                   ])
@@ -345,14 +362,10 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->preload()
                   ->relationship('Item','name')
                   ->inlineLabel()
-                  ->live()
+                  ->live(onBlur: true)
                   ->reactive()
                   ->required()
-                  ->afterStateUpdated(function (Set $set,$state){
-                    $res=Item::find($state);
-                    $set('barcode_id',$res->barcode) ;
-                    $set('price_input', $res->price_buy);
-                  })
+
                   ->extraAttributes([
                     'wire:change' => "ChkItem",
                     'wire:keydown..enter' => "ChkItem",
@@ -370,6 +383,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->label('السعر')
               ->inlineLabel()
               ->numeric()
+
               ->live()
               ->required()
               ->id('price_input')
@@ -413,7 +427,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                               $this->buyTranForm->copyToSave($id->id, $item);
 
                               Buy_tran::create($this->buyTranForm->all());
-                              $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2);
+                              $this->incAllBuy($item->item_id,$this->buyForm->place_id,$item->q1,$item->q2,$this->buyForm->price_type_id,$item->price_input);
 
                           }
                           if ($this->buyForm->pay !=0){

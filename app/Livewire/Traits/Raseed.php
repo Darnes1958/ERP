@@ -7,6 +7,7 @@ use App\Models\BuySell;
 use App\Models\Item;
 use App\Models\Place_stock;
 
+use App\Models\Price_buy;
 use App\Models\Price_sell;
 use App\Models\Price_type;
 use App\Models\Sell_tran;
@@ -138,7 +139,7 @@ trait Raseed {
 
     $this->incQs($sell_id,$item_id,$count);
   }
-    public function incAllBuy($item_id,$place_id,$q1,$q2){
+    public function incAllBuy($item_id,$place_id,$q1,$q2,$price_type,$price_input){
 
         $item=Item::find($item_id);
         $count=$item->count;
@@ -146,11 +147,25 @@ trait Raseed {
         $quantItem=($item->stock2+($item->stock1*$count)) + $quant;
         $item->stock1=intdiv($quantItem,$count);
         $item->stock2=$quantItem%$count;
+
+        if ($price_type==1)   $item->price_buy=$price_input;
         $item->save();
+
+        $price_buy=Price_buy::where('price_type_id',$price_type)
+                 ->where('item_id',$item_id)->first();
+        if ($price_buy) {
+            $price_buy->price=$price_input;
+            $price_buy->save();
+        }else
+            Price_buy::create([
+                'price_type_id' => $price_type,
+                'item_id' => $item_id,
+                'price' => $price_input,
+            ]);
 
 
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
-        info($place);
+
         if ($place) {
             $quantPlace=($place->stock2+($place->stock1*$count)) + $quant;
             $place->stock1=intdiv($quantPlace,$count);
