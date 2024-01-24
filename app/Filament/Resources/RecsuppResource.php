@@ -57,8 +57,6 @@ class RecsuppResource extends Resource
          ->label('الرقم الألي')
          ->disabled()
          ->hidden(fn(string $operation)=>$operation=='create') ,
-
-
         Select::make('supplier_id')
           ->label('المورد')
           ->relationship('Supplier','name')
@@ -109,11 +107,11 @@ class RecsuppResource extends Resource
           ->requiredIf('rec_who',[3,4])
           ->visible(fn(Get $get): bool =>($get('rec_who')==3 || $get('rec_who') ==4))
           ->preload(),
-
         Select::make('price_type_id')
           ->label('طريقة الدفع')
           ->relationship('Price_type','name')
           ->preload()
+          ->live()
           ->searchable()
           ->default(1)
           ->required(),
@@ -125,6 +123,65 @@ class RecsuppResource extends Resource
           ->label('المبلغ')
           ->required()
           ->numeric(),
+        Select::make('acc_id')
+              ->label('المصرف')
+              ->relationship('Acc','name')
+              ->searchable()
+              ->required()
+              ->live()
+              ->preload()
+              ->visible(fn(Get $get): bool =>($get('price_type_id')==2 ))
+              ->createOptionForm([
+                  Section::make('ادخال حساب مصرفي جديد')
+                      ->schema([
+                          TextInput::make('name')
+                              ->label('اسم المصرف')
+                              ->required()
+                              ->autofocus()
+                              ->columnSpan(2)
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])        ,
+                          TextInput::make('acc')
+                              ->label('رقم الحساب')
+                              ->required()
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])  ,
+                          TextInput::make('raseed')
+                              ->label('رصيد بداية المدة')
+                              ->numeric()
+                              ->required()                          ,
+                      ])
+              ])
+              ->editOptionForm([
+                  Section::make('تعديل بيانات مورد')
+                      ->schema([
+                          TextInput::make('name')
+                              ->label('اسم المصرف')
+                              ->required()
+                              ->autofocus()
+                              ->columnSpan(2)
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])        ,
+                          TextInput::make('acc')
+                              ->label('رقم الحساب')
+                              ->required()
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])  ,
+                          TextInput::make('raseed')
+                              ->label('رصيد بداية المدة')
+                              ->numeric()
+                              ->required()
+
+                      ])->columns(2)
+              ]),
         TextInput::make('notes')
           ->columnSpan(3)
           ->label('ملاحظات'),

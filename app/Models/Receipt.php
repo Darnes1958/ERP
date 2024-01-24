@@ -24,7 +24,9 @@ class Receipt extends Model
         return $this->belongsTo(Price_type::class);
     }
 
-
+    public function Acc(){
+        return $this->belongsTo(Acc::class);
+    }
 
     public function __construct(array $attributes = [])
     {

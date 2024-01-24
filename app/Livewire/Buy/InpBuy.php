@@ -6,6 +6,7 @@ use App\Enums\PlaceType;
 use App\Livewire\Forms\BuyForm;
 use App\Livewire\Forms\BuyTranForm;
 use App\Livewire\Traits\Raseed;
+use App\Models\Acc;
 use App\Models\Barcode;
 use App\Models\Buy;
 use App\Models\Buy_tran;
@@ -49,6 +50,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
@@ -62,6 +64,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
   public ?array $buytranData = [];
 
   public $buy_id;
+  public $acc_id = null;
 
   protected function getForms(): array
   {
@@ -280,6 +283,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
               ->label('طريقة الدفع')
               ->columnSpan(2)
               ->inlineLabel()
+                ->live()
               ->default(1)
               ->relationship('Price_type','name')
               ->required()
@@ -405,13 +409,15 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
         Section::make()
           ->schema([
               \Filament\Forms\Components\Actions::make([
-                  \Filament\Forms\Components\Actions\Action::make('تخزين')
+                  \Filament\Forms\Components\Actions\Action::make('store')
+                      ->label('تخزين')
                       ->icon('heroicon-m-plus')
                       ->button()
-                      ->visible(function (){return Buy_tran_work::where('buy_id',$this->buy_id)->count()>0;})
+                      ->visible(function (){return Buy_tran_work::where('buy_id',$this->buy_id)->count()>0
+                                        && $this->buyForm->price_type_id !=2
+                                        && $this->buyForm->pay<=0;})
                       ->color('success')
                       ->requiresConfirmation()
-
                       ->action(function () {
                           $buy=Buys_work::find($this->buy_id);
                           $buytran=Buy_tran_work::where('buy_id',$this->buy_id)->get();
@@ -422,7 +428,9 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                                   ->iconColor('warning')
                                   ->send();
                           $this->buyForm->copyToSave($buy);
+
                           $id=Buy::create($this->buyForm->all());
+
                           foreach ($buytran as $item) {
                               $this->buyTranForm->copyToSave($id->id, $item);
 
@@ -431,6 +439,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
 
                           }
                           if ($this->buyForm->pay !=0){
+
                             $recipt= Recsupp::create([
                                   'receipt_date'=>$this->buyForm->order_date,
                                   'supplier_id'=>$this->buyForm->supplier_id,
@@ -439,6 +448,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                                   'rec_who'=>4,
                                   'imp_exp'=>1,
                                   'val'=>$this->buyForm->pay,
+
                                   'notes'=>'فاتورة مشتريات رقم '.strval($id->id),
                                   'user_id'=>Auth::id()
                               ]);
@@ -452,6 +462,8 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                         $this->dispatch('goto',  test: 'barcode_id' );
 
                       }),
+                    
+
                     \Filament\Forms\Components\Actions\Action::make('مسح')
                         ->icon('heroicon-m-trash')
                         ->button()
@@ -505,7 +517,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
           TextColumn::make('price_input')
               ->label('سعر الشراء')
             ->numeric(
-              decimalPlaces: 2,
+              decimalPlaces: 3,
               decimalSeparator: '.',
               thousandsSeparator: ',',
             )
@@ -513,7 +525,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
           TextColumn::make('sub_input')
               ->label('المجموع')
             ->numeric(
-              decimalPlaces: 2,
+              decimalPlaces: 3,
               decimalSeparator: '.',
               thousandsSeparator: ',',
             )
@@ -567,6 +579,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
     $this->buyFormBlade->fill($this->buyForm->toArray());
     $this->buytranFormBlade->fill($this->buyTranForm->toArray());
   }
+
 
   public function render()
     {

@@ -22,6 +22,10 @@ class Recsupp extends Model
   public function Price_type() {
     return $this->belongsTo(Price_type::class);
   }
+    public function Acc(){
+        return $this->belongsTo(Acc::class);
+    }
+
 
   public function __construct(array $attributes = [])
   {
