@@ -43,9 +43,14 @@ class ItemResource extends Resource
                 TextInput::make('name')
                  ->label('اسم الصنف')
                  ->required()
+                  ->live()
                 ->unique(ignoreRecord: true)
                   ->validationMessages([
                     'unique' => ' :attribute مخزون مسبقا ',
+                  ])
+                  ->extraAttributes([
+
+                    'x-on:keydown.enter' => "\$focus.previous()",
                   ])
                 ->columnSpan(2),
                 TextInput::make('barcode')
@@ -129,7 +134,12 @@ class ItemResource extends Resource
                     ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
               TextInput::make('price_buy')
                 ->label('سعر الشراء')
-                ->required(),
+                ->required()
+//                ->extraAttributes([
+
+  //                'x-on:keydown.enter' => "\$focus.previous().",
+    //            ])
+                ->id('price_buy'),
 
                 TextInput::make('price1')
                     ->label('سعر البيع قطاعي')

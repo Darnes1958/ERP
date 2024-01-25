@@ -158,7 +158,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
     $this->buyForm->fillForm($this->buy_id);
     $this->buyFormBlade->fill($this->buyForm->toArray());
 
-     $this->dispatch('goto', test: 'barcode_id');
+  //   $this->dispatch('goto', test: 'barcode_id');
 
   }
 
@@ -402,7 +402,11 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                   ->required()
                   ->extraAttributes([
 
-                    'wire:keydown.enter' => "add_rec",
+                  //  'wire:keydown.enter' => "add_rec",
+
+                    'x-on:keydown.enter' => "\$focus.focus(item_id)",
+
+
                   ])
                   ->id('q1'),
           ]),

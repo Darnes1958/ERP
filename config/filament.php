@@ -14,6 +14,13 @@ return [
     |
     */
 
+  'layout' => [
+    'notifications' => [
+      'vertical_alignment' => 'center',
+        'alignment' => 'center',
+    ],
+],
+
     'broadcasting' => [
 
         // 'echo' => [
