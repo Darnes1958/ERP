@@ -21,7 +21,7 @@ class Buys_work extends Model
   }
 
   public function Buy_tran_work(){
-    return $this->hasMany(Buy_tran_work::class);
+    return $this->hasMany(Buy_tran_work::class,'buy_id');
   }
   public function Tar_Buy(){
     return $this->hasMany(Tar_buy::class);

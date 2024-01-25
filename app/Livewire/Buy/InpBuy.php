@@ -466,7 +466,7 @@ class InpBuy extends Component implements HasForms,HasTable,HasActions
                         $this->dispatch('goto',  test: 'barcode_id' );
 
                       }),
-                    
+
 
                     \Filament\Forms\Components\Actions\Action::make('مسح')
                         ->icon('heroicon-m-trash')

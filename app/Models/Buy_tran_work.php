@@ -11,7 +11,7 @@ class Buy_tran_work extends Model
   protected $connection = 'other';
 
   public function Buys_work(){
-    return $this->belongsTo(Buys_work::class);
+    return $this->belongsTo(Buys_work::class,'buy_id');
   }
   public function Item(){
     return $this->belongsTo(Item::class);
