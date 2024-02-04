@@ -11,10 +11,12 @@ class ListBuysWorks extends ListRecords
 {
     protected static string $resource = BuysWorkResource::class;
 
+    protected ?string $heading='';
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+          ->label('ادخال أصتاف للفاتورة'),
 
 
         ];

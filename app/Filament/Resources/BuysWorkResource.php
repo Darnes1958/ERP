@@ -18,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -32,6 +33,9 @@ class BuysWorkResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+protected static ?string $navigationLabel='فاتورة مشتريات';
+protected static ?string $navigationGroup='فواتير شراء';
+protected static ?int $navigationSort=1;
     public static function form(Form $form): Form
     {
         return $form
@@ -39,17 +43,15 @@ class BuysWorkResource extends Resource
                 Section::make()
                     ->schema([
                         DatePicker::make('order_date')
-
                             ->id('order_date')
                             ->autofocus()
                             ->label('التاريخ')
-
                             ->columnSpan(2)
                             ->inlineLabel()
                             ->required(),
                         Select::make('supplier_id')
                             ->label('المورد')
-                            ->relationship('worksupplier','name')
+                            ->relationship('Supplier','name')
                             ->live()
                             ->required()
                             ->inlineLabel()
@@ -160,6 +162,9 @@ class BuysWorkResource extends Resource
                             ->inlineLabel()
                             ->disabled()
                             ->default('0'),
+                      TextInput::make('notes')
+                        ->label('ملاحظات')
+                        ->columnSpan(8),
 
                     ])
                     ->columns(8)
@@ -169,22 +174,18 @@ class BuysWorkResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+          ->query(function (Buys_work $buy)  {
+            $buy=Buys_work::where('id',Auth::id()) ;
+            return  $buy;
+          })
             ->columns([
                 TextColumn::make('id')
-                    ->searchable()
-                    ->sortable()
                     ->label('الرقم الالي'),
                 TextColumn::make('Supplier.name')
-                    ->searchable()
-                    ->sortable()
                     ->label('اسم المورد'),
                 TextColumn::make('order_date')
-                    ->searchable()
-                    ->sortable()
                     ->label('التاريخ'),
                 TextColumn::make('tot')
-                    ->searchable()
-                    ->sortable()
                     ->label('اجمالي الفاتورة'),
                 TextColumn::make('pay')
                     ->label('المدفوع'),
@@ -198,28 +199,33 @@ class BuysWorkResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('buytran')
+                ->label('إدخال أصناف للفاتورة')
+                ->icon('heroicon-m-plus')
+                ->color('success')
+                ->url(fn(): string =>  self::getUrl('createbuy'))
+
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+
+           ;
     }
 
     public static function getRelations(): array
     {
-        return [
-            RelationManagers\BuyTranWorkRelationManager::class,
-        ];
+      return [
+        //
+      ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBuysWorks::route('/'),
-            'create' => Pages\NewBuy::route('/create'),
+
+            'create' => Pages\CreateBuysWork::route('/create'),
+            'createbuy' => Pages\CreateBuy::route('/createbuy'),
+
             'edit' => Pages\EditBuysWork::route('/{record}/edit'),
-            'newbuy' => Pages\NewBuy::route('/newbuy'),
+            'index' => Pages\ListBuysWorks::route('/'),
         ];
     }
 }

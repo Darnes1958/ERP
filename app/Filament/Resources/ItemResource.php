@@ -48,10 +48,6 @@ class ItemResource extends Resource
                   ->validationMessages([
                     'unique' => ' :attribute مخزون مسبقا ',
                   ])
-                  ->extraAttributes([
-
-                    'x-on:keydown.enter' => "\$focus.previous()",
-                  ])
                 ->columnSpan(2),
                 TextInput::make('barcode')
                     ->label('الباركود')
@@ -287,7 +283,8 @@ class ItemResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()->iconButton(),
               Tables\Actions\DeleteAction::make()
-                  ->hidden(fn(Item $record): bool =>Buy_tran::where('item_id',$record->id)->count()>0)
+                  ->hidden(fn ($record) => $record->Buy_tran()->exists())
+
                   ->iconButton(),
             ])
             ->bulkActions([

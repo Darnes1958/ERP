@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use function Laravel\Prompts\text;
 
 class RecsuppResource extends Resource
 {
@@ -209,6 +210,8 @@ class RecsuppResource extends Resource
           ->badge(),
         TextColumn::make('val')
           ->label('المبلغ'),
+        TextColumn::make('Acc.name')
+         ->label('المصرف'),
         TextColumn::make('notes')
           ->label('ملاحظات'),
       ])

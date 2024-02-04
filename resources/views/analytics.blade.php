@@ -5,13 +5,16 @@
         document.addEventListener('livewire:initialized', () => {
         @this.on('gotoitem', (event) => {
             postid = (event.test);
-alert(postid);
 
+            if (postid == 'q1') {
+                $("#q1").focus();
+                $("#q1").select();
+            }
             if (postid == 'price_buy') {
-                alert('i am here')
+
                 $("#price_buy").focus();
                 $("#price_buy").select();
-                alert('uuu')
+
             }
             if (postid == 'supplier_id') {
                 $("#supplier_id").focus();
@@ -37,7 +40,6 @@ alert(postid);
                 $("#item_id").select();
 
             }if (postid == 'q1') {
-
                 $("#q1").focus();
                 $("#q1").select();
             }if (postid == 'price_input') {

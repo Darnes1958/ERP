@@ -10,7 +10,7 @@ class Buys_work extends Model
 {
   protected $connection = 'other';
 
-  public function worksupplier(){
+  public function Supplier(){
     return $this->belongsTo(Supplier::class);
   }
   public function Price_type(){

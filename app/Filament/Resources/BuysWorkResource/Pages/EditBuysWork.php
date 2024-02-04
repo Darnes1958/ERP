@@ -10,10 +10,5 @@ class EditBuysWork extends EditRecord
 {
     protected static string $resource = BuysWorkResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
+    protected ?string $heading='تعديل فاتورة شراء';
 }

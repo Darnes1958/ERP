@@ -3,7 +3,10 @@
 namespace App\Livewire\Traits;
 
 use App\Enums\TwoUnit;
+use App\Models\Buy;
 use App\Models\Buy_tran;
+use App\Models\Buy_tran_work;
+use App\Models\Buys_work;
 use App\Models\BuySell;
 use App\Models\Item;
 use App\Models\Place_stock;
@@ -15,6 +18,14 @@ use App\Models\Sell_tran;
 use Illuminate\Database\Eloquent\Builder;
 
 trait Raseed {
+    public function tarseedBuys_work($buy_id){
+      $buy=Buys_work::find($buy_id);
+      $tot=Buy_tran_work::where('buy_id',$buy_id)->sum('sub_input');
+      $baky=$tot-$this->buy->pay;
+      $this->buy->tot=$tot;
+      $this->buy->baky=$baky;
+      $this->buy->save();
+    }
     public function retPrice($item,$single,$price_type){
 
       $Item=Item::find($item);
