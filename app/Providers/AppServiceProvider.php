@@ -33,7 +33,10 @@ class AppServiceProvider extends ServiceProvider
       FilamentView::registerRenderHook(
         'panels::page.end',
         fn (): View => view('analytics'),
-        scopes: \App\Filament\Resources\BuysWorkResource::class,
+        scopes: [
+            \App\Filament\Resources\BuysWorkResource::class,
+              \App\Filament\Resources\SellWorkResource::class,
+            ]
       );
 
       Filament::registerNavigationGroups([

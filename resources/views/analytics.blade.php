@@ -16,10 +16,28 @@
                 $("#price_buy").select();
 
             }
+            if (postid == 'price1') {
+
+                $("#price1").focus();
+                $("#price1").select();
+
+            }
+            if (postid == 'price2') {
+
+                $("#price2").focus();
+                $("#price2").select();
+
+            }
+
             if (postid == 'supplier_id') {
                 $("#supplier_id").focus();
                 $("#supplier_id").select();
             }
+            if (postid == 'customer_id') {
+                $("#customer_id").focus();
+                $("#customer_id").select();
+            }
+
             if (postid == 'place_id') {
                 $("#place_id").focus();
                 $("#place_id").select();
@@ -42,7 +60,12 @@
             }if (postid == 'q1') {
                 $("#q1").focus();
                 $("#q1").select();
-            }if (postid == 'price_input') {
+            }
+            if (postid == 'q2') {
+                $("#q2").focus();
+                $("#q2").select();
+            }
+            if (postid == 'price_input') {
                 $("#price_input").focus();
                 $("#price_input").select();
             }

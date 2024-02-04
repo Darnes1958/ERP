@@ -31,7 +31,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+
 
 class CreateBuy extends Page implements HasTable
 {
@@ -156,6 +156,7 @@ class CreateBuy extends Page implements HasTable
                 $this->buyForm->fill($this->buy->toArray());
                 $this->buytran= Buy_tran_work::where('buy_id', Auth::id())->delete();
                 $this->buyTranForm->fill([]);
+                $this->collapse=false;
               }),
 
 
@@ -344,7 +345,7 @@ class CreateBuy extends Page implements HasTable
     else $this->dispatch('gotoitem',  test: 'q1' );
   }
   public function ChkBarcode($state){
-
+      $this->collapse=true;
     if ($state==null) return;
     $res=Barcode::find($state);
     if (! $res)
@@ -385,7 +386,6 @@ class CreateBuy extends Page implements HasTable
     return [
       Section::make()
         ->schema([
-
           TextInput::make('barcode_id')
             ->label('الباركود')
             ->required()
@@ -396,7 +396,6 @@ class CreateBuy extends Page implements HasTable
            ->extraAttributes(['wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",])
             ->autocomplete(false)
             ->id('barcode_id'),
-
           Select::make('item_id')
             ->label('الصنف')
             ->searchable()
@@ -614,7 +613,7 @@ class CreateBuy extends Page implements HasTable
   {
       return $table
         ->query(function (Buy_tran_work $buy_tran) {
-          $buy_tran = Buy_tran_work::where('user_id', Auth::id());
+          $buy_tran = Buy_tran_work::where('buy_id', Auth::id());
           return $buy_tran;
         })
         ->columns([
