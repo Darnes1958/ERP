@@ -153,7 +153,7 @@ class ReceiptResource extends Resource
                             ])
                     ])
                     ->editOptionForm([
-                        Section::make('تعديل بيانات مورد')
+                        Section::make('تعديل بيانات مصرف')
                             ->schema([
                                 TextInput::make('name')
                                     ->label('اسم المصرف')

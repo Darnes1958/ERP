@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ImpExp;
 use App\Enums\RecWho;
 
+use App\Enums\RecWhoView;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +43,7 @@ class Receipt extends Model
      * @var array
      */
     protected $casts =[
-        'rec_who' => RecWho::class,
+        'rec_who' => RecWhoView::class,
         'imp_exp' => ImpExp::class,
     ];
 }

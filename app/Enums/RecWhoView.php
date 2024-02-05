@@ -5,13 +5,14 @@ use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasColor;
 
-enum RecWho: int implements HasLabel,HasColor,HasIcon
+enum RecWhoView: int implements HasLabel,HasColor,HasIcon
 {
   case قبض = 1;
   case دفع = 2;
   case قبض_فاتورة = 3;
   case دفع_فاتورة = 4;
-
+  case دفـع_فاتورة = 5;
+  case قبـض_فاتورة = 6;
 
 
   public function getLabel(): ?string
@@ -25,6 +26,8 @@ enum RecWho: int implements HasLabel,HasColor,HasIcon
       self::دفع => 'danger',
       self::قبض_فاتورة => 'success',
       self::دفع_فاتورة => 'danger',
+      self::قبـض_فاتورة => 'success',
+      self::دفـع_فاتورة => 'danger',
 
     };
   }
@@ -35,6 +38,8 @@ enum RecWho: int implements HasLabel,HasColor,HasIcon
       self::دفع => 'heroicon-m-arrow-long-right',
       self::قبض_فاتورة => 'heroicon-m-arrow-long-left',
       self::دفع_فاتورة => 'heroicon-m-arrow-long-right',
+        self::قبـض_فاتورة => 'heroicon-m-arrow-left-circle',
+        self::دفـع_فاتورة => 'heroicon-m-arrow-right-circle',
 
     };
   }
