@@ -158,18 +158,12 @@ class CreateBuy extends Page implements HasTable
                 $this->buyTranForm->fill([]);
                 $this->collapse=false;
               }),
-
-
             Action::make('مسح')
               ->icon('heroicon-m-trash')
               ->button()
               ->color('danger')
               ->requiresConfirmation()
-              ->after(function ()  {
-                //
-              })
               ->action(function () {
-
                 $this->buy->tot = 0;
                 $this->buy->pay = 0;
                 $this->buy->baky = 0;

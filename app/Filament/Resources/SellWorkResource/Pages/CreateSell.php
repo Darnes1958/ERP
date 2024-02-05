@@ -34,6 +34,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Number;
 
 class CreateSell extends Page
     implements HasTable
@@ -239,15 +240,11 @@ class CreateSell extends Page
         $this->sellForm->fill($this->sell->toArray());
     }
     public function retPrice($item,$single,$price_type){
-
         $Item=Item::find($item);
         $Price_type=Price_type::find($price_type);
-
         if ($Price_type->inc_dec->value==0)
         {
-
             $rec=Price_sell::where('item_id',$item)->where('price_type_id',$price_type)->first();
-
             if ($rec) {
                 if ($single) return ['price1'=>$rec->price1,'price2'=>$rec->price2];
                 else return ['price1'=>$rec->pricej1,'price2'=>$rec->pricej2];
@@ -295,25 +292,20 @@ class CreateSell extends Page
 
     }
     public function fill_item($item_id,$barcode){
-
-
         $item=Item::find($item_id);
-
         $rec=$this->retPrice($item_id,$item->single,$this->sellData['price_type_id']);
         if ($rec['price1']==0)$rec['price1']='';
-
         $stock=Place_stock::where('item_id',$item_id)
             ->where('place_id',$this->sellData['place_id'])->first();
         if ($stock) $placestock=$stock->stock1;else $placestock=0;
-
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$item_id)->first();
-
         if ($this->selltran)
             $this->sellTranForm->fill($this->selltran->toArray());
         else $this->sellTranForm->fill([
-            'barcode_id'=>$barcode,'item_id'=>$item,
+            'barcode_id'=>$barcode,'item_id'=>$item_id,
             'price1'=>$rec['price1'],'price2'=>$rec['price2'],'q1'=>'','q2'=>'',
+            'sub_tot'=>0,
             'raseed_all'=>$item->stock1,
             'raseed_place'=>$placestock,
             'sell_id'=>Auth::id(),'user_id'=>Auth::id()]);
@@ -352,28 +344,42 @@ class CreateSell extends Page
     public function chkData(){
         if (! $this->selltranData['item_id']) return 'يجب ادخال الصنف';
         $item_id=$this->selltranData['item_id'];
-        $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($item_id)->two_unit;
-        if (!$has_two && $this->selltranData['q1']<=0) return 'يجب ادخال الكمية';
-        if ($has_two &&  $this->selltranData['q2']<=0 && $this->selltranData['q1']<=0) return 'يجب ادخال الكمية';
+        $place_id=$this->sellData['place_id'];
+        $q1=floatval($this->selltranData['q1']);
+        $q2=floatVal($this->selltranData['q2']);
 
-        if ($this->retRaseedTwo($item_id,$this->sellData['place_id'])<=0) return 'الرصيد لا يسمح !!';
+        $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($item_id)->two_unit;
+        if (!$has_two && $q1<=0) return 'يجب ادخال الكمية';
+        if ($has_two &&  $q2<=0 && $q1<=0) return 'يجب ادخال الكمية';
+
+        if (!$this->chkRaseed($item_id,$place_id,$q1,$q2) ) return 'الرصيد لا يسمح !!';
         return 'ok';
     }
 
+
     public function add_rec(){
+
         $this->validate();
+      $item_id=$this->selltranData['item_id'];
+      $q1=$this->selltranData['q1'];
+      $q2=$this->selltranData['q2'];
+      $price1=$this->selltranData['price1'];
+      $price2=$this->selltranData['price2'];
+
+      //dd($this->selltranData);
+
         $place_id=$this->sellData['place_id'];
+
         $chk=$this->chkData($place_id);
         if ($chk != 'ok') {
             Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
             return;
         }
-
         $this->selltran=Sell_tran_work::where('item_id',$this->selltranData['item_id'])->first();
         if ($this->selltran)
             $this->selltran->update($this->sellTranForm->getState());
         else
-            $this->selltran=Sell_tran_work::create(collect($this->selltranData)->except('id')->toArray());
+            $this->selltran=Sell_tran_work::create(collect($this->selltranData)->except(['id','raseed_place','raseed_all'])->toArray());
         $this->sub_tot();
         $this->tot();
 
@@ -407,13 +413,11 @@ class CreateSell extends Page
                     Select::make('item_id')
                         ->hiddenLabel()
                         ->prefix('الصنف')
-
                         ->columnSpan(2)
                         ->searchable()
                         ->preload()
                         ->relationship('Item','name')
                         ->live(onBlur: true)
-                        ->reactive()
                         ->required()
                         ->afterStateUpdated(function ($state){$this->ChkItem($state);})
                         ->createOptionForm([
@@ -588,14 +592,13 @@ class CreateSell extends Page
                         ->id('item_id'),
                     TextInput::make('raseed_all')
                         ->hiddenLabel()
+
                         ->prefix('الرصيد الكلي')
                         ->disabled(),
                     TextInput::make('raseed_place')
                         ->hiddenLabel()
                         ->prefix('رصيد المكان')
                         ->disabled(),
-
-
                     TextInput::make('price1')
                         ->hiddenLabel()
                         ->prefix('السعر')
@@ -614,7 +617,7 @@ class CreateSell extends Page
                         ->numeric()
                         ->live()
                         ->required()
-                        ->gt(0)
+                        ->gte(0)
                         ->id('price2')
                         ->visible(function (){
                             return $this->is_two();
@@ -627,14 +630,19 @@ class CreateSell extends Page
                         ->prefix('الكمية')
                         ->prefixIcon('heroicon-m-shopping-cart')
                         ->prefixIconColor('warning')
-
                         ->numeric()
+
                         ->required()
                         ->gte(0)
-                        ->afterStateUpdated(function (Set $set,Get $get){
+                        ->afterStateUpdated(function (Set $set,Get $get,$state){
+
+                            if ($get('item_id')==null) return;
                             if ($get('q2')==null) $set('q2',0);
                             if ($get('q1')==null) $set('q1',0);
-
+                            $quant=$this->retSetQuant($get('item_id'),$get('q1'),$get('q2'));
+                            $set('q1',$quant['q1']);
+                            $set('q2',$quant['q2']);
+                            $set('sub_tot',($quant['q1']*$get('price1') + $quant['q2']*$get('price2')));
                         })
                         ->extraAttributes(['wire:keydown.enter' => "chkQuant",])
                         ->id('q1'),
@@ -682,7 +690,27 @@ class CreateSell extends Page
                             ->color('success')
                             ->requiresConfirmation()
                             ->action(function () {
-                                $selltran=Sell_tran_work::where('sell_id',Auth::id())->get();
+                              $selltran=Sell_tran_work::with('Item')->where('sell_id',Auth::id())->get();
+                              $minus=false;
+                              foreach ($selltran as $tran) {
+                                $placeRaseed=$this->retRaseedPlace($tran->item_id,$this->sell->place_id);
+                                if (
+                                  $this->TwoToOne($tran->item->count,$tran->q1,$tran->q2) >
+                                  $this->TwoToOne($tran->item->count,$placeRaseed['q1'],$placeRaseed['q2'])
+                                ){
+                                  Notification::make()
+                                    ->title('الصنف : ('.$tran->item->name.') رصيده لا يسمح !!')
+                                    ->icon('heroicon-o-exclamation-triangle')
+                                    ->iconColor('warning')
+                                    ->send();
+                                  $minus=true;
+                                  break;
+
+                                }
+                              }
+                              if ($minus) return;
+
+
                                 if ($this->sell->pay>0 && $this->sell->price_type_id!=1) {
                                     if (!$this->sellStoreData['acc_id'])
                                     {
@@ -695,26 +723,27 @@ class CreateSell extends Page
 
                                 unset($this->sell['id']);
                                 $id=Sell::create($this->sell->toArray());
+                              $selltran=Sell_tran_work::where('sell_id',Auth::id())->get();
                                 foreach ($selltran as $tran) {
+                             //     dd($tran->toArray());
                                     $tran->sell_id=$id->id;
-                                    $tran->qs1=$tran->q1;
                                     unset($tran['id']);
-                                    Sell_tran::create($tran->toArray());
-                                    $this->incAllsell($tran->item_id,$this->sell->place_id,$tran->q1,$this->sell->price_type_id,$tran->price_input);
+                                    $tran_id=Sell_tran::create($tran->toArray());
 
+                                    $this->decAll($tran_id->id,$id->id,$tran->item_id,$id->place_id,$tran->q1,$tran->q2);
                                 }
                                 if ($this->sell->pay>0){
 
                                     $recipt= Receipt::create([
                                         'receipt_date'=>$this->sell->order_date,
-                                        'supplier_id'=>$this->sell->supplier_id,
+                                        'supplier_id'=>$this->sell->customer_id,
                                         'sell_id'=>$id->id,
                                         'price_type_id'=>$this->sell->price_type_id,
-                                        'rec_who'=>4,
-                                        'imp_exp'=>1,
+                                        'rec_who'=>3,
+                                        'imp_exp'=>0,
                                         'val'=>$this->sell->pay,
                                         'acc_id'=>$acc,
-                                        'notes'=>'فاتورة مشتريات رقم '.strval($id->id),
+                                        'notes'=>'فاتورة مبيعات رقم '.strval($id->id),
                                         'user_id'=>Auth::id()
                                     ]);
                                     Sell::find($id->id)->update(['receipt_id'=>$recipt->id]);
@@ -745,6 +774,7 @@ class CreateSell extends Page
                                 $this->sellForm->fill($this->sell->toArray());
                                 $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
                                 $this->sellTranForm->fill([]);
+                                $this->collapse=false;
 
                             })
                     ])->extraAttributes(['class' => 'items-center justify-between']),

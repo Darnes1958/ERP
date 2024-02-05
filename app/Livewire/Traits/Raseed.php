@@ -113,6 +113,11 @@ trait Raseed {
         else return ['q1'=>$q1,'q2' => 0];
     }
 
+    public function chkRaseed($item_id,$place_id,$q1,$q2){
+      $quant=$this->retSetQuant($item_id,$q1,$q2);
+      return $this->retRaseedTwo($item_id,$place_id) - $this->retQuant($item_id,$quant['q1'],$quant['q2']) >=0;
+    }
+
 
 
     public function decAll($sell_tran_id,$sell_id,$item_id,$place_id,$q1,$q2){

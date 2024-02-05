@@ -128,8 +128,6 @@ class InpSell extends Component implements HasForms,HasTable,HasActions
 
         $this->sellTranForm->loadForm($this->sell_id, $this->selltranData);
 
-
-
         $chk=$this->sellTranForm->chkData($this->sellForm->place_id);
         if ($chk != 'ok') {
           Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
