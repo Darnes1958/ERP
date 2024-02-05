@@ -5,11 +5,10 @@ namespace App\Filament\Resources;
 use App\Enums\RecWho;
 use App\Filament\Resources\RecsuppResource\Pages;
 use App\Filament\Resources\RecsuppResource\RelationManagers;
+use App\Models\Acc;
 use App\Models\Buy;
-use App\Models\Customer;
-use App\Models\Receipt;
 use App\Models\Recsupp;
-use App\Models\Sell;
+
 use App\Models\Supplier;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -22,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -204,14 +204,24 @@ class RecsuppResource extends Resource
         TextColumn::make('supplier.name')
           ->label('اسم المورد'),
         TextColumn::make('price_type.name')
+             ->color(function (Recsupp $record) {
+                        if ($record->price_type_id!=1) return 'info';
+                    })
+                    ->weight(function (Recsupp $record) {
+                        if ($record->price_type_id!=1) return FontWeight::Bold;
+                    })
+                    ->description(function (Recsupp $record){
+                        $name=null;
+                        if ($record->acc_id) {$name=Acc::find($record->acc_id)->name;}
+                        return $name;
+                    })
           ->label('طريقة الدفع'),
         TextColumn::make('rec_who')
           ->label('البيان')
           ->badge(),
         TextColumn::make('val')
           ->label('المبلغ'),
-        TextColumn::make('Acc.name')
-         ->label('المصرف'),
+       
         TextColumn::make('notes')
           ->label('ملاحظات'),
       ])
@@ -260,8 +270,8 @@ class RecsuppResource extends Resource
           })
       ])
       ->actions([
-        Tables\Actions\EditAction::make()->iconButton(),
-        Tables\Actions\DeleteAction::make()->iconButton()
+        Tables\Actions\EditAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<5),
+        Tables\Actions\DeleteAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<5)
           ->modalHeading('حذف الإيصال')
           ->after(function (Recsupp $record) {
             if ($record->rec_who->value==3 || $record->rec_who->value==4) {

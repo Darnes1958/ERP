@@ -32,6 +32,10 @@ class SellWorkResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationLabel='فاتورة مبيعات';
+    protected static ?string $navigationGroup='فواتير مبيعات';
+    protected static ?int $navigationSort=1;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -159,6 +163,10 @@ class SellWorkResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(function (Sell_work $sell)  {
+                $sell=Sell_work::where('id',Auth::id()) ;
+                return  $sell;
+            })
             ->columns([
                 TextColumn::make('id')
                     ->label('الرقم الالي'),
@@ -204,11 +212,5 @@ class SellWorkResource extends Resource
             'edit' => Pages\EditSellWork::route('/{record}/edit'),
         ];
     }
-    public function mount(){
-        if (!Sell_work::find(Auth::id())) {
-            Sell_work::create([
-                'id'=>Auth::id(),'user_id'=>Auth::id(),
-            ]);
-        }
-    }
+
 }

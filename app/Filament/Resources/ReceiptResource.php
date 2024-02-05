@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\RecWho;
 use App\Filament\Resources\ReceiptResource\Pages;
 
+use App\Models\Acc;
 use App\Models\Customer;
 use App\Models\Receipt;
 use App\Models\Sell;
@@ -14,6 +15,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -190,6 +192,9 @@ class ReceiptResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('ت')
+                    ->rowIndex(),
                 TextColumn::make('id')
                  ->label('الرقم الألي'),
                 TextColumn::make('receipt_date')
@@ -197,9 +202,21 @@ class ReceiptResource extends Resource
                 TextColumn::make('customer.name')
                     ->label('اسم الزبون'),
                 TextColumn::make('price_type.name')
+                    ->color(function (Receipt $record) {
+                        if ($record->price_type_id!=1) return 'info';
+                    })
+                    ->weight(function (Receipt $record) {
+                        if ($record->price_type_id!=1) return FontWeight::Bold;
+                    })
+                    ->description(function (Receipt $record){
+                        $name=null;
+                        if ($record->acc_id) {$name=Acc::find($record->acc_id)->name;}
+                        return $name;
+                    })
                     ->label('طريقة الدفع'),
                 TextColumn::make('rec_who')
                     ->label('البيان')
+
                     ->badge(),
                 TextColumn::make('val')
                     ->label('المبلغ'),
@@ -252,8 +269,9 @@ class ReceiptResource extends Resource
                 })
             ])
             ->actions([
-              Tables\Actions\EditAction::make()->iconButton()->color('blue'),
+              Tables\Actions\EditAction::make()->iconButton()->color('blue')->visible(fn(Receipt $record) =>$record->rec_who->value<5),
               Tables\Actions\DeleteAction::make()->iconButton()
+                  ->visible(fn(Receipt $record) =>$record->rec_who->value<5)
                 ->modalHeading('حذف الإيصال')
                 ->after(function (Receipt $record) {
                   if ($record->rec_who==3 || $record->rec_who==4) {

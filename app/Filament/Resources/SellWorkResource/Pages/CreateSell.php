@@ -242,9 +242,11 @@ class CreateSell extends Page
     public function retPrice($item,$single,$price_type){
         $Item=Item::find($item);
         $Price_type=Price_type::find($price_type);
+
         if ($Price_type->inc_dec->value==0)
         {
             $rec=Price_sell::where('item_id',$item)->where('price_type_id',$price_type)->first();
+
             if ($rec) {
                 if ($single) return ['price1'=>$rec->price1,'price2'=>$rec->price2];
                 else return ['price1'=>$rec->pricej1,'price2'=>$rec->pricej2];
@@ -293,8 +295,9 @@ class CreateSell extends Page
     }
     public function fill_item($item_id,$barcode){
         $item=Item::find($item_id);
-        $rec=$this->retPrice($item_id,$item->single,$this->sellData['price_type_id']);
-        if ($rec['price1']==0)$rec['price1']='';
+        $rec=$this->retPrice($item_id,$this->sell->single,$this->sellData['price_type_id']);
+
+        if ($rec['price1']==0) $rec['price1']='';
         $stock=Place_stock::where('item_id',$item_id)
             ->where('place_id',$this->sellData['place_id'])->first();
         if ($stock) $placestock=$stock->stock1;else $placestock=0;
@@ -718,35 +721,35 @@ class CreateSell extends Page
                                     }
                                     $acc=$this->sellStoreData['acc_id'];
                                 }
-                                else $acc='';
+                                else $acc=null;
 
 
-                                unset($this->sell['id']);
+                                unset($this->sell['id'],$this->sell['created_at'],$this->sell['updated_at']);
                                 $id=Sell::create($this->sell->toArray());
                               $selltran=Sell_tran_work::where('sell_id',Auth::id())->get();
                                 foreach ($selltran as $tran) {
-                             //     dd($tran->toArray());
                                     $tran->sell_id=$id->id;
-                                    unset($tran['id']);
+                                    unset($tran['id'],$tran['created_at'],$tran['updated_at']);
                                     $tran_id=Sell_tran::create($tran->toArray());
 
                                     $this->decAll($tran_id->id,$id->id,$tran->item_id,$id->place_id,$tran->q1,$tran->q2);
+                                    $this->setPriceSell($tran->item_id,$this->sell->price_type_id,$this->sell->single,$tran->price1,$tran->price2);
                                 }
                                 if ($this->sell->pay>0){
 
                                     $recipt= Receipt::create([
                                         'receipt_date'=>$this->sell->order_date,
-                                        'supplier_id'=>$this->sell->customer_id,
+                                        'customer_id'=>$this->sell->customer_id,
                                         'sell_id'=>$id->id,
                                         'price_type_id'=>$this->sell->price_type_id,
-                                        'rec_who'=>3,
+                                        'rec_who'=>6,
                                         'imp_exp'=>0,
                                         'val'=>$this->sell->pay,
                                         'acc_id'=>$acc,
                                         'notes'=>'فاتورة مبيعات رقم '.strval($id->id),
                                         'user_id'=>Auth::id()
                                     ]);
-                                    Sell::find($id->id)->update(['receipt_id'=>$recipt->id]);
+
                                 }
                                 $this->sell=Sell_work::find(Auth::id());
                                 $this->sell->tot=0;  $this->sell->pay=0; $this->sell->baky=0;  $this->sell->save();
@@ -835,14 +838,7 @@ class CreateSell extends Page
                         if ($state=='0.0') return '';
                         return $state;
                     }),
-                TextColumn::make('price1')
-                    ->label('سعر الشراء')
-                    ->numeric(
-                        decimalPlaces: 3,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
-                    ->sortable(),
+
                 TextColumn::make('sub_tot')
                     ->label('المجموع')
                     ->numeric(

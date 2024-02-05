@@ -82,6 +82,19 @@ trait Raseed {
       }
 
     }
+    public function setPriceSell($item_id,$price_type_id,$single,$price1,$price2){
+        if ($single) {$type1='price1';$type2='price2';}
+        else {$type1='pricej1';$type2='pricej2';}
+
+        if ($price_type_id==1) Item::find($item_id)->update([$type1=>$price1,$type2=>$price2,]);
+
+        $price_sell=Price_sell::where('item_id',$item_id)->where('price_type_id',$price_type_id)->first();
+        if ($price_sell) $price_sell->update([$type1=>$price1,$type2=>$price2,]);
+        else Price_sell::create(['item_id'=>$item_id,'price_type_id'=>$price_type_id
+            ,'price1'=>$price1,'price2'=>$price2,'pricej1'=>$price1,'pricej2'=>$price2,]);
+
+
+    }
     public function retRaseedTwo($item_id,$place_id){
 
         $count=Item::find($item_id)->count;
@@ -92,18 +105,16 @@ trait Raseed {
          return $res->stock2+($res->stock1*$count);
         else return 0;
     }
-  public function retRaseedPlace($item_id,$place_id){
+    public function retRaseedPlace($item_id,$place_id){
     $res=Place_stock::where('item_id',$item_id)
       ->where('place_id',$place_id)->first();
     if ($res)
       return ['q1'=>$res->stock1,'q2'=>$res->stock2];
     else return ['q1'=>0,'q2'=>0];
   }
-
     public function retQuant($item_id,$q1,$q2){
         return $q2+($q1*Item::find($item_id)->count);
     }
-
     public function retSetQuant($item_id,$q1,$q2){
         $res=Item::find($item_id);
         $count=$res->count;
@@ -112,13 +123,10 @@ trait Raseed {
          return ['q1'=>intdiv($qq,$count),'q2' => $qq % $count];
         else return ['q1'=>$q1,'q2' => 0];
     }
-
     public function chkRaseed($item_id,$place_id,$q1,$q2){
       $quant=$this->retSetQuant($item_id,$q1,$q2);
       return $this->retRaseedTwo($item_id,$place_id) - $this->retQuant($item_id,$quant['q1'],$quant['q2']) >=0;
     }
-
-
 
     public function decAll($sell_tran_id,$sell_id,$item_id,$place_id,$q1,$q2){
         $item=Item::find($item_id);

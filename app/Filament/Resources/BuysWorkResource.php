@@ -229,11 +229,5 @@ protected static ?int $navigationSort=1;
         ];
     }
 
-    public function mount(){
-        if (!Buys_work::find(Auth::id())) {
-            Buys_work::create([
-                'id'=>Auth::id(),'user_id'=>Auth::id(),
-            ]);
-        }
-    }
+
 }

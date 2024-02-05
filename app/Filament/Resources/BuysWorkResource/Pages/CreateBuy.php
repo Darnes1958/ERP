@@ -122,7 +122,7 @@ class CreateBuy extends Page implements HasTable
                   }
                   $acc=$this->buyStoreData['acc_id'];
                 }
-                else $acc='';
+                else $acc=null;
 
 
                 unset($this->buy['id']);
@@ -142,14 +142,14 @@ class CreateBuy extends Page implements HasTable
                     'supplier_id'=>$this->buy->supplier_id,
                     'buy_id'=>$id->id,
                     'price_type_id'=>$this->buy->price_type_id,
-                    'rec_who'=>4,
+                    'rec_who'=>5,
                     'imp_exp'=>1,
                     'val'=>$this->buy->pay,
                     'acc_id'=>$acc,
                     'notes'=>'فاتورة مشتريات رقم '.strval($id->id),
                     'user_id'=>Auth::id()
                   ]);
-                  Buy::find($id->id)->update(['receipt_id'=>$recipt->id]);
+
                 }
                 $this->buy=Buys_work::find(Auth::id());
                 $this->buy->tot=0;  $this->buy->pay=0; $this->buy->baky=0;  $this->buy->save();
