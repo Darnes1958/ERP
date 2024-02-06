@@ -31,9 +31,9 @@ class EditRecsupp extends EditRecord
         if ($this->rec_who == 3 || $this->rec_who == 4)
         {
 
-            $imp=Recsupp::where('buy_id',$this->buy_to_save)->where('rec_who',3)
+            $imp=Recsupp::where('buy_id',$this->buy_to_save)->whereIn('rec_who',[3,6])
                 ->sum('val');
-            $exp=Recsupp::where('buy_id',$this->buy_to_save)->where('rec_who',4)
+            $exp=Recsupp::where('buy_id',$this->buy_to_save)->whereIn('rec_who',[4,5])
                 ->sum('val');
             $buy=Buy::find($this->buy_to_save);
             $buy->pay=$exp-$imp;

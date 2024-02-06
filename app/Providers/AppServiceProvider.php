@@ -35,7 +35,8 @@ class AppServiceProvider extends ServiceProvider
         fn (): View => view('analytics'),
         scopes: [
             \App\Filament\Resources\BuysWorkResource::class,
-              \App\Filament\Resources\SellWorkResource::class,
+            \App\Filament\Resources\SellWorkResource::class,
+            \App\Filament\Resources\BuyResource::class,
             ]
       );
 

@@ -221,7 +221,7 @@ class RecsuppResource extends Resource
           ->badge(),
         TextColumn::make('val')
           ->label('المبلغ'),
-       
+
         TextColumn::make('notes')
           ->label('ملاحظات'),
       ])
@@ -275,8 +275,8 @@ class RecsuppResource extends Resource
           ->modalHeading('حذف الإيصال')
           ->after(function (Recsupp $record) {
             if ($record->rec_who->value==3 || $record->rec_who->value==4) {
-                $sum=Recsupp::where('buy_id',$record->buy_id)->where('rec_who',3)->sum('val');
-                $sub=Recsupp::where('buy_id',$record->buy_id)->where('rec_who',4)->sum('val');
+                $sum=Recsupp::where('buy_id',$record->buy_id)->whereIn('rec_who',[3,6])->sum('val');
+                $sub=Recsupp::where('buy_id',$record->buy_id)->whereIn('rec_who',[4,5])->sum('val');
               $buy=Buy::find($record->buy_id);
               $buy->pay=$sub-$sum;
               $buy->baky=$buy->tot-$sub+$sum;

@@ -19,9 +19,9 @@ class EditReceipt extends EditRecord
     {
         if ($this->rec_who == 3 || $this->rec_who == 4)
         {
-            $imp=Receipt::where('sell_id',$this->sell_to_save)->where('rec_who',3)
+            $imp=Receipt::where('sell_id',$this->sell_to_save)->where('rec_who',[3,6])
                 ->sum('val');
-            $exp=Receipt::where('sell_id',$this->sell_to_save)->where('rec_who',4)
+            $exp=Receipt::where('sell_id',$this->sell_to_save)->where('rec_who',[4,5])
                 ->sum('val');
             $sell=Sell::find($this->sell_to_save);
             $sell->pay=$imp-$exp;

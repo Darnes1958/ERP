@@ -223,7 +223,6 @@ protected static ?int $navigationSort=1;
 
             'create' => Pages\CreateBuysWork::route('/create'),
             'createbuy' => Pages\CreateBuy::route('/createbuy'),
-
             'edit' => Pages\EditBuysWork::route('/{record}/edit'),
             'index' => Pages\ListBuysWorks::route('/'),
         ];

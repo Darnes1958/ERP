@@ -276,8 +276,8 @@ class ReceiptResource extends Resource
                 ->after(function (Receipt $record) {
                   if ($record->rec_who==3 || $record->rec_who==4) {
 
-                    $sum=Receipt::where('sell_id',$record->sell_id)->where('rec_who',3)->sum('val');
-                    $sub=Receipt::where('sell_id',$record->sell_id)->where('rec_who',4)->sum('val');
+                    $sum=Receipt::where('sell_id',$record->sell_id)->whereIn('rec_who',[3,6])->sum('val');
+                    $sub=Receipt::where('sell_id',$record->sell_id)->whereIn('rec_who',[4,5])->sum('val');
                     $sell=Sell::find($record->sell_id);
                     $sell->pay=$sum-$sub;
                     $sell->baky=$sell->tot-$sum+$sub;
