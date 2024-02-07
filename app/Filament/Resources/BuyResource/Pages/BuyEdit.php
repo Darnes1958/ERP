@@ -183,13 +183,13 @@ class BuyEdit extends Page implements HasTable
         if ($price_buy) $price_input=$price_buy->price;
         else $price_input=Item::find($item)->price_buy;
 
-        $this->buytran=Buy_tran::where('buy_id',Auth::id())
+        $this->buytran=Buy_tran::where('buy_id',$this->buy_id)
             ->where('item_id',$item)->first();
         if ($this->buytran)
             $this->buyTranForm->fill($this->buytran->toArray());
         else $this->buyTranForm->fill([
             'barcode_id'=>$barcode,'item_id'=>$item,'price_input'=>$price_input,'q1'=>'',
-            'buy_id'=>$this->buy_id,'user_id'=>Auth::id(),'sub_input'=>'',]);
+            'buy_id'=>$this->buy_id,'user_id'=>Auth::id(),]);
         if ($price_input==0)  $this->dispatch('gotoitem',  test: 'price_input' );
         else $this->dispatch('gotoitem',  test: 'q1' );
     }
@@ -231,15 +231,23 @@ class BuyEdit extends Page implements HasTable
             Notification::make()->title('يجب ادخال الكمية ')->icon('heroicon-o-check')->iconColor('success')->send();
             return;
         }
+        $q1=$this->buytranData['q1'];
+        $p1=$this->buytranData['price_input'];
+        $sub=$q1*$p1;
 
         $this->buytran=Buy_tran::where('buy_id',$this->buy_id)
             ->where('item_id',$this->buytranData['item_id'])->first();
         if ($this->buytran) {
             $this->decAllBuy($this->buytran->item_id,$this->buy->place_id,$this->buytran->q1);
             $this->buytran->update($this->buyTranForm->getState());
+            $this->buytran->update(['sub_input'=>$sub]);
         }
         else
-            $this->buytran=Buy_tran::create(collect($this->buytranData)->except('id')->toArray());
+            $this->buytran=Buy_tran::create(
+              collect($this->buytranData)
+                ->put('qs1',$q1)
+                ->put('sub_input',$sub)
+                ->except('id')->toArray());
 
         $this->incAllBuy($this->buytran->item_id,$this->buy->place_id,$this->buytran->q1
             ,$this->buy->price_type_id,$this->buytran->price_input);
@@ -253,7 +261,7 @@ class BuyEdit extends Page implements HasTable
         $this->buy->save();
         $this->buyForm->fill($this->buy->toArray());
 
-        $this->dispatch('goto', test: 'barcode_id');
+        $this->dispatch('gotoitem', test: 'barcode_id');
     }
     protected function getBuyTranFormSchema(): array
     {
@@ -261,21 +269,24 @@ class BuyEdit extends Page implements HasTable
             Section::make()
                 ->schema([
                     TextInput::make('barcode_id')
-                        ->label('الباركود')
+                      ->hiddenLabel()
+                      ->prefix('الباركود')
+
                         ->required()
                         ->exists()
                         ->live(onBlur: true)
                         ->extraAttributes([
                             'wire:keydown.enter' => "ChkBarcode",
                         ])
+                        ->columnSpanFull()
                         ->id('barcode_id'),
 
                     Select::make('item_id')
-                        ->label('الصنف')
+                      ->hiddenLabel()
+                      ->prefix('الصنف')
                         ->searchable()
                         ->preload()
                         ->relationship('Item','name')
-                        ->inlineLabel()
                         ->live()
                         ->reactive()
                         ->required()
@@ -283,6 +294,7 @@ class BuyEdit extends Page implements HasTable
                             'wire:change' => "ChkItem",
                             'wire:keydown.enter' => "ChkItem",
                         ])
+                        ->columnSpanFull()
                         ->id('item_id'),
                     DatePicker::make('exp_date')
                         ->label('تاريخ الصلاحية')
@@ -293,8 +305,10 @@ class BuyEdit extends Page implements HasTable
                         ->visible(Setting::find(Auth::user()->company)->has_exp),
 
                     TextInput::make('price_input')
-                        ->label('السعر')
-                        ->inlineLabel()
+                      ->hiddenLabel()
+                      ->prefix('السعر')
+                      ->prefixIcon('heroicon-m-currency-dollar')
+                      ->prefixIconColor('info')
                         ->numeric()
                         ->live()
                         ->required()
@@ -309,8 +323,10 @@ class BuyEdit extends Page implements HasTable
                         ]),
 
                     TextInput::make('q1')
-                        ->label('الكمية')
-                        ->inlineLabel()
+                      ->hiddenLabel()
+                      ->prefix('الكمية')
+                      ->prefixIcon('heroicon-m-shopping-cart')
+                      ->prefixIconColor('warning')
                         ->numeric()
                         ->required()
                         ->afterStateUpdated(function (Get $get,Set $set,$state){
@@ -321,11 +337,9 @@ class BuyEdit extends Page implements HasTable
                             'wire:keydown.enter' => "add_rec",
                         ])
                         ->id('q1'),
-                    TextInput::make('sum_input')
-                        ->label('المجموع')
-                        ->readOnly()
-                        ->inlineLabel(),
+
                 ])
+                ->columns(2)
                 ->hidden(function (){
                     return $this->buy_id==null;
                 }),
@@ -341,19 +355,13 @@ class BuyEdit extends Page implements HasTable
                             ->action(function () {
                                 $buytran=Buy_tran::where('buy_id',$this->buy_id)->get();
                                 foreach ($buytran as $tran)
-                                    $this->decAllBuy($tran->item_id,$this->buyForm->place_id,$tran->q1);
+                                    $this->decAllBuy($tran->item_id,$this->buy->place_id,$tran->q1);
 
                                 Recsupp::where('buy_id',$this->buy_id)->delete();
-                                Buy_tran::where('buy_id',$this->buy_id)->delete();
-                                Buy::find($this->buy_id)->delete();
+                                $this->buytran=Buy_tran::where('buy_id',$this->buy_id)->delete();
+                                $this->buy=Buy::find($this->buy_id)->delete();
 
-                                $this->is_filled=false;
-                                $this->buy_id='';
-                                $this->buyForm->reset();
-                                $this->buyTranForm->reset();
-
-
-                                $this->buyFormBlade->fill($this->buyForm->toArray());
+                              $this->getResource()::getUrl('index');
 
                             })
                     ])->extraAttributes(['class' => 'items-center justify-between']),
@@ -403,7 +411,7 @@ class BuyEdit extends Page implements HasTable
             ->actions([
                 \Filament\Tables\Actions\Action::make('delete')
                     ->action(function (Buy_tran $record){
-                        $record->delete();
+                        $this->buytran= $record->delete();
                         $this->decAllBuy($record->item_id,$this->buy->place_id,$record->q1);
                         $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
                         $baky=$tot-Buy::find($this->buy_id)->pay;

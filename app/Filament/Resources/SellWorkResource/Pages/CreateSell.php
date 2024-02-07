@@ -595,7 +595,6 @@ class CreateSell extends Page
                         ->id('item_id'),
                     TextInput::make('raseed_all')
                         ->hiddenLabel()
-
                         ->prefix('الرصيد الكلي')
                         ->disabled(),
                     TextInput::make('raseed_place')
@@ -616,7 +615,11 @@ class CreateSell extends Page
                             'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",
                         ]),
                     TextInput::make('price2')
-                        ->hiddenLabel()
+                      ->hiddenLabel()
+                      ->prefix('الكمية')
+                      ->prefixIcon('heroicon-m-shopping-cart')
+                      ->prefixIconColor('warning')
+
                         ->numeric()
                         ->live()
                         ->required()

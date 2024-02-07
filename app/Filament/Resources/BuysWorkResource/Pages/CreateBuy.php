@@ -381,7 +381,8 @@ class CreateBuy extends Page implements HasTable
       Section::make()
         ->schema([
           TextInput::make('barcode_id')
-            ->label('الباركود')
+            ->hiddenLabel()
+            ->prefix('الباركود')
             ->required()
             ->inlineLabel()
             ->exists(Barcode::class,column: 'id')
@@ -391,7 +392,8 @@ class CreateBuy extends Page implements HasTable
             ->autocomplete(false)
             ->id('barcode_id'),
           Select::make('item_id')
-            ->label('الصنف')
+            ->hiddenLabel()
+            ->prefix('الصنف')
             ->searchable()
             ->preload()
             ->relationship('Item','name')
@@ -578,8 +580,10 @@ class CreateBuy extends Page implements HasTable
             ->visible(Setting::find(Auth::user()->company)->has_exp) ,
 
           TextInput::make('price_input')
-            ->label('السعر')
-            ->inlineLabel()
+            ->hiddenLabel()
+            ->prefix('السعر')
+            ->prefixIcon('heroicon-m-currency-dollar')
+            ->prefixIconColor('info')
             ->numeric()
             ->live()
             ->required()
@@ -588,8 +592,10 @@ class CreateBuy extends Page implements HasTable
               'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",
             ]),
           TextInput::make('q1')
-            ->label('الكمية')
-            ->inlineLabel()
+            ->hiddenLabel()
+            ->prefix('الكمية')
+            ->prefixIcon('heroicon-m-shopping-cart')
+            ->prefixIconColor('warning')
             ->numeric()
             ->required()
 
