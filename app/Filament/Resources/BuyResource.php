@@ -22,6 +22,9 @@ class BuyResource extends Resource
     protected static ?string $model = Buy::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel='تعديل فاتورة شراء';
+    protected static ?string $navigationGroup='فواتير شراء';
+    protected static ?int $navigationSort=2;
 
     public static function form(Form $form): Form
     {
@@ -36,12 +39,20 @@ class BuyResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')
+                    ->searchable()
+                    ->sortable()
                     ->label('الرقم الالي'),
                 TextColumn::make('Supplier.name')
+                    ->searchable()
+                    ->sortable()
                     ->label('اسم المورد'),
                 TextColumn::make('order_date')
+                    ->searchable()
+                    ->sortable()
                     ->label('التاريخ'),
                 TextColumn::make('tot')
+                    ->searchable()
+                    ->sortable()
                     ->label('اجمالي الفاتورة'),
                 TextColumn::make('pay')
                     ->label('المدفوع'),
@@ -54,16 +65,12 @@ class BuyResource extends Resource
                 //
             ])
             ->actions([
-
                 Tables\Actions\Action::make('buytran')
                     ->label('تعديل')
                     ->icon('heroicon-m-pencil')
                     ->color('info')
                     ->url(fn(Model $record) => self::getUrl('buyedit', ['record' => $record]))
-
-
             ])
-
             ;
     }
 

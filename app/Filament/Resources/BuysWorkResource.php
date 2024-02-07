@@ -33,9 +33,10 @@ class BuysWorkResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-protected static ?string $navigationLabel='فاتورة مشتريات';
+protected static ?string $navigationLabel='فاتورة مشتريات جديدة';
 protected static ?string $navigationGroup='فواتير شراء';
 protected static ?int $navigationSort=1;
+
     public static function form(Form $form): Form
     {
         return $form

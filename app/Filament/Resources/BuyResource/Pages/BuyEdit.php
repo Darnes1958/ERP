@@ -4,11 +4,13 @@ namespace App\Filament\Resources\BuyResource\Pages;
 
 use App\Filament\Resources\BuyResource;
 use App\Livewire\Traits\Raseed;
+use App\Models\Acc;
 use App\Models\Barcode;
 use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Item;
 use App\Models\Price_buy;
+use App\Models\Receipt;
 use App\Models\Recsupp;
 use App\Models\Setting;
 use Filament\Forms\Components\DatePicker;
@@ -20,6 +22,7 @@ use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
+use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -27,6 +30,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
+use function Symfony\Component\String\b;
 
 class BuyEdit extends Page implements HasTable
 {
@@ -36,6 +40,10 @@ class BuyEdit extends Page implements HasTable
     protected static string $resource = BuyResource::class;
 
     protected static string $view = 'filament.resources.buy-resource.pages.buy-edit';
+
+    protected ?string $heading="";
+
+
 
     public $buy;
     public $buytran;
@@ -52,7 +60,14 @@ class BuyEdit extends Page implements HasTable
         $this->buy_id=$this->record->id;
         $this->buy=Buy::find($this->buy_id);
 
+
         $this->buyForm->fill($this->record->toArray());
+        if ($this->buy->receipt_id!=null){
+            $receipt=Recsupp::find($this->buy->receipt_id);
+
+            if ($receipt->acc_id)
+            $this->buyForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
+        }
 
         $this->buyTranForm->fill([]);
     }
@@ -78,12 +93,13 @@ class BuyEdit extends Page implements HasTable
             Section::make()
                 ->schema([
                     DatePicker::make('order_date')
+                        ->hiddenLabel()
+                        ->prefix('التاريخ')
                         ->extraAttributes([
                             'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'supplier_id' })",
                         ])
                         ->id('order_date')
                         ->autofocus()
-                        ->label('التاريخ')
                         ->afterStateUpdated(function ($state){
                             $res=Buy::find($this->buy_id);
                             $res->order_date=$state;
@@ -94,30 +110,73 @@ class BuyEdit extends Page implements HasTable
                         ->required(),
                     Select::make('supplier_id')
                         ->relationship('Supplier','name')
-                        ->label('المورد')
-                        ->inlineLabel()
-                        ->columnSpan(3)
-                        ->disabled(),
+                        ->hiddenLabel()
+
+                        ->prefix('المورد')
+                        ->prefixIcon('heroicon-m-user')
+                        ->prefixIconColor('info')
+                        ->afterStateUpdated(function ($state){
+                            $this->buy->supplier_id=$state;
+                            $this->buy->save();
+                        })
+                        ->columnSpan(3),
+
                     Select::make('place_id')
                         ->relationship('Place','name')
-                        ->label('مكان التخزين')
+                        ->hiddenLabel()
+                        ->prefix('مكان التخزين')
+                        ->prefixIcon('heroicon-m-home-modern')
+                        ->prefixIconColor('warning')
                         ->columnSpan(3)
                         ->inlineLabel()
                         ->disabled()
                         ->visible(Setting::find(Auth::user()->company)->many_place),
                     Select::make('price_type_id')
-                        ->relationship('Place','name')
-                        ->label('طريقة الدفع')
+                        ->relationship('Price_type','name')
+                        ->hiddenLabel()
+                        ->live()
+                        ->prefix('طريقة الدفع')
+                        ->prefixIcon('heroicon-m-banknotes')
+                        ->prefixIconColor('success')
+                        ->afterStateUpdated(function ($state){
+                            $this->buy->price_type_id=$state;
+                            $this->buy->save();
+                            $receipt=Recsupp::find($this->buy->receipt_id);
+                            if ($receipt){
+                                if ($state==1) $receipt->acc_id=null;
+                                $receipt->price_type_id=$state;
+                                $receipt->save();
+                            }
+                        })
+                        ->columnSpan(2),
+                    Select::make('acc_id')
+                        ->options(Acc::all()->pluck('name','id'))
+                        ->hiddenLabel()
+                        ->prefix('الحساب المصرفي')
+
+                        ->prefixIcon('heroicon-m-currency-dollar')
+                        ->prefixIconColor('warning')
                         ->columnSpan(2)
-                        ->inlineLabel()
-                        ->disabled(),
+                        ->afterStateUpdated(function ($state,Get $get){
+                           $receipt=Recsupp::find($this->buy->receipt_id);
+                           if ($receipt){
+                               $receipt->acc_id=$state;
+                               $receipt->save();
+                           }
+                        })
+                        ->dehydrated()
+                        ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')!=1) ),
                     TextInput::make('tot')
-                        ->label('إجمالي الفاتورة')
+                        ->hiddenLabel()
+                        ->prefix('اجمالي الفاتورة')
                         ->columnSpan(2)
-                        ->inlineLabel()
+                        ->mask(RawJs::make('$money($input)'))
                         ->disabled(),
                     TextInput::make('pay')
-                        ->label('المدفوع')
+                        ->hiddenLabel()
+                        ->prefix('المدفوع')
+                        ->prefixIcon('heroicon-m-hand-thumb-up')
+                        ->prefixIconColor('blue')
                         ->columnSpan(2)
                         ->live(onBlur: true)
                         ->inlineLabel()
@@ -127,22 +186,22 @@ class BuyEdit extends Page implements HasTable
                         ])
                         ->afterStateUpdated(function (Set $set,Get $get,$state){
                             if (!$state) $set('pay',0);
-
-                            $set('baky',$get('tot')-$get('pay'));
+                            $baky=$this->buy->tot-$this->buy->pay;
+                            $set('baky', $baky);
 
                             $this->buy->pay=$get('pay');
-                            $this->buy->baky=$get('baky');
+                            $this->buy->baky=$baky;
                             $this->buy->save();
-                            if ((!$state || $state<=0) &&  $this->buy->recipt_id)
-                            {Recsupp::find($this->buy->recipt_id)->delete();
-                                $this->buy->recipt_id='';
+                            if ((!$state || $state<=0) &&  $this->buy->receipt_id)
+                            {Recsupp::find($this->buy->receipt_id)->delete();
+                                $this->buy->receipt_id=null;
                                 $this->buy->save();
                             }
                             else {
-                                if ($this->buy->recipt_id)
-                                    Recsupp::find($this->buy->recipt_id)->update(['val'=>$this->buy->pay]);
+                                if ($this->buy->receipt_id)
+                                    Recsupp::find($this->buy->receipt_id)->update(['val'=>$this->buy->pay]);
                                 else {
-                                    $recipt= Recsupp::create([
+                                    $receipt= Recsupp::create([
                                         'receipt_date'=>$this->buy->order_date,
                                         'supplier_id'=>$this->buy->supplier_id,
                                         'buy_id'=>$this->buy->id,
@@ -153,7 +212,7 @@ class BuyEdit extends Page implements HasTable
                                         'notes'=>'فاتورة مشتريات رقم '.strval($this->buy->id),
                                         'user_id'=>Auth::id()
                                     ]);
-                                    $this->buy->recipt_id=$recipt->id;
+                                    $this->buy->receipt_id=$receipt->id;
                                     $this->buy->save();
                                 }
 
@@ -161,12 +220,21 @@ class BuyEdit extends Page implements HasTable
                         })
                         ->id('pay'),
                     TextInput::make('baky')
-                        ->label('المتبقي')
-
+                        ->hiddenLabel()
+                        ->prefix('المتبقي')
                         ->columnSpan(2)
-                        ->inlineLabel()
+                        ->mask(RawJs::make('$money($input)'))
                         ->disabled()
                         ->default('0'),
+                    TextInput::make('notes')
+                        ->hiddenLabel()
+                        ->prefix('ملاحظات')
+                        ->afterStateUpdated(function ($state){
+                            $this->buy->notes=$state;
+                            $this->buy->save();
+                        })
+                        ->columnSpanFull(),
+
                 ])
                 ->columns(8)
                 ->collapsible()
@@ -219,18 +287,8 @@ class BuyEdit extends Page implements HasTable
         $this->dispatch('gotoitem', test: 'q1');
     }
     public function add_rec(){
-        if (!$this->buytranData['item_id']) {
-            Notification::make()->title('يجب اختيار الصنف ')->icon('heroicon-o-check')->iconColor('success')->send();
-            return;
-        }
-        if (!$this->buytranData['price_input'] || $this->buytranData['price_input']<=0) {
-            Notification::make()->title('يجب ادخال السعر ')->icon('heroicon-o-check')->iconColor('success')->send();
-            return;
-        }
-        if (!$this->buytranData['q1'] || $this->buytranData['q1']<=0) {
-            Notification::make()->title('يجب ادخال الكمية ')->icon('heroicon-o-check')->iconColor('success')->send();
-            return;
-        }
+        $this->validate();
+
         $q1=$this->buytranData['q1'];
         $p1=$this->buytranData['price_input'];
         $sub=$q1*$p1;
@@ -414,12 +472,10 @@ class BuyEdit extends Page implements HasTable
                         $this->buytran= $record->delete();
                         $this->decAllBuy($record->item_id,$this->buy->place_id,$record->q1);
                         $tot=Buy_tran::where('buy_id',$this->buy_id)->sum('sub_input');
-                        $baky=$tot-Buy::find($this->buy_id)->pay;
-                        Buy::find($this->buy_id)->update([
-                            'tot'=>$tot,
-                            'baky'=>$baky,
-
-                        ]);
+                        $baky=$tot-$this->buy->pay;
+                        $this->buy->tot=$tot;
+                        $this->buy->baky=$baky;
+                        $this->buy->save();
                         $this->buyForm->fill($this->buy->toArray());
                         $this->buyTranForm->fill([]);
                     })
@@ -432,7 +488,7 @@ class BuyEdit extends Page implements HasTable
                     ->requiresConfirmation(),
                 \Filament\Tables\Actions\Action::make('edit')
                     ->action(function (Buy_tran $record){
-                        $this->buyTranFormBlade->fill($record->toArray());
+                        $this->buyTranForm->fill($record->toArray());
                         $this->dispatch('gotoitem',  test: 'q1' );
                     })
                     ->icon('heroicon-m-pencil')
