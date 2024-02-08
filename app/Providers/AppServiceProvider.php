@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Filament\Resources\BuysWorkResource::class,
             \App\Filament\Resources\SellWorkResource::class,
             \App\Filament\Resources\BuyResource::class,
+              \App\Filament\Resources\SellResource::class,
             ]
       );
 

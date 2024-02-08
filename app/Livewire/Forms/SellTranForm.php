@@ -76,6 +76,7 @@ class SellTranForm extends Form
 
      return ($this->raseedTwo($place_id)-$this->quantTwo())>=0;
     }
+
     public function chkRaseedEdit($place_id,$q1,$q2): bool{
 
           $raseed=$this->TwoToOne(Item::find($this->item_id)->count, $q1 ,$q2) + $this->raseedTwo($place_id);
@@ -101,10 +102,10 @@ class SellTranForm extends Form
         if (!$has_two && $this->q1<=0) return 'يجب ادخال الكمية';
         if ($has_two &&  $this->q2<=0 && $this->q1<=0) return 'يجب ادخال الكمية';
         $res=Sell_tran::where('sell_id',$this->sell_id)->where('item_id',$this->item_id)->first();
-        if ($res) {
-            info($this->chkRaseedEdit($place_id,$res->q1,$res->q2));
+        if ($res)
+
             if (!$this->chkRaseedEdit($place_id,$res->q1,$res->q2)) return 'الرصيد لا يسمح !!';
-        }
+
 
         else {
           if (!$this->chkRaseed($place_id)) return 'الرصيد لا يسمح !!';}

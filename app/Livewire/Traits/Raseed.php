@@ -15,7 +15,9 @@ use App\Models\Price_buy;
 use App\Models\Price_sell;
 use App\Models\Price_type;
 use App\Models\Sell_tran;
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 trait Raseed {
     public function tarseedBuys_work($buy_id){
@@ -128,6 +130,7 @@ trait Raseed {
       return $this->retRaseedTwo($item_id,$place_id) - $this->retQuant($item_id,$quant['q1'],$quant['q2']) >=0;
     }
 
+
     public function decAll($sell_tran_id,$sell_id,$item_id,$place_id,$q1,$q2){
         $item=Item::find($item_id);
         $count=$item->count;
@@ -215,7 +218,6 @@ trait Raseed {
     public function decAllBuy($item_id,$place_id,$q1){
 
         $item=Item::find($item_id);
-
         $item->stock1-=$q1;
         $item->save();
 

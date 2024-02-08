@@ -186,22 +186,21 @@ class BuyEdit extends Page implements HasTable
                         ])
                         ->afterStateUpdated(function (Set $set,Get $get,$state){
                             if (!$state) $set('pay',0);
-                            $baky=$this->buy->tot-$this->buy->pay;
+                            $baky=$this->buy->tot-$state;
                             $set('baky', $baky);
-
-                            $this->buy->pay=$get('pay');
+                            $this->buy->pay=$state;
                             $this->buy->baky=$baky;
                             $this->buy->save();
-                            if ((!$state || $state<=0) &&  $this->buy->receipt_id)
-                            {Recsupp::find($this->buy->receipt_id)->delete();
-                                $this->buy->receipt_id=null;
-                                $this->buy->save();
-                            }
+                            $this->buyForm->fill($this->buy->toArray());
+
+                            if (!$state || $state<=0)
+                                Recsupp::where('buy_id',$this->buy_id,'rec_who'==5)->delete();
                             else {
-                                if ($this->buy->receipt_id)
-                                    Recsupp::find($this->buy->receipt_id)->update(['val'=>$this->buy->pay]);
+                                $receipt=Recsupp::where('buy_id',$this->buy_id,'rec_who'==5)->first();
+                                if ($receipt)
+                                    $receipt->update(['val'=>$this->buy->pay]);
                                 else {
-                                    $receipt= Recsupp::create([
+                                    Receipt::create([
                                         'receipt_date'=>$this->buy->order_date,
                                         'supplier_id'=>$this->buy->supplier_id,
                                         'buy_id'=>$this->buy->id,
@@ -212,11 +211,11 @@ class BuyEdit extends Page implements HasTable
                                         'notes'=>'فاتورة مشتريات رقم '.strval($this->buy->id),
                                         'user_id'=>Auth::id()
                                     ]);
-                                    $this->buy->receipt_id=$receipt->id;
-                                    $this->buy->save();
+
                                 }
 
                             }
+
                         })
                         ->id('pay'),
                     TextInput::make('baky')
@@ -401,30 +400,7 @@ class BuyEdit extends Page implements HasTable
                 ->hidden(function (){
                     return $this->buy_id==null;
                 }),
-            Section::make()
-                ->schema([
-                    \Filament\Forms\Components\Actions::make([
 
-                        \Filament\Forms\Components\Actions\Action::make('الغاء الفاتورة')
-                            ->icon('heroicon-m-trash')
-                            ->button()
-                            ->color('danger')
-                            ->requiresConfirmation()
-                            ->action(function () {
-                                $buytran=Buy_tran::where('buy_id',$this->buy_id)->get();
-                                foreach ($buytran as $tran)
-                                    $this->decAllBuy($tran->item_id,$this->buy->place_id,$tran->q1);
-
-                                Recsupp::where('buy_id',$this->buy_id)->delete();
-                                $this->buytran=Buy_tran::where('buy_id',$this->buy_id)->delete();
-                                $this->buy=Buy::find($this->buy_id)->delete();
-
-                              $this->getResource()::getUrl('index');
-
-                            })
-                    ])->extraAttributes(['class' => 'items-center justify-between']),
-
-                ])
         ];
     }
     public function table(Table $table):Table

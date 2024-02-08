@@ -738,9 +738,9 @@ class CreateSell extends Page
                                     $this->decAll($tran_id->id,$id->id,$tran->item_id,$id->place_id,$tran->q1,$tran->q2);
                                     $this->setPriceSell($tran->item_id,$this->sell->price_type_id,$this->sell->single,$tran->price1,$tran->price2);
                                 }
-                                if ($this->sell->pay>0){
+                                if ($this->sell->pay>0)
 
-                                    $recipt= Receipt::create([
+                                    Receipt::create([
                                         'receipt_date'=>$this->sell->order_date,
                                         'customer_id'=>$this->sell->customer_id,
                                         'sell_id'=>$id->id,
@@ -753,7 +753,6 @@ class CreateSell extends Page
                                         'user_id'=>Auth::id()
                                     ]);
 
-                                }
                                 $this->sell=Sell_work::find(Auth::id());
                                 $this->sell->tot=0;  $this->sell->pay=0; $this->sell->baky=0;  $this->sell->save();
                                 $this->sellForm->fill($this->sell->toArray());
