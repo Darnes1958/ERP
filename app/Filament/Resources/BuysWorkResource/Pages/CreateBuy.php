@@ -56,6 +56,7 @@ class CreateBuy extends Page implements HasTable
       $this->buy=Buys_work::create([
         'id'=>Auth::id(),'user_id'=>0,
       ]);
+
     $this->buyForm->fill($this->buy->toArray());
 
     $this->buyTranForm->fill([]);
@@ -152,7 +153,9 @@ class CreateBuy extends Page implements HasTable
 
                 }
                 $this->buy=Buys_work::find(Auth::id());
-                $this->buy->tot=0;  $this->buy->pay=0; $this->buy->baky=0;  $this->buy->save();
+                $this->buy->tot=0;  $this->buy->pay=0; $this->buy->baky=0;
+                $this->buy->notes='';
+                $this->buy->save();
                 $this->buyForm->fill($this->buy->toArray());
                 $this->buytran= Buy_tran_work::where('buy_id', Auth::id())->delete();
                 $this->buyTranForm->fill([]);
@@ -167,6 +170,7 @@ class CreateBuy extends Page implements HasTable
                 $this->buy->tot = 0;
                 $this->buy->pay = 0;
                 $this->buy->baky = 0;
+                $this->buy->notes='';
                 $this->buy->save();
                 $this->buyForm->fill($this->buy->toArray());
                 $this->buytran= Buy_tran_work::where('buy_id', Auth::id())->delete();
@@ -301,6 +305,14 @@ class CreateBuy extends Page implements HasTable
             ->inlineLabel()
             ->readOnly()
             ->default('0'),
+          TextInput::make('notes')
+            ->hiddenLabel()
+            ->prefix('ملاحظات')
+            ->columnSpanFull()
+            ->afterStateUpdated(function ($state){
+              $this->buy->notes=$state;
+              $this->buy->save();
+            })
         ])
         ->columns(8)
         ->collapsible()
@@ -410,6 +422,7 @@ class CreateBuy extends Page implements HasTable
                     ->label('الرقم الألي'),
                   TextInput::make('name')
                     ->label('اسم الصنف')
+                    ->autocomplete(false)
                     ->required()
                     ->live()
                     ->unique(ignoreRecord: true)
