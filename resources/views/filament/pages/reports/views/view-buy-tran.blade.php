@@ -32,4 +32,5 @@
         </x-slot>
     </x-table>
 
+
 </x-filament-panels::page>

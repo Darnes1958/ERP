@@ -29,6 +29,13 @@ class SellRep extends Page implements HasForms,HasTable
     protected static ?string $navigationGroup = 'تقارير';
     protected ?string $heading = "";
 
+    public array $data_list= [
+        'calc_columns' => [
+            'tot',
+            'pay',
+            'baky',
+        ],
+    ];
  public function table(Table $table): Table
  {
    return $table
@@ -53,10 +60,25 @@ class SellRep extends Page implements HasForms,HasTable
        TextColumn::make('tot')
          ->searchable()
          ->sortable()
+           ->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           )
          ->label('اجمالي الفاتورة'),
        TextColumn::make('pay')
+           ->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           )
          ->label('المدفوع'),
        TextColumn::make('baky')
+           ->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           )
          ->label('الباقي'),
          TextColumn::make('sell_tran_sum_profit')
              ->sum('Sell_tran','profit')
@@ -65,9 +87,10 @@ class SellRep extends Page implements HasForms,HasTable
          ->label('ملاحظات'),
 
      ])
+       ->contentFooter(view('table.footer', $this->data_list))
      ->actions([
 
-       Action::make('عرض')
+         Action::make('عرض')
          ->modalHeading(false)
          ->action(fn (Sell $record) => $record->id())
          ->modalSubmitAction(false)

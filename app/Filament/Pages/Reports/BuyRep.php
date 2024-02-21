@@ -6,18 +6,22 @@ use App\Models\Buy;
 
 use App\Models\Customer;
 use App\Models\Supplier;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\StaticAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 
 class BuyRep extends Page implements HasForms,HasTable
 {
@@ -29,6 +33,14 @@ class BuyRep extends Page implements HasForms,HasTable
   protected static ?string $navigationLabel = 'فواتير مشتريات';
   protected static ?string $navigationGroup = 'تقارير';
   protected ?string $heading = "";
+
+    public array $data_list= [
+        'calc_columns' => [
+            'tot',
+            'pay',
+            'baky',
+        ],
+    ];
 
   public function table(Table $table): Table
   {
@@ -54,15 +66,32 @@ class BuyRep extends Page implements HasForms,HasTable
         TextColumn::make('tot')
           ->searchable()
           ->sortable()
+            ->numeric(
+                decimalPlaces: 2,
+                decimalSeparator: '.',
+                thousandsSeparator: ',',
+            )
           ->label('اجمالي الفاتورة'),
         TextColumn::make('pay')
-          ->label('المدفوع'),
+          ->label('المدفوع')
+            ->numeric(
+                decimalPlaces: 2,
+                decimalSeparator: '.',
+                thousandsSeparator: ',',
+            ),
         TextColumn::make('baky')
-          ->label('الباقي'),
+          ->label('الباقي')
+            ->numeric(
+                decimalPlaces: 2,
+                decimalSeparator: '.',
+                thousandsSeparator: ',',
+            ),
         TextColumn::make('notes')
           ->label('ملاحظات'),
       ])
+        ->contentFooter(view('table.footer', $this->data_list))
       ->actions([
+
         Action::make('عرض')
           ->modalHeading(false)
           ->action(fn (Buy $record) => $record->id())
