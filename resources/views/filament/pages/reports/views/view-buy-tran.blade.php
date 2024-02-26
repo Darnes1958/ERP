@@ -1,7 +1,5 @@
 <x-filament-panels::page>
 
-
-
     <x-table class="table-fixed font-medium">
         <x-slot name="head">
             <x-table.heading class="w-1/12 text-right" >رقم الصنف</x-table.heading>
@@ -25,8 +23,6 @@
                     <x-table.cell > {{$item->sub_input}}  </x-table.cell>
                     <x-table.cell > {{$item->qs1}}  </x-table.cell>
                     <x-table.cell>  {{$item->qs2}} </x-table.cell>
-
-
                 </x-table.row>
             @endforeach
         </x-slot>

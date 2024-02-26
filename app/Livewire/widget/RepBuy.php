@@ -3,14 +3,18 @@
 namespace App\Livewire\widget;
 
 use App\Models\Buy;
+use Filament\Actions\StaticAction;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\HtmlString;
 use Livewire\Attributes\On;
 
 class RepBuy extends BaseWidget
 {
+
     public $repDate;
 
     #[On('updateRep')]
@@ -63,6 +67,20 @@ class RepBuy extends BaseWidget
                         ->label('ملاحظات'),
 
                 ])
+              ->actions([
+
+                Action::make('عرض')
+                  ->modalHeading(false)
+                  ->action(fn (Buy $record) => $record->id())
+                  ->modalSubmitAction(false)
+                  ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                  ->modalContent(fn (Buy $record): View => view(
+                    'filament.pages.reports.views.view-buy-tran',
+                    ['record' => $record],
+                  ))
+                  ->icon('heroicon-o-eye')
+                  ->iconButton()
+              ])
                 ->emptyStateHeading('لا توجد بيانات')
                 ->contentFooter(view('table.footer', $this->data_list))
                 ;
