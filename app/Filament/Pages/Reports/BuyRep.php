@@ -109,7 +109,7 @@ class BuyRep extends Page implements HasForms,HasTable
           ->options(Supplier::all()->pluck('name', 'id'))
           ->searchable()
           ->label('مورد معين'),
-      ]);;
+      ]);
   }
 
 }
