@@ -42,6 +42,11 @@ class RecsuppResource extends Resource
   protected static ?string $navigationGroup = 'ايصالات قبض ودفع';
   protected static ?int $navigationSort = 2;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('موردين');
+    }
+
   public static function form(Form $form): Form
   {
     return $form

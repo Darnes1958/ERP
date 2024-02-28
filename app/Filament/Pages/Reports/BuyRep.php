@@ -21,6 +21,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 
 class BuyRep extends Page implements HasForms,HasTable
@@ -33,6 +34,11 @@ class BuyRep extends Page implements HasForms,HasTable
   protected static ?string $navigationLabel = 'فواتير مشتريات';
   protected static ?string $navigationGroup = 'تقارير';
   protected ?string $heading = "";
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مشتريات');
+    }
 
     public array $data_list= [
         'calc_columns' => [
@@ -102,7 +108,12 @@ class BuyRep extends Page implements HasForms,HasTable
             ['record' => $record],
           ))
           ->icon('heroicon-o-eye')
-          ->iconButton()
+          ->iconButton(),
+      Action::make('print')
+      ->icon('heroicon-o-printer')
+      ->iconButton()
+      ->color('blue')
+      ->url(fn (Buy $record): string => route('pdfbuy', ['id' => $record->id]))
       ])
       ->filters([
         SelectFilter::make('supplier_id')

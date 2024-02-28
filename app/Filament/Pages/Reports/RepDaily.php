@@ -2,11 +2,6 @@
 
 namespace App\Filament\Pages\Reports;
 
-
-use App\Livewire\widget\KlasaBuy;
-use App\Livewire\widget\KlasaCust;
-use App\Livewire\widget\KlasaSell;
-use App\Livewire\widget\KlasaSupp;
 use App\Livewire\widget\RepBuy;
 use App\Livewire\widget\RepReceipt;
 use App\Livewire\widget\RepResSupp;
@@ -19,20 +14,19 @@ use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
-class RepKlasa extends Page implements HasForms
+class RepDaily extends Page implements HasForms
 {
     use InteractsWithForms;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationLabel = 'خلاصة الحركة اليومية';
+    protected static ?string $navigationLabel = 'الحركة اليومية';
     protected static ?string $navigationGroup = 'تقارير';
-    protected static ?int $navigationSort=5;
-
+    protected static ?int $navigationSort=4;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasRole('Admin');
     }
 
-    protected static string $view = 'filament.pages.reports.rep-klasa';
+    protected static string $view = 'filament.pages.reports.rep-daily';
     protected ?string $heading="";
 
     public $repDate;
@@ -43,44 +37,43 @@ class RepKlasa extends Page implements HasForms
     public static function getWidgets(): array
     {
         return [
-            KlasaBuy::class,
-            KlasaSell::class,
-            KlasaSupp::class,
-            KlasaCust::class,
+            RepBuy::class,
+            RepSell::class,
+            Recsupp::class,
+            RepReceipt::class,
+
         ];
     }
     protected function getFooterWidgets(): array
     {
         return [
-            KlasaBuy::make([
+            RepBuy::make([
                 'repDate'=>$this->repDate,
             ]),
-            KlasaSell::make([
+            RepSell::make([
                 'repDate'=>$this->repDate,
             ]),
-            KlasaSupp::make([
+            RepResSupp::make([
                 'repDate'=>$this->repDate,
             ]),
-            KlasaCust::make([
+            RepReceipt::make([
                 'repDate'=>$this->repDate,
             ]),
+
 
         ];
     }
-
-
     public function form(Form $form): Form
     {
         return $form
             ->schema([
                 DatePicker::make('repDate')
-                 ->live()
-                 ->afterStateUpdated(function ($state){
-                     $this->repDate=$state;
-                     $this->dispatch('updateRep', repdate: $state);
-                 })
-                 ->label('تاريخ اليومية')
+                    ->live()
+                    ->afterStateUpdated(function ($state){
+                        $this->repDate=$state;
+                        $this->dispatch('updateRep', repdate: $state);
+                    })
+                    ->label('تاريخ اليومية')
             ])->columns(6);
     }
-
 }

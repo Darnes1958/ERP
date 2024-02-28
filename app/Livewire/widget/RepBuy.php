@@ -4,6 +4,7 @@ namespace App\Livewire\widget;
 
 use App\Models\Buy;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\HtmlString;
@@ -63,6 +64,13 @@ class RepBuy extends BaseWidget
                         ->label('ملاحظات'),
 
                 ])
+                ->actions([
+                    Action::make('print')
+                        ->icon('heroicon-o-printer')
+                        ->iconButton()
+                        ->color('blue')
+                        ->url(fn (Buy $record): string => route('pdfbuy', ['id' => $record->id]))
+                    ])
                 ->emptyStateHeading('لا توجد بيانات')
                 ->contentFooter(view('table.footer', $this->data_list))
                 ;

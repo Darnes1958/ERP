@@ -39,6 +39,11 @@ class ReceiptResource extends Resource
     protected static ?string $navigationGroup = 'ايصالات قبض ودفع';
     protected static ?int $navigationSort = 1;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('زبائن');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

@@ -12,10 +12,12 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use http\Client\Curl\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Auth;
 
 class AccResource extends Resource
 {
@@ -23,6 +25,11 @@ class AccResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='حسابات مصرفية';
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->hasRole('Admin');
+    }
 
     public static function form(Form $form): Form
     {

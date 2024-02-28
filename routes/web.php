@@ -17,3 +17,8 @@ Route::get('/', function () {
     return redirect(route('filament.admin.auth.login'));
 
 });
+
+Route::controller(\App\Http\Controllers\PdfController::class)->group(function (){
+    route::get('/pdfbuy/{id}', 'PdfBuy')->name('pdfbuy') ;
+    route::get('/pdfsell/{id}', 'PdfSell')->name('pdfsell') ;
+});

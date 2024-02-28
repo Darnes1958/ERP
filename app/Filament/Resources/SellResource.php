@@ -21,6 +21,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class SellResource extends Resource
 {
@@ -32,6 +33,11 @@ class SellResource extends Resource
     protected static ?string $navigationLabel='تعديل فاتورة مبيعات';
     protected static ?string $navigationGroup='فواتير مبيعات';
     protected static ?int $navigationSort=2;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مبيعات');
+    }
 
     public static function form(Form $form): Form
     {

@@ -36,6 +36,11 @@ class SellWorkResource extends Resource
     protected static ?string $navigationGroup='فواتير مبيعات';
     protected static ?int $navigationSort=1;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مبيعات');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

@@ -32,6 +32,11 @@ class ItemResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مشتريات');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

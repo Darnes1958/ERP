@@ -29,6 +29,11 @@ class SupplierResource extends Resource
   protected static ?string $navigationGroup='زبائن وموردين';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مشتريات');
+    }
+
   public static function form(Form $form): Form
   {
     return $form

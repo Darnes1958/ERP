@@ -3,11 +3,13 @@
 namespace App\Filament\Pages\Reports;
 
 use App\Models\Place_stock;
+use App\Models\Setting;
 use Filament\Pages\Page;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Auth;
 
 class RepMakzoon extends Page implements HasTable
 
@@ -43,8 +45,12 @@ class RepMakzoon extends Page implements HasTable
                 TextColumn::make('Item.stock1')
                  ->label('الرصيد الكلي'),
                 TextColumn::make('stock1')
-                    ->label('الكمية (ك)'),
+                    ->label(function (){
+                        if (Setting::find(Auth::user()->company)->has_two) return 'الكمية (ك)';
+                        else return 'الكمية';
+                    }),
                 TextColumn::make('stock2')
+                    ->visible(Setting::find(Auth::user()->company)->has_two)
                     ->label('الكمية (ص)'),
 
             ])

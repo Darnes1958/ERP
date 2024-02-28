@@ -33,6 +33,10 @@ class BuyResource extends Resource
     protected static ?string $navigationGroup='فواتير شراء';
     protected static ?int $navigationSort=2;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مشتريات');
+    }
 
     public static function form(Form $form): Form
     {

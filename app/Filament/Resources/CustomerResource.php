@@ -27,6 +27,11 @@ class CustomerResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup='زبائن وموردين';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مبيعات');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

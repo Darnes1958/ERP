@@ -17,6 +17,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 
 
 class SellRep extends Page implements HasForms,HasTable
@@ -28,6 +29,11 @@ class SellRep extends Page implements HasForms,HasTable
     protected static ?string $navigationLabel = 'فواتير مبيعات';
     protected static ?string $navigationGroup = 'تقارير';
     protected ?string $heading = "";
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مبيعات');
+    }
 
     public array $data_list= [
         'calc_columns' => [
@@ -81,6 +87,7 @@ class SellRep extends Page implements HasForms,HasTable
            )
          ->label('الباقي'),
          TextColumn::make('sell_tran_sum_profit')
+             ->visible(Auth::user()->hasRole('Admin'))
              ->sum('Sell_tran','profit')
              ->label('الربح'),
        TextColumn::make('notes')
@@ -100,7 +107,13 @@ class SellRep extends Page implements HasForms,HasTable
            ['record' => $record],
          ))
          ->icon('heroicon-o-eye')
-         ->iconButton()
+         ->iconButton(),
+         Action::make('print')
+             ->icon('heroicon-o-printer')
+             ->iconButton()
+             ->color('blue')
+             ->url(fn (Sell $record): string => route('pdfsell', ['id' => $record->id]))
+
 
      ])
      ->filters([
