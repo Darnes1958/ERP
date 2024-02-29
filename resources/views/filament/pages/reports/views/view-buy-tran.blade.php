@@ -1,7 +1,5 @@
 <x-filament-panels::page>
 
-
-
     <x-table class="table-fixed font-medium">
         <x-slot name="head">
             <x-table.heading class="w-1/12 text-right" >رقم الصنف</x-table.heading>
@@ -30,7 +28,9 @@
                     <x-table.cell > {{$item->qs1}}  </x-table.cell>
                     @if(\App\Models\Setting::find(\Illuminate\Support\Facades\Auth::user()->company)->has_two)
                     <x-table.cell>  {{$item->qs2}} </x-table.cell>
+
                     @endif
+
 
 
                 </x-table.row>

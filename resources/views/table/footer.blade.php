@@ -12,7 +12,7 @@
                     <div class="filament-tables-column-wrapper">
                         <div class="filament-tables-text-column px-2 py-2 flex w-full justify-start text-start">
                             <div class="inline-flex items-center space-x-1 rtl:space-x-reverse">
-                                <span class="font-medium">
+                                <span class="font-medium text-indigo-700">
                                     {{ number_format($records->sum($calc_columns[$i]),2, '.', ',') }}
                                 </span>
                             </div>

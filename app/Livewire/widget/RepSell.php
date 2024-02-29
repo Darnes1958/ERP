@@ -13,6 +13,7 @@ use Livewire\Attributes\On;
 
 class RepSell extends BaseWidget
 {
+
     public $repDate;
 
     #[On('updateRep')]

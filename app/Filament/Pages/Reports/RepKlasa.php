@@ -11,6 +11,7 @@ use App\Livewire\widget\RepBuy;
 use App\Livewire\widget\RepReceipt;
 use App\Livewire\widget\RepResSupp;
 use App\Livewire\widget\RepSell;
+use App\Livewire\widget\StatsKlasa;
 use App\Models\Recsupp;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -43,18 +44,32 @@ class RepKlasa extends Page implements HasForms
     public static function getWidgets(): array
     {
         return [
+
             KlasaBuy::class,
             KlasaSell::class,
             KlasaSupp::class,
             KlasaCust::class,
+
+            StatsKlasa::class,
+            RepBuy::class,
+            RepSell::class,
+            Recsupp::class,
+            RepReceipt::class,
+
         ];
     }
     protected function getFooterWidgets(): array
     {
         return [
+
+
+
+          StatsKlasa::make([
+            'repDate'=>$this->repDate,
+          ]),
+
             KlasaBuy::make([
-                'repDate'=>$this->repDate,
-            ]),
+                'repDate'=>$this->repDate,]),
             KlasaSell::make([
                 'repDate'=>$this->repDate,
             ]),
