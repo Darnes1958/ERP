@@ -198,7 +198,7 @@ class CreateSell extends Page
                         ->default(1)
                         ->relationship('Price_type','name')
                         ->required()
-                        ->extraAttributes(['x-on:change' => "\$wire.updatesells"])
+                        ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
                         ->id('price_type_id'),
                     TextInput::make('tot')
                         ->hiddenLabel()
