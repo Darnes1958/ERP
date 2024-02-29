@@ -21,6 +21,12 @@ class KlasaSupp extends BaseWidget
         $this->repDate=$repdate;
 
     }
+    public array $data_list= [
+        'calc_columns' => [
+            'val',
+            'exp',
+        ],
+    ];
     public function getTableRecordKey(Model $record): string
     {
         return uniqid();
@@ -36,30 +42,47 @@ class KlasaSupp extends BaseWidget
                     return false ;
                 }
                 $first=Recsupp::where('receipt_date',$this->repDate)
+                    ->join('price_types','price_type_id','price_types.id')
                     ->where('imp_exp',0)
-                    ->selectRaw('0 as exp,sum(val) as val');
+                    ->selectRaw('rec_who,name,0 as exp,sum(recsupps.val) as val')
+                    ->groupby('rec_who','name');
 
                 $rec=Recsupp::where('receipt_date',$this->repDate)
+                    ->join('price_types','price_type_id','price_types.id')
                     ->where('imp_exp',1)
-                    ->selectRaw('sum(val) as exp,0 as val')
+                    ->selectRaw('rec_who,name,sum(recsupps.val) as exp,0 as val')
+                    ->groupby('rec_who','name')
                     ->union($first);
                 return $rec;
             }
 
             )
             ->heading(new HtmlString('<div class="text-primary-400 text-lg">الموردين</div>'))
+            ->contentFooter(view('table.footer', $this->data_list))
             ->paginated(false)
             ->defaultSort('val')
             ->columns([
+                Tables\Columns\TextColumn::make('rec_who')
+                    ->label('البيان'),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('طريقة الدفع'),
                 Tables\Columns\TextColumn::make('val')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
+                    ->state(function (Recsupp $record): string {
+                        if ($record->val==0)
+                            return ''; else return $record->val;
+                    })
                     ->label('قبض'),
                 Tables\Columns\TextColumn::make('exp')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
+                    ->state(function (Recsupp $record): string {
+                        if ($record->exp==0)
+                            return ''; else return $record->exp;
+                    })
                     ->label('دفع'),
 
             ]);

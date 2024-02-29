@@ -21,6 +21,12 @@ class KlasaCust extends BaseWidget
         $this->repDate=$repdate;
 
     }
+    public array $data_list= [
+        'calc_columns' => [
+            'val',
+            'exp',
+        ],
+    ];
     public function getTableRecordKey(Model $record): string
     {
         return uniqid();
@@ -36,29 +42,49 @@ class KlasaCust extends BaseWidget
                     return false ;
                 }
                 $first=Receipt::where('receipt_date',$this->repDate)
+                    ->join('price_types','price_type_id','price_types.id')
                     ->where('imp_exp',0)
-                    ->selectRaw('\'قبض\' as name,sum(val) as val');
+                    ->selectRaw('rec_who,name,0 as exp,sum(receipts.val) as val')
+                    ->groupby('rec_who','name');
 
                 $rec=Receipt::where('receipt_date',$this->repDate)
+                    ->join('price_types','price_type_id','price_types.id')
                     ->where('imp_exp',1)
-                    ->selectRaw('\'دفع\' as name, sum(val) as val')
+                    ->selectRaw('rec_who,name,sum(receipts.val) as exp,0 as val')
+                    ->groupby('rec_who','name')
                     ->union($first);
+
                 return $rec;
             }
 
             )
             ->heading(new HtmlString('<div class="text-primary-400 text-lg">الزبائن</div>'))
+            ->contentFooter(view('table.footer', $this->data_list))
             ->paginated(false)
             ->defaultSort('val')
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('rec_who')
                     ->label('البيان'),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('طريقة الدفع'),
                 Tables\Columns\TextColumn::make('val')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
-                    ->label('الإجمالي'),
-
+                    ->state(function (Receipt $record): string {
+                        if ($record->val==0)
+                        return ''; else return $record->val;
+                    })
+                    ->label('قبض'),
+                Tables\Columns\TextColumn::make('exp')
+                    ->numeric(decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',')
+                    ->state(function (Receipt $record): string {
+                        if ($record->exp==0)
+                            return ''; else return $record->exp;
+                    })
+                    ->label('دفع'),
             ]);
     }
 }

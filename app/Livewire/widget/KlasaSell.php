@@ -21,6 +21,13 @@ class KlasaSell extends BaseWidget
         $this->repDate=$repdate;
 
     }
+    public array $data_list= [
+        'calc_columns' => [
+            'tot',
+            'pay',
+            'baky',
+        ],
+    ];
     public function getTableRecordKey(Model $record): string
     {
         return uniqid();
@@ -36,17 +43,23 @@ class KlasaSell extends BaseWidget
                     return false ;
                 }
                 $rec=Sell::where('order_date',$this->repDate)
-                    ->with('Place')
+                    ->join('places','place_id','places.id')
 
-                    ->selectRaw('sum(tot) as tot,sum(pay) as pay,sum(baky) as baky');
+                    ->selectRaw('places.name, sum(tot) as tot,sum(pay) as pay,sum(baky) as baky')
+                    ->groupBy('places.name');
+
                 return $rec;
             }
 
             )
             ->heading(new HtmlString('<div class="text-primary-400 text-lg">المبيعات</div>'))
+            ->contentFooter(view('table.footer', $this->data_list))
             ->paginated(false)
             ->defaultSort('tot')
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('نقطة البيع')
+                    ->color('info'),
                 Tables\Columns\TextColumn::make('tot')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
