@@ -72,6 +72,34 @@ class SellRep extends Page implements HasForms,HasTable
                thousandsSeparator: ',',
            )
          ->label('اجمالي الفاتورة'),
+       TextColumn::make('cost')
+         ->searchable()
+         ->sortable()
+         ->numeric(
+           decimalPlaces: 2,
+           decimalSeparator: '.',
+           thousandsSeparator: ',',
+         )
+         ->label('تكاليف إضافية'),
+       TextColumn::make('differ')
+         ->searchable()
+         ->numeric(
+           decimalPlaces: 2,
+           decimalSeparator: '.',
+           thousandsSeparator: ',',
+         )
+         ->sortable()
+         ->label('فرق عملة'),
+       TextColumn::make('total')
+         ->searchable()
+         ->numeric(
+           decimalPlaces: 2,
+           decimalSeparator: '.',
+           thousandsSeparator: ',',
+         )
+         ->sortable()
+         ->label('الإجمالي النهائي'),
+
        TextColumn::make('pay')
            ->numeric(
                decimalPlaces: 2,

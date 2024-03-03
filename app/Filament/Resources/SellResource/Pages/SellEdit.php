@@ -38,7 +38,7 @@ class SellEdit extends Page implements HasTable
 
     protected static string $view = 'filament.resources.sell-resource.pages.sell-edit';
 
-
+    protected ?string $heading='';
 
     public $sell;
     public $selltran;
@@ -56,8 +56,8 @@ class SellEdit extends Page implements HasTable
         $this->sell=Sell::find($this->sell_id);
 
         $this->sellForm->fill($this->record->toArray());
-        if ($this->sell->receipt_id!=null){
-            $receipt=Receipt::find($this->sell->receipt_id);
+        if ($this->sell->pay!=0){
+            $receipt=Receipt::where('sell_id',$this->sell->id)->first();
 
             if ($receipt->acc_id)
                 $this->sellForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
@@ -188,7 +188,13 @@ class SellEdit extends Page implements HasTable
         $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
+        $this->sellForm->fill($this->sell->toArray());
+      if ($this->sell->pay!=0){
+        $receipt=Receipt::where('sell_id',$this->sell->id)->first();
 
+        if ($receipt->acc_id)
+          $this->sellForm->fill(collect($this->sell)->put('acc_id',$receipt->acc_id)->toArray());
+      }
         $this->dispatch('gotoitem', test: 'barcode_id');
     }
 
@@ -199,6 +205,12 @@ class SellEdit extends Page implements HasTable
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
+      if ($this->sell->pay!=0){
+        $receipt=Receipt::where('sell_id',$this->sell->id)->first();
+
+        if ($receipt->acc_id)
+          $this->sellForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
+      }
     }
 
     public function updatePriceType(){
@@ -209,9 +221,10 @@ class SellEdit extends Page implements HasTable
         }
         else {$this->sellData['rate'] = 0;$this->updateNonDiffer();}
 
-        $receipt=Receipt::find($this->sell->receipt_id);
+        $receipt=Receipt::where('sell_id',$this->sell->id)->first();
         if ($receipt){
             if ($this->sell->price_type_id!=2) $receipt->acc_id=null;
+            else $receipt->acc_id=$this->sellData['acc_id'];
             $receipt->price_type_id=$this->sell->price_type_id;
             $receipt->save();
         }
@@ -305,7 +318,7 @@ class SellEdit extends Page implements HasTable
                         ->prefixIconColor('warning')
                         ->columnSpan(2)
                         ->afterStateUpdated(function ($state,Get $get){
-                            $receipt=Receipt::find($this->sell->receipt_id);
+                            $receipt=Receipt::where('sell_id',$this->sell->id)->first();
                             if ($receipt){
                                 $receipt->acc_id=$state;
                                 $receipt->save();
@@ -376,11 +389,12 @@ class SellEdit extends Page implements HasTable
                                 if ($receipt)
                                     $receipt->update(['val'=>$this->sell->pay]);
                                 else {
-                                     Receipt::create([
+                                     $receipt=Receipt::create([
                                         'receipt_date'=>$this->sell->order_date,
                                         'customer_id'=>$this->sell->customer_id,
                                         'sell_id'=>$this->sell->id,
                                         'price_type_id'=>$this->sell->price_type_id,
+                                        'acc_id'=>$this->sellData['acc_id'],
                                         'rec_who'=>6,
                                         'imp_exp'=>0,
                                         'val'=>$this->sell->pay,
@@ -389,6 +403,8 @@ class SellEdit extends Page implements HasTable
                                     ]);
 
                                 }
+                                if ($receipt->acc_id)
+                                 $this->sellForm->fill(collect($this->sell)->put('acc_id',$receipt->acc_id)->toArray());
 
                             }
                         })
@@ -447,6 +463,7 @@ class SellEdit extends Page implements HasTable
                         ->prefix('الصنف')
                         ->searchable()
                         ->preload()
+                        ->options(Item::where('stock1','>',0)->pluck('name','id'))
                         ->relationship('Item','name')
                         ->live()
                         ->reactive()
