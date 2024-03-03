@@ -53,8 +53,6 @@ class CreateSell extends Page
     public $selltranData;
     public $sellStoreData;
 
-    public $collapse=false;
-
     public function mount()
     {
         $this->sell = Sell_work::find(auth()->id());
@@ -85,18 +83,48 @@ class CreateSell extends Page
 
         ]);
     }
+
+    public function updatePriceType(){
+      if ($this->sellForm->getState()['price_type_id']==2)
+      {$this->sellData['rate'] = Price_type::find(2)->rate;
+        $this->updateDiffer();
+      }
+      else {$this->sellData['rate'] = 0;$this->updateNonDiffer();}
+
+    }
     public function updateSells()
     {
         $this->sell->update($this->sellForm->getState());
+        if ($this->sell->price_type_id==2) $this->updateDiffer();
+        else $this->updateNonDiffer();
     }
     public function updatePay()
     {
         $this->sell->update($this->sellForm->getState());
-        $this->sell->baky=$this->sell->tot-$this->sell->pay;
+        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+        $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
     }
 
+    public function updateNonDiffer(){
+      $this->sell->rate=0;
+      $this->sell->differ=0;
+      $this->sell->total=$this->sell->tot+$this->sell->cost;
+      $this->sell->baky=$this->sell->total-$this->sell->pay;
+      $this->sell->save();
+      $this->sellForm->fill($this->sell->toArray());
+
+    }
+    public function updateDiffer(){
+      $this->sell->rate=$this->sellForm->getState()['rate'];
+      $this->sell->differ=$this->sell->tot*$this->sell->rate/100;
+      $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+      $this->sell->baky=$this->sell->total-$this->sell->pay;
+
+      $this->sell->save();
+      $this->sellForm->fill($this->sell->toArray());
+    }
     protected function getSellFormSchema(): array
     {
         return [
@@ -108,7 +136,6 @@ class CreateSell extends Page
                         ->hiddenLabel()
                         ->prefix('التاريخ')
                         ->columnSpan(2)
-
                         ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
                         ->required(),
                     Select::make('customer_id')
@@ -118,8 +145,7 @@ class CreateSell extends Page
                         ->relationship('Customer','name')
                         ->live()
                         ->required()
-
-                        ->columnSpan(3)
+                        ->columnSpan(4)
                         ->createOptionForm([
                             Section::make('ادخال زبون جديد')
                                 ->schema([
@@ -161,8 +187,7 @@ class CreateSell extends Page
                         ->relationship('Place','name')
                         ->live()
                         ->required()
-
-                        ->columnSpan(3)
+                        ->columnSpan(4)
                         ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
                         ->createOptionForm([
                             Section::make('ادخال مكان تخزين')
@@ -198,13 +223,42 @@ class CreateSell extends Page
                         ->default(1)
                         ->relationship('Price_type','name')
                         ->required()
-                        ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
+                        ->extraAttributes(['x-on:change' => "\$wire.updatePriceType"])
                         ->id('price_type_id'),
                     TextInput::make('tot')
                         ->hiddenLabel()
                         ->prefix('اجمالي الفاتورة')
                         ->columnSpan(2)
                         ->readOnly(),
+                    TextInput::make('rate')
+                      ->hiddenLabel()
+                      ->prefix('النسبة')
+                      ->prefixIcon('heroicon-m-chart-pie')
+                      ->prefixIconColor('danger')
+                      ->extraAttributes(['x-on:change' => "\$wire.updateDiffer"])
+                      ->visible(fn()=>$this->sell->price_type_id==2)
+                      ->columnSpan(2)
+                      ->numeric()
+                      ->minValue(function (){
+                        if ($this->sell->price_type_id==2) return 1;
+                        else return 0;
+                      })
+                      ->maxValue(100),
+                    TextInput::make('differ')
+                      ->hiddenLabel()
+                      ->prefix('فرق عملة')
+                      ->prefixIcon('heroicon-m-document-plus')
+                      ->prefixIconColor('success')
+                      ->visible(fn()=>$this->sell->price_type_id==2)
+                      ->columnSpan(2)
+                      ->readOnly(),
+                    TextInput::make('cost')
+                      ->hiddenLabel()
+                      ->prefix('تكاليف إضافية')
+                      ->extraAttributes(['x-on:change' => "\$wire.updatePay"])
+                      ->columnSpan(2)
+                      ->numeric()
+                      ->gte(0),
                     TextInput::make('pay')
                         ->hiddenLabel()
                         ->prefix('المدفوع')
@@ -213,16 +267,24 @@ class CreateSell extends Page
                         ->live(onBlur: true)
                         ->default('0')
                         ->id('pay'),
+
                     TextInput::make('baky')
                         ->hiddenLabel()
                         ->prefix('المتبقي')
                         ->columnSpan(2)
                         ->readOnly()
                         ->default('0'),
+                  TextInput::make('total')
+                    ->hiddenLabel()
+                    ->prefix('الإجمالي النهائي')
+                    ->columnSpan(2)
+                    ->readOnly()
+                    ->default('0'),
+
                 ])
-                ->columns(8)
+                ->columns(10)
                 ->collapsible()
-                ->collapsed(fn() :bool=>$this->collapse)
+
         ];
     }
 
@@ -233,8 +295,12 @@ class CreateSell extends Page
     }
     public function tot(){
         $tot=Sell_tran_work::where('sell_id',Auth::id())->sum('sub_tot');
-        $baky=$tot-$this->sell->pay;
         $this->sell->tot=$tot;
+        $this->sell->differ=$tot*$this->sell->rate/100;
+        $total=$tot+$this->sell->cost+$this->sell->differ;
+        $baky=$total-$this->sell->pay;
+
+        $this->sell->total=$total;
         $this->sell->baky=$baky;
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
@@ -316,7 +382,7 @@ class CreateSell extends Page
         else $this->dispatch('gotoitem',  test: 'q1' );
     }
     public function ChkBarcode($state){
-        $this->collapse=true;
+
         if ($state==null) return;
         $res=Barcode::find($state);
         if (! $res)
@@ -332,7 +398,7 @@ class CreateSell extends Page
         }
     }
     public function ChkItem($state){
-        $this->collapse=true;
+
 
         if ($state==null) return;
         $res=Item::find($state);
@@ -400,7 +466,6 @@ class CreateSell extends Page
         return [
             Section::make()
                 ->schema([
-
                     TextInput::make('barcode_id')
                         ->hiddenLabel()
                         ->prefix('الباركود')
@@ -412,7 +477,6 @@ class CreateSell extends Page
                         ->extraAttributes(['wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",])
                         ->autocomplete(false)
                         ->id('barcode_id'),
-
                     Select::make('item_id')
                         ->hiddenLabel()
                         ->prefix('الصنف')
@@ -684,8 +748,7 @@ class CreateSell extends Page
                         ->label('المصرف')
                         ->inlineLabel()
                         ->visible(function (){
-                            $record=Sell_work::find(Auth::id());
-                            return $record->pay>0 && $record->price_type_id==2;
+                            return $this->sell->pay>0 && $this->sell->price_type_id==2;
                         }),
                     \Filament\Forms\Components\Actions::make([
                         Action::make('store')
@@ -715,9 +778,7 @@ class CreateSell extends Page
                                 }
                               }
                               if ($minus) return;
-
-
-                                if ($this->sell->pay>0 && $this->sell->price_type_id!=1) {
+                                if ($this->sell->pay>0 && $this->sell->price_type_id==2) {
                                     if (!$this->sellStoreData['acc_id'])
                                     {
                                         Notification::make()->title('يجب اختيار المصرف ')->color('danger')->icon('heroicon-m-no-symbol')->send();return;
@@ -725,8 +786,6 @@ class CreateSell extends Page
                                     $acc=$this->sellStoreData['acc_id'];
                                 }
                                 else $acc=null;
-
-
                                 unset($this->sell['id'],$this->sell['created_at'],$this->sell['updated_at']);
                                 $id=Sell::create($this->sell->toArray());
                               $selltran=Sell_tran_work::where('sell_id',Auth::id())->get();
@@ -754,11 +813,13 @@ class CreateSell extends Page
                                     ]);
 
                                 $this->sell=Sell_work::find(Auth::id());
-                                $this->sell->tot=0;  $this->sell->pay=0; $this->sell->baky=0;  $this->sell->save();
+                                $this->sell->tot=0;  $this->sell->pay=0; $this->sell->baky=0;$this->sell->total=0;
+                                $this->sell->differ=0;$this->sell->cost=0;
+                                $this->sell->save();
                                 $this->sellForm->fill($this->sell->toArray());
                                 $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
                                 $this->sellTranForm->fill([]);
-                                $this->collapse=false;
+
                             }),
 
 
@@ -779,7 +840,7 @@ class CreateSell extends Page
                                 $this->sellForm->fill($this->sell->toArray());
                                 $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
                                 $this->sellTranForm->fill([]);
-                                $this->collapse=false;
+
 
                             })
                     ])->extraAttributes(['class' => 'items-center justify-between']),

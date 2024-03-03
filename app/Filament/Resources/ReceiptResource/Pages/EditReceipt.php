@@ -25,7 +25,7 @@ class EditReceipt extends EditRecord
                 ->sum('val');
             $sell=Sell::find($this->sell_to_save);
             $sell->pay=$imp-$exp;
-            $sell->baky=$sell->tot-$sell->pay;
+            $sell->baky=$sell->total-$sell->pay;
             $sell->save();
         }
     }

@@ -52,7 +52,6 @@ class SellEdit extends Page implements HasTable
         $this->sell_id=$this->record->id;
         $this->sell=Sell::find($this->sell_id);
 
-
         $this->sellForm->fill($this->record->toArray());
         if ($this->sell->receipt_id!=null){
             $receipt=Receipt::find($this->sell->receipt_id);
