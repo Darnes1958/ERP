@@ -120,7 +120,7 @@ class CreateSell extends Page
     }
     public function updateDiffer(){
       $this->sell->rate=$this->sellData['rate'];
-      $this->sell->differ=$this->sell->tot*$this->sell->rate/100;
+      $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
       $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
       $this->sell->baky=$this->sell->total-$this->sell->pay;
 
@@ -307,7 +307,7 @@ class CreateSell extends Page
     public function tot(){
         $tot=Sell_tran_work::where('sell_id',Auth::id())->sum('sub_tot');
         $this->sell->tot=$tot;
-        $this->sell->differ=$tot*$this->sell->rate/100;
+        $this->sell->differ=($tot+$this->sell->cost)*$this->sell->rate/100;
         $total=$tot+$this->sell->cost+$this->sell->differ;
         $baky=$total-$this->sell->pay;
 

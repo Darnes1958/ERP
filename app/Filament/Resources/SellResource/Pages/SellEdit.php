@@ -185,6 +185,7 @@ class SellEdit extends Page implements HasTable
         $this->sellTranForm->fill([]);
         $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
         $this->sell->tot=$tot;
+        $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
         $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
@@ -240,7 +241,7 @@ class SellEdit extends Page implements HasTable
     }
     public function updateDiffer(){
         $this->sell->rate=$this->sellData['rate'];
-        $this->sell->differ=$this->sell->tot*$this->sell->rate/100;
+        $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
         $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
 
