@@ -123,6 +123,18 @@ class SellResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('اجمالي الفاتورة'),
+                TextColumn::make('cost')
+                    ->searchable()
+                    ->sortable()
+                    ->label('تكاليف إضافية'),
+                TextColumn::make('differ')
+                    ->searchable()
+                    ->sortable()
+                    ->label('فرق عملة'),
+                TextColumn::make('total')
+                    ->searchable()
+                    ->sortable()
+                    ->label('الإجمالي النهائي'),
                 TextColumn::make('pay')
                     ->label('المدفوع'),
                 TextColumn::make('baky')

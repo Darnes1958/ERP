@@ -8,6 +8,7 @@ use App\Models\Acc;
 use App\Models\Barcode;
 use App\Models\Item;
 use App\Models\Place_stock;
+use App\Models\Price_type;
 use App\Models\Receipt;
 
 use App\Models\Sell;
@@ -36,6 +37,8 @@ class SellEdit extends Page implements HasTable
     protected static string $resource = SellResource::class;
 
     protected static string $view = 'filament.resources.sell-resource.pages.sell-edit';
+
+
 
     public $sell;
     public $selltran;
@@ -182,10 +185,56 @@ class SellEdit extends Page implements HasTable
         $this->sellTranForm->fill([]);
         $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
         $this->sell->tot=$tot;
-        $this->sell->baky=$tot-$this->sell->pay;
+        $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
+        $this->sell->baky=$this->sell->total-$this->sell->pay;
+        $this->sell->save();
 
         $this->dispatch('gotoitem', test: 'barcode_id');
     }
+
+    public function updatePay()
+    {
+        $this->sell->update($this->sellForm->getState());
+        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+        $this->sell->baky=$this->sell->total-$this->sell->pay;
+        $this->sell->save();
+        $this->sellForm->fill($this->sell->toArray());
+    }
+
+    public function updatePriceType(){
+        $this->sell->price_type_id=$this->sellData['price_type_id'] ;
+        if ($this->sell->price_type_id==2)
+        {$this->sellData['rate'] = Price_type::find(2)->rate;
+            $this->updateDiffer();
+        }
+        else {$this->sellData['rate'] = 0;$this->updateNonDiffer();}
+
+        $receipt=Receipt::find($this->sell->receipt_id);
+        if ($receipt){
+            if ($this->sell->price_type_id!=2) $receipt->acc_id=null;
+            $receipt->price_type_id=$this->sell->price_type_id;
+            $receipt->save();
+        }
+    }
+    public function updateNonDiffer(){
+        $this->sell->rate=0;
+        $this->sell->differ=0;
+        $this->sell->total=$this->sell->tot+$this->sell->cost;
+        $this->sell->baky=$this->sell->total-$this->sell->pay;
+        $this->sell->save();
+        $this->sellForm->fill($this->sell->toArray());
+
+    }
+    public function updateDiffer(){
+        $this->sell->rate=$this->sellData['rate'];
+        $this->sell->differ=$this->sell->tot*$this->sell->rate/100;
+        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+        $this->sell->baky=$this->sell->total-$this->sell->pay;
+
+        $this->sell->save();
+        $this->sellForm->fill($this->sell->toArray());
+    }
+
 
     protected function getSellFormSchema(): array
     {
@@ -196,6 +245,7 @@ class SellEdit extends Page implements HasTable
                     TextInput::make('id')
                         ->hiddenLabel()
                         ->prefix('رقم الفاتورة')
+                        ->columnSpan(2)
                         ->disabled(),
 
                     DatePicker::make('order_date')
@@ -212,7 +262,7 @@ class SellEdit extends Page implements HasTable
                             $res->save();
                         })
                         ->columnSpan(2)
-                        ->inlineLabel()
+
                         ->required(),
                     Select::make('customer_id')
                         ->relationship('Customer','name')
@@ -225,7 +275,7 @@ class SellEdit extends Page implements HasTable
                             $this->sell->customer_id=$state;
                             $this->sell->save();
                         })
-                        ->columnSpan(3),
+                        ->columnSpan(4),
 
                     Select::make('place_id')
                         ->relationship('Place','name')
@@ -244,16 +294,7 @@ class SellEdit extends Page implements HasTable
                         ->prefix('طريقة الدفع')
                         ->prefixIcon('heroicon-m-banknotes')
                         ->prefixIconColor('success')
-                        ->afterStateUpdated(function ($state){
-                            $this->sell->price_type_id=$state;
-                            $this->sell->save();
-                            $receipt=Receipt::find($this->sell->receipt_id);
-                            if ($receipt){
-                                if ($state==1) $receipt->acc_id=null;
-                                $receipt->price_type_id=$state;
-                                $receipt->save();
-                            }
-                        })
+                        ->extraAttributes(['x-on:change' => "\$wire.updatePriceType"])
                         ->columnSpan(2),
                     Select::make('acc_id')
                         ->options(Acc::all()->pluck('name','id'))
@@ -271,13 +312,42 @@ class SellEdit extends Page implements HasTable
                             }
                         })
                         ->dehydrated()
-                        ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')!=1) ),
+                        ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')==2) ),
                     TextInput::make('tot')
                         ->hiddenLabel()
                         ->prefix('اجمالي الفاتورة')
                         ->columnSpan(2)
                         ->mask(RawJs::make('$money($input)'))
                         ->disabled(),
+                    TextInput::make('rate')
+                        ->hiddenLabel()
+                        ->prefix('النسبة')
+                        ->prefixIcon('heroicon-m-chart-pie')
+                        ->prefixIconColor('danger')
+                        ->extraAttributes(['x-on:change' => "\$wire.updateDiffer"])
+                        ->visible(fn()=>$this->sell->price_type_id==2)
+                        ->columnSpan(2)
+                        ->numeric()
+                        ->minValue(function (){
+                            if ($this->sell->price_type_id==2) return 1;
+                            else return 0;
+                        })
+                        ->maxValue(100),
+                    TextInput::make('differ')
+                        ->hiddenLabel()
+                        ->prefix('فرق عملة')
+                        ->prefixIcon('heroicon-m-document-plus')
+                        ->prefixIconColor('success')
+                        ->visible(fn()=>$this->sell->price_type_id==2)
+                        ->columnSpan(2)
+                        ->readOnly(),
+                    TextInput::make('cost')
+                        ->hiddenLabel()
+                        ->prefix('تكاليف إضافية')
+                        ->extraAttributes(['x-on:change' => "\$wire.updatePay"])
+                        ->columnSpan(2)
+                        ->numeric()
+                        ->gte(0),
                     TextInput::make('pay')
                         ->hiddenLabel()
                         ->prefix('المدفوع')
@@ -285,21 +355,19 @@ class SellEdit extends Page implements HasTable
                         ->prefixIconColor('blue')
                         ->columnSpan(2)
                         ->live(onBlur: true)
-                        ->inlineLabel()
+
                         ->default('0')
                         ->extraAttributes([
                             'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'barcode_id' })",
                         ])
                         ->afterStateUpdated(function (Set $set,Get $get,$state){
                             if (!$state) $set('pay',0);
-                            $baky=$this->sell->tot-$state;
+                            $baky=$this->sell->total-$state;
                             $set('baky', $baky);
-
                             $this->sell->pay=$state;
                             $this->sell->baky=$baky;
                             $this->sell->save();
                             $this->sellForm->fill($this->sell->toArray());
-
 
                             if (!$state || $state<=0)
                              Receipt::where('sell_id',$this->sell_id,'rec_who'==6)->delete();
@@ -331,6 +399,12 @@ class SellEdit extends Page implements HasTable
                         ->columnSpan(2)
                         ->mask(RawJs::make('$money($input)'))
                         ->disabled()
+                        ->default('0'),
+                    TextInput::make('total')
+                        ->hiddenLabel()
+                        ->prefix('الإجمالي النهائي')
+                        ->columnSpan(2)
+                        ->readOnly()
                         ->default('0'),
                     TextInput::make('notes')
                         ->hiddenLabel()
@@ -492,8 +566,6 @@ class SellEdit extends Page implements HasTable
                         if ($state=='0.0') return '';
                         return $state;
                     }),
-
-
             ])
 
             ->actions([
@@ -509,7 +581,6 @@ class SellEdit extends Page implements HasTable
                         $this->sell->save();
                         $this->sellForm->fill($this->sell->toArray());
                         $this->sellTranForm->fill([]);
-
 
                     })
                     ->icon('heroicon-m-trash')

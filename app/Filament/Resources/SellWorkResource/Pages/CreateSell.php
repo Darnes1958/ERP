@@ -85,8 +85,10 @@ class CreateSell extends Page
     }
 
     public function updatePriceType(){
-      if ($this->sellForm->getState()['price_type_id']==2)
+      $this->sell->price_type_id=$this->sellData['price_type_id'] ;
+        if ($this->sell->price_type_id==2)
       {$this->sellData['rate'] = Price_type::find(2)->rate;
+
         $this->updateDiffer();
       }
       else {$this->sellData['rate'] = 0;$this->updateNonDiffer();}
@@ -117,7 +119,7 @@ class CreateSell extends Page
 
     }
     public function updateDiffer(){
-      $this->sell->rate=$this->sellForm->getState()['rate'];
+      $this->sell->rate=$this->sellData['rate'];
       $this->sell->differ=$this->sell->tot*$this->sell->rate/100;
       $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
       $this->sell->baky=$this->sell->total-$this->sell->pay;
@@ -243,6 +245,7 @@ class CreateSell extends Page
                         if ($this->sell->price_type_id==2) return 1;
                         else return 0;
                       })
+
                       ->maxValue(100),
                     TextInput::make('differ')
                       ->hiddenLabel()
@@ -280,6 +283,14 @@ class CreateSell extends Page
                     ->columnSpan(2)
                     ->readOnly()
                     ->default('0'),
+                    TextInput::make('notes')
+                        ->hiddenLabel()
+                        ->prefix('ملاحظات')
+                        ->afterStateUpdated(function ($state){
+                            $this->sell->notes=$state;
+                            $this->sell->save();
+                        })
+                        ->columnSpanFull(),
 
                 ])
                 ->columns(10)
