@@ -109,7 +109,7 @@ class RepKlasa extends Page implements HasForms,HasActions
 
                      $this->dispatch('updateRep', repdate: $state);
                  })
-                 ->label('تاريخ اليومية')
+                ->label('تاريخ اليومية')
                 ->inlineLabel()
             ]);
     }

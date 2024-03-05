@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Reports;
 use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Item;
+use App\Models\Item_tran;
 use App\Models\Recsupp;
 use App\Models\Sell_tran;
 use Filament\Forms\Components\DatePicker;
@@ -17,8 +18,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
+use Carbon\Carbon;
 
 class ItemTran extends Page implements HasForms,HasTable
 {
@@ -37,7 +40,15 @@ class ItemTran extends Page implements HasForms,HasTable
 
    public $item_id;
    public $repDate;
-    public function form(Form $form): Form
+
+   public function mount(){
+       $this->repDate = now()->copy()->startOfYear();
+       $this->form->fill(['repdate'=>$this->repDate]);
+   }
+   public function SetDate($repdate){
+       $this->repDate=$repdate;
+   }
+   public function form(Form $form): Form
   {
     return $form
       ->schema([
@@ -47,60 +58,64 @@ class ItemTran extends Page implements HasForms,HasTable
           ->searchable()
           ->preload()
           ->afterStateUpdated(function ($state){
+
             $this->item_id=$state;
+
           })
           ->label('الصنف')
-          ->inlineLabel()
-      ]);
+          ->columnSpan(2),
+
+       DatePicker::make('repDate')
+           ->live(onBlur: true)
+           ->afterStateUpdated(function ($state){
+                $this->SetDate($state);
+           })
+
+           ->label('من تاريخ'),
+
+      ])->columns(4);
   }
 
+    public function getTableRecordKey(Model $record): string
+    {
+        return uniqid();
+    }
   public function table(Table $table): Table
   {
     return $table
-      ->query(function(Recsupp $rec){
+      ->query(function(Item_tran $rec){
 
-        $first=Buy_tran::where('item_id',$this->item_id)
+       $rec=Item_tran::where('item_id',$this->item_id)
           ->where('order_date','>=',$this->repDate)
-          ->join('buys','buy_id','buys.id')
-          ->join('price_types','buys.price_type_id','price_types.id')
-          ->join('suppliers','buys.supplier_id','suppliers.id')
-          ->selectRaw('\'مشتريات\' as buy,created_at,order_date,suppliers.name ,q1,price_input as price1,sub_input as sub_tot');
-        $secound=Sell_tran::where('item_id',$this->item_id)
-          ->where('order_date','>=',$this->repDate)
-          ->join('sells','sell_id','sells.id')
-          ->join('price_types','sells.price_type_id','price_types.id')
-          ->join('customers','sells.customer_id','customers.id')
-          ->selectRaw('\'مبيعات\'  as sell,created_at,order_date,customers.name ,q1,price1,sub_tot')
-          ->union($first);
+           ;
 
-        return $secound;
+        return $rec;
       }
 
       )
       ->defaultSort('created_at')
+
       ->columns([
+        TextColumn::make('type')
+          ->label('البيان'),
         TextColumn::make('order_date')
           ->label('التاريخ'),
         TextColumn::make('name')
+          ->label('العميل'),
+        TextColumn::make('name')
           ->label('طريقة الدفع'),
-        TextColumn::make('val')
+        TextColumn::make('q1')
+          ->label('الكمية'),
+        TextColumn::make('price1')
           ->numeric(decimalPlaces: 2,
             decimalSeparator: '.',
             thousandsSeparator: ',')
-          ->state(function (Recsupp $record): string {
-            if ($record->val==0)
-              return ''; else return $record->val;
-          })
-          ->label('قبض'),
-        Tables\Columns\TextColumn::make('exp')
+          ->label('السعر'),
+        TextColumn::make('sub_tot')
           ->numeric(decimalPlaces: 2,
             decimalSeparator: '.',
             thousandsSeparator: ',')
-          ->state(function (Recsupp $record): string {
-            if ($record->exp==0)
-              return ''; else return $record->exp;
-          })
-          ->label('دفع'),
+          ->label('المجموع'),
 
       ]);
   }
