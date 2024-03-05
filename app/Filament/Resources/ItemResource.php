@@ -7,6 +7,8 @@ use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Buy_tran;
 use App\Models\Item;
+use App\Models\Price_buy;
+use App\Models\Price_sell;
 use App\Models\Sell_tran;
 use App\Models\Setting;
 use Filament\Actions\DeleteAction;
@@ -22,6 +24,7 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class ItemResource extends Resource
@@ -31,6 +34,7 @@ class ItemResource extends Resource
     protected static ?string $pluralModelLabel='أصناف';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -136,6 +140,7 @@ class ItemResource extends Resource
               TextInput::make('price_buy')
                 ->label('سعر الشراء')
                 ->required()
+
 //                ->extraAttributes([
 
   //                'x-on:keydown.enter' => "\$focus.previous().",
@@ -255,19 +260,15 @@ class ItemResource extends Resource
                         return $state;
                     })
                     ->visible(Setting::find(Auth::user()->company)->has_two),
-              TextColumn::make('price_buy')
-                  ->numeric(
-                      decimalPlaces: 2,
-                      decimalSeparator: '.',
-                      thousandsSeparator: ',',
-                  )
+              Tables\Columns\TextInputColumn::make('price_buy')
+                  ->afterStateUpdated(function ($state,Model $record){
+                      Price_buy::where('item_id',$record->id)->where('price_type_id',1)->update(['price'=>$state]);
+                  })
                 ->label('سعر الشراء'),
-                TextColumn::make('price1')
-                    ->numeric(
-                        decimalPlaces: 2,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
+                Tables\Columns\TextInputColumn::make('price1')
+                    ->afterStateUpdated(function ($state,Model $record){
+                        Price_sell::where('item_id',$record->id)->where('price_type_id',1)->update(['price1'=>$state]);
+                    })
                     ->label('سعر البيع'),
                 TextColumn::make('price2')
                     ->numeric(
