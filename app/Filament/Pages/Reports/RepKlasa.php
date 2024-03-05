@@ -76,8 +76,6 @@ class RepKlasa extends Page implements HasForms,HasActions
     {
         return [
 
-
-
           StatsKlasa::make([
             'repDate'=>$this->repDate,
           ]),
