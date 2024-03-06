@@ -1,4 +1,4 @@
-php<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('Hala')->create('accs', function (Blueprint $table) {
+        Schema::connection('other')->create('rent_trans', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->decimal('balance',12,3)->default(0);
-            $table->decimal('raseed',12,3);
-            $table->string('acc')->nullable();
+            $table->foreignIdFor(\App\Models\Rent::class);
+            $table->string('month');
+            $table->integer('val');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('accs');
+        Schema::dropIfExists('rent_trans');
     }
 };
