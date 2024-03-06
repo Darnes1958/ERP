@@ -73,7 +73,7 @@ class ItemTran extends Page implements HasForms,HasTable
 
            ->label('من تاريخ'),
 
-      ])->columns(4);
+      ])->columns(6);
   }
 
     public function getTableRecordKey(Model $record): string
@@ -96,13 +96,19 @@ class ItemTran extends Page implements HasForms,HasTable
       ->defaultSort('created_at')
 
       ->columns([
+        TextColumn::make('created_at')
+              ->label('تاريخ الإدخال'),
         TextColumn::make('type')
+          ->color(function ($state){
+              if ($state=='مشتريات') return 'info';
+              if ($state=='مبيعات') return 'success';
+          })
           ->label('البيان'),
         TextColumn::make('order_date')
-          ->label('التاريخ'),
+          ->label('تاريخ الفاتورة'),
         TextColumn::make('name')
           ->label('العميل'),
-        TextColumn::make('name')
+        TextColumn::make('price_type')
           ->label('طريقة الدفع'),
         TextColumn::make('q1')
           ->label('الكمية'),
