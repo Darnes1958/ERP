@@ -15,11 +15,10 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Auth;
 
 class SalaryTranView extends Page implements HasTable, HasForms
 {
-
-
   use InteractsWithTable,InteractsWithForms;
   protected static ?string $navigationLabel='حركة مرتب';
   protected static ?string $navigationGroup='مرتبات';
@@ -27,6 +26,11 @@ class SalaryTranView extends Page implements HasTable, HasForms
   protected ?string $heading = '';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static string $view = 'filament.pages.reports.salary-tran-view';
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('مرتبات');
+    }
 
     public $salary_id;
 
@@ -36,24 +40,18 @@ class SalaryTranView extends Page implements HasTable, HasForms
             ->schema([
                 Select::make('salary_id')
                     ->options(Salary::all()->pluck('name', 'id')->toArray())
-
                     ->searchable()
                     ->preload()
                     ->live()
-                    ->Label('الاسم')
-                   ,
-
+                    ->Label('الاسم'),
             ])->columns(4);
     }
-
-
 
     public function table(Table $table):Table
     {
         return $table
             ->query(function (Salarytran $tran)  {
                 $tran= Salarytran::where('salary_id',$this->salary_id);
-
                 return  $tran;
             })
             ->columns([

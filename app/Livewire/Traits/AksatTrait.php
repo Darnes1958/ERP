@@ -17,7 +17,7 @@ trait AksatTrait {
       Salary::find($item->id)->update([
         'raseed'=>
           Salarytran::where('salary_id',$item->id)->where('tran_type','مرتب')->sum('val')+
-          Salarytran::where('salary_id',$item->id)->where('tran_type','اضاقة')->sum('val')-
+          Salarytran::where('salary_id',$item->id)->where('tran_type','اضافة')->sum('val')-
           Salarytran::where('salary_id',$item->id)->where('tran_type','سحب')->sum('val')-
           Salarytran::where('salary_id',$item->id)->where('tran_type','خصم')->sum('val')
         ]);
