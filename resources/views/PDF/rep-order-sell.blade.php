@@ -64,19 +64,34 @@
 <div  >
 
 
-        <label style="font-family: Amiri; font-size: 24pt; margin-right: 12px;" >{{$cus->CompanyName}}</label>
-    <br>
-        <label style="font-family: Amiri; font-size: 18pt;margin-right: 12px;">{{$cus->CompanyNameSuffix}}</label>
+        <div class=" display: inline-flex;">
+            <div style="text-align: left;position: absolute;left: 0">
+                <label style="padding-left: 4px;" > فاتورة مبيعات رقم :  {{$res->id}}</label>
+                <div >
+                    <label style="font-size: 12px;">{{$res->order_date}}</label>
+                    <label style="margin-right: 12px;" >بتاريخ : </label>
+                </div>
+            </div>
 
+            <div style="text-align: left;position: absolute;right: 0">
+                <label style="font-family: Amiri; font-size: 24pt;" > {{$cus->CompanyName}} </label>
+                <div >
+                    <label style="font-family: Amiri; font-size: 18pt;">{{$cus->CompanyNameSuffix}}</label>
+                </div>
+            </div>
+        </div>
+<div>
     <br>
     <br>
     <br>
-    <label style="margin-right: 12px;"> فاتورة مبيعات رقم :  {{$res->id}}</label>
+
+</div>
+
     <div >
-        <label style="font-size: 12px;">{{$res->order_date}}</label>
-        <label style="margin-right: 12px;" >بتاريخ : </label>
-    </div>
-    <div >
+        <br>
+        <br>
+        <br>
+
         <label >{{$res->Customer->name}}</label>
         <label style="margin-right: 12px;" >اسم الزبون : </label>
     </div>
@@ -121,6 +136,23 @@
         <td style="border: none;"></td>
 
       </tr>
+      <tr style="border-bottom: none;border-right: none;border-left: none;">
+          <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$res->differ}}</td>
+          <td style="padding: 4px;border: none;" > عمولة مصرفية </td>
+          <td style="border: none;"></td>
+          <td style="border: none;"></td>
+          <td style="border: none;"></td>
+
+      </tr>
+      <tr style="border-bottom: none;border-right: none;border-left: none;">
+          <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$res->cost}}</td>
+          <td style="padding: 4px;border: none;" > تكلفة إضاقية </td>
+          <td style="border: none;"></td>
+          <td style="border: none;"></td>
+          <td style="border: none;"></td>
+
+      </tr>
+
       <tr style="border: none;">
         <td style="font-weight: bold;text-align: right;border: white solid 4pt;text-align: center;background: lightgray;">{{$res->pay}}</td>
         <td style="padding: 4px;border: none;">المدفوع </td>

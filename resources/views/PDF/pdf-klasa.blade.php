@@ -70,7 +70,7 @@
         <tr class="font-size-12">
           <td> {{number_format($item->baky, 2, '.', ',')}} </td>
           <td> {{number_format($item->pay, 2, '.', ',')}} </td>
-          <td> {{number_format($item->tot, 2, '.', ',')}} </td>
+          <td> {{number_format($item->total, 2, '.', ',')}} </td>
           <td> {{$item->name}}  </td>
         </tr>
         <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
@@ -78,7 +78,7 @@
           <label class="page"></label>
           <label> صفحة رقم </label>
         </div>
-        @php $sumtot+=$item->tot;$sumcash+=$item->pay;$sumnot_cash+=$item->baky; @endphp
+        @php $sumtot+=$item->total;$sumcash+=$item->pay;$sumnot_cash+=$item->baky; @endphp
       @endforeach
 
       <tr class="font-size-12 " style="font-weight: bold">
@@ -128,7 +128,7 @@
           <label class="page"></label>
           <label> صفحة رقم </label>
         </div>
-        @php $sumexp+=$item->exp;$sumexp+=$item->exp; @endphp
+        @php $sumva+=$item->val;$sumexp+=$item->exp; @endphp
       @endforeach
       <tr class="font-size-12 " style="font-weight: bold">
         <td> {{number_format($sumexp, 2, '.', ',')}} </td>
@@ -169,7 +169,7 @@
                   <label class="page"></label>
                   <label> صفحة رقم </label>
               </div>
-              @php $sumexp+=$item->exp;$sumexp+=$item->exp; @endphp
+              @php $sumval+=$item->val;$sumexp+=$item->exp; @endphp
           @endforeach
           <tr class="font-size-12 " style="font-weight: bold">
               <td> {{number_format($sumexp, 2, '.', ',')}} </td>

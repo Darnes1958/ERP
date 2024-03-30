@@ -61,7 +61,7 @@ class PdfController extends Controller
     }
     public function PdfKlasa($repDate){
 
-        $RepDate=date('Y-m-d');
+
         $cus=OurCompany::where('Company',Auth::user()->company)->first();
         $buy=Buy::where('order_date',$repDate)
             ->join('places','place_id','places.id')
@@ -71,7 +71,7 @@ class PdfController extends Controller
         $sell=Sell::where('order_date',$repDate)
             ->join('places','place_id','places.id')
 
-            ->selectRaw('places.name, sum(tot) as tot,sum(pay) as pay,sum(baky) as baky')
+            ->selectRaw('places.name, sum(total) as total,sum(pay) as pay,sum(baky) as baky')
             ->groupBy('places.name')->get();
 
         $supp1=Recsupp::where('receipt_date',$repDate)
@@ -101,7 +101,7 @@ class PdfController extends Controller
             ->union($cust1)->get();
 
         $html = view('PDF.pdf-klasa',
-            ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,'cus'=>$cus,'RepDate'=>$RepDate])->toArabicHTML();
+            ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,'cus'=>$cus,'RepDate'=>$repDate])->toArabicHTML();
 
         $pdf = PDF::loadHTML($html)->output();
         $headers = array(

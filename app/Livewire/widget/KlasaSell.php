@@ -23,7 +23,7 @@ class KlasaSell extends BaseWidget
     }
     public array $data_list= [
         'calc_columns' => [
-            'tot',
+            'total',
             'pay',
             'baky',
         ],
@@ -45,7 +45,7 @@ class KlasaSell extends BaseWidget
                 $rec=Sell::where('order_date',$this->repDate)
                     ->join('places','place_id','places.id')
 
-                    ->selectRaw('places.name, sum(tot) as tot,sum(pay) as pay,sum(baky) as baky')
+                    ->selectRaw('places.name, sum(total) as total,sum(pay) as pay,sum(baky) as baky')
                     ->groupBy('places.name');
 
                 return $rec;
@@ -55,12 +55,12 @@ class KlasaSell extends BaseWidget
             ->heading(new HtmlString('<div class="text-primary-400 text-lg">المبيعات</div>'))
             ->contentFooter(view('table.footer', $this->data_list))
             ->paginated(false)
-            ->defaultSort('tot')
+            ->defaultSort('total')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('نقطة البيع')
                     ->color('info'),
-                Tables\Columns\TextColumn::make('tot')
+                Tables\Columns\TextColumn::make('total')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')

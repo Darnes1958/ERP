@@ -24,7 +24,7 @@ class RepSell extends BaseWidget
     }
     public array $data_list= [
         'calc_columns' => [
-            'tot',
+            'total',
             'pay',
             'baky',
         ],
@@ -54,9 +54,9 @@ class RepSell extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('رقم الفاتورة'),
-                Tables\Columns\TextColumn::make('Supplier.name')
+                Tables\Columns\TextColumn::make('Customer.name')
                     ->label('الزبون'),
-                Tables\Columns\TextColumn::make('tot')
+                Tables\Columns\TextColumn::make('total')
                     ->label('الإجمالي'),
                 Tables\Columns\TextColumn::make('pay')
                     ->label('المدفوع'),
