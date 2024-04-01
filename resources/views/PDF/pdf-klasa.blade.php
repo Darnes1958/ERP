@@ -103,15 +103,16 @@
 
 
     <label style="font-size: 14pt;margin-right: 12px;" >الموردين</label>
-    <table style=" width:60%"   align="right" >
-      <thead style="  margin-top: 8px;">
-      <tr style="background:lightgray">
-        <th style="width: 30%;">دفع</th>
-        <th style="width: 30%;">قبض</th>
-        <th style="width: 35%;">طريقة الدفع</th>
-        <th style="width: 35%;">البيان</th>
+      <table style=" width:80%"   align="right" >
+          <thead style="  margin-top: 8px;">
+          <tr style="background:lightgray">
+              <th style="width: 14%;">دفع</th>
+              <th style="width: 14%;">قبض</th>
+              <th >الحساب المصرفي</th>
+              <th style="width: 20%;">طريقة الدفع</th>
+              <th style="width: 20%;">البيان</th>
 
-      </tr>
+          </tr>
       </thead>
       <tbody >
       @php $sumval=0;$sumexp=0; @endphp
@@ -121,6 +122,7 @@
           <td> {{number_format($item->exp, 2, '.', ',')}} </td>
           <td> {{number_format($item->val, 2, '.', ',')}} </td>
           <td> {{$item->name}}  </td>
+          <td> {{$item->accName}}  </td>
           <td >{{$item->rec_who->name}}  </td>
         </tr>
         <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
@@ -134,6 +136,7 @@
         <td> {{number_format($sumexp, 2, '.', ',')}} </td>
         <td> {{number_format($sumval, 2, '.', ',')}} </td>
         <td>   </td>
+          <td>   </td>
         <td style="font-weight:normal;">الإجمــــــــالي  </td>
       </tr>
       <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
@@ -145,13 +148,14 @@
 
       @if($CustTable)
       <label style="font-size: 14pt;margin-right: 12px;" >الزبائن</label>
-      <table style=" width:60%"   align="right" >
+      <table style=" width:80%"   align="right" >
           <thead style="  margin-top: 8px;">
           <tr style="background:lightgray">
-              <th style="width: 30%;">دفع</th>
-              <th style="width: 30%;">قبض</th>
-              <th style="width: 35%;">طريقة الدفع</th>
-              <th style="width: 35%;">البيان</th>
+              <th style="width: 14%;">دفع</th>
+              <th style="width: 14%;">قبض</th>
+              <th >الحساب المصرفي</th>
+              <th style="width: 20%;">طريقة الدفع</th>
+              <th style="width: 20%;">البيان</th>
 
           </tr>
           </thead>
@@ -161,6 +165,7 @@
               <tr class="font-size-12">
                   <td> {{number_format($item->exp, 2, '.', ',')}} </td>
                   <td> {{number_format($item->val, 2, '.', ',')}} </td>
+                  <td> {{$item->accName}}  </td>
                   <td> {{$item->name}}  </td>
                   <td >{{$item->rec_who->name}}  </td>
               </tr>
@@ -174,6 +179,7 @@
           <tr class="font-size-12 " style="font-weight: bold">
               <td> {{number_format($sumexp, 2, '.', ',')}} </td>
               <td> {{number_format($sumval, 2, '.', ',')}} </td>
+              <td>   </td>
               <td>   </td>
               <td style="font-weight:normal;">الإجمــــــــالي  </td>
           </tr>

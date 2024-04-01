@@ -101,7 +101,7 @@ class ReceiptResource extends Resource
                 ->label('رقم الفاتورة')
                 ->options(fn (Get $get): Collection => Sell::query()
                   ->where('customer_id', $get('customer_id'))
-                  ->selectRaw('\'الرقم \'+str(id)+\' الإجمالي \'+str(tot)+\' بتاريخ \'+convert(varchar,order_date) as name,id')
+                  ->selectRaw('\' رقم \'+str(id)+\' الاجمالي \'+str(total)+\' بتاريخ \'+convert(varchar,order_date)+\' الباقي \'+str(baky) as name,id')
                   ->pluck('name', 'id'))
                 ->searchable()
                 ->requiredIf('rec_who',[3,4])
@@ -265,11 +265,11 @@ class ReceiptResource extends Resource
                   return $query
                     ->when(
                       $data['Date1'],
-                      fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                      fn (Builder $query, $date): Builder => $query->whereDate('receipt_date', '>=', $date),
                     )
                     ->when(
                       $data['Date2'],
-                      fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                      fn (Builder $query, $date): Builder => $query->whereDate('receipt_date', '<=', $date),
                     );
                 })
             ])
@@ -285,7 +285,7 @@ class ReceiptResource extends Resource
                     $sub=Receipt::where('sell_id',$record->sell_id)->whereIn('rec_who',[4,5])->sum('val');
                     $sell=Sell::find($record->sell_id);
                     $sell->pay=$sum-$sub;
-                    $sell->baky=$sell->tot-$sum+$sub;
+                    $sell->baky=$sell->total-$sum+$sub;
                     $sell->save();
 
                   }

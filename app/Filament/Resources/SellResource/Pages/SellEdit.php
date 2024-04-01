@@ -342,10 +342,7 @@ class SellEdit extends Page implements HasTable
                         ->visible(fn()=>$this->sell->price_type_id==2)
                         ->columnSpan(2)
                         ->numeric()
-                        ->minValue(function (){
-                            if ($this->sell->price_type_id==2) return 1;
-                            else return 0;
-                        })
+                        ->minValue(0)
                         ->maxValue(100),
                     TextInput::make('differ')
                         ->hiddenLabel()

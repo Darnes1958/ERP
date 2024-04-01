@@ -5,7 +5,9 @@ namespace App\Filament\Pages\Reports;
 use App\Models\Buy;
 use App\Models\Customer;
 use App\Models\Sell;
+use Carbon\Carbon;
 use Filament\Actions\StaticAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
@@ -14,9 +16,11 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -37,6 +41,7 @@ class SellRep extends Page implements HasForms,HasTable
 
     public array $data_list= [
         'calc_columns' => [
+            'total',
             'tot',
             'pay',
             'baky',
@@ -149,6 +154,35 @@ class SellRep extends Page implements HasForms,HasTable
          ->options(Customer::all()->pluck('name', 'id'))
          ->searchable()
          ->label('زبون معين'),
+       Filter::make('created_at')
+         ->form([
+           DatePicker::make('Date1')
+             ->label('من تاريخ'),
+           DatePicker::make('Date2')
+             ->label('إلي تاريخ'),
+         ])
+         ->indicateUsing(function (array $data): ?string {
+           if (! $data['Date1'] && ! $data['Date2']) { return null;   }
+           if ( $data['Date1'] && !$data['Date2'])
+             return 'ادخلت بتاريخ  ' . Carbon::parse($data['Date1'])->toFormattedDateString();
+           if ( !$data['Date1'] && $data['Date2'])
+             return 'حتي تاريخ  ' . Carbon::parse($data['Date2'])->toFormattedDateString();
+           if ( $data['Date1'] && $data['Date2'])
+             return 'ادخلت في الفترة من  ' . Carbon::parse($data['Date1'])->toFormattedDateString()
+               .' إلي '. Carbon::parse($data['Date1'])->toFormattedDateString();
+
+         })
+         ->query(function (Builder $query, array $data): Builder {
+           return $query
+             ->when(
+               $data['Date1'],
+               fn (Builder $query, $date): Builder => $query->whereDate('order_date', '>=', $date),
+             )
+             ->when(
+               $data['Date2'],
+               fn (Builder $query, $date): Builder => $query->whereDate('order_date', '<=', $date),
+             );
+         })
      ]);
  }
 

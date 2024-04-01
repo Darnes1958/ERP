@@ -106,6 +106,9 @@ class ItemTran extends Page implements HasForms,HasTable
           ->label('البيان'),
         TextColumn::make('order_date')
           ->label('تاريخ الفاتورة'),
+        TextColumn::make('id')
+          ->label('رقم الفاتورة'),
+
         TextColumn::make('name')
           ->label('العميل'),
         TextColumn::make('price_type')

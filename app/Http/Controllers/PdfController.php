@@ -76,28 +76,32 @@ class PdfController extends Controller
 
         $supp1=Recsupp::where('receipt_date',$repDate)
             ->join('price_types','price_type_id','price_types.id')
+            ->join('accs','acc_id','accs.id')
             ->where('imp_exp',0)
-            ->selectRaw('rec_who,name,0 as exp,sum(recsupps.val) as val')
-            ->groupby('rec_who','name');
+            ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(recsupps.val) as val')
+          ->groupby('rec_who','price_types.name','accs.name');
 
         $supp=Recsupp::where('receipt_date',$repDate)
             ->join('price_types','price_type_id','price_types.id')
-            ->where('imp_exp',1)
-            ->selectRaw('rec_who,name,sum(recsupps.val) as exp,0 as val')
-            ->groupby('rec_who','name')
+          ->join('accs','acc_id','accs.id')
+          ->where('imp_exp',1)
+            ->selectRaw('rec_who,price_types.name,accs.name accName,sum(recsupps.val) as exp,0 as val')
+          ->groupby('rec_who','price_types.name','accs.name')
             ->union($supp1)->get();
 
         $cust1=Receipt::where('receipt_date',$repDate)
             ->join('price_types','price_type_id','price_types.id')
+            ->join('accs','acc_id','accs.id')
             ->where('imp_exp',0)
-            ->selectRaw('rec_who,name,0 as exp,sum(receipts.val) as val')
-            ->groupby('rec_who','name');
+            ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(receipts.val) as val')
+            ->groupby('rec_who','price_types.name','accs.name');
 
         $cust=Receipt::where('receipt_date',$repDate)
             ->join('price_types','price_type_id','price_types.id')
+            ->join('accs','acc_id','accs.id')
             ->where('imp_exp',1)
-            ->selectRaw('rec_who,name,sum(receipts.val) as exp,0 as val')
-            ->groupby('rec_who','name')
+            ->selectRaw('rec_who,price_types.name,accs.name accName,sum(receipts.val) as exp,0 as val')
+            ->groupby('rec_who','price_types.name','accs.name')
             ->union($cust1)->get();
 
         $html = view('PDF.pdf-klasa',
