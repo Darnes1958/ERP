@@ -14,14 +14,21 @@ use Livewire\Attributes\On;
 class RepSell extends BaseWidget
 {
 
-    public $repDate;
+  public $repDate1;
+  public $repDate2;
 
-    #[On('updateRep')]
-    public function updaterep($repdate)
-    {
-        $this->repDate=$repdate;
+  #[On('updateDate1')]
+  public function updatedate1($repdate)
+  {
+    $this->repDate1=$repdate;
 
-    }
+  }
+  #[On('updateDate2')]
+  public function updatedate2($repdate)
+  {
+    $this->repDate2=$repdate;
+
+  }
     public array $data_list= [
         'calc_columns' => [
             'total',
@@ -35,13 +42,27 @@ class RepSell extends BaseWidget
 
         return $table
             ->query(function (Sell $sell){
-                if (!$this->repDate) return $sell=Sell::where('id',null);
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate[4]);
+              if (!$this->repDate1 && !$this->repDate2) return;
+                  $sell=Sell::where('id',null);
+                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate1[4]);
                 $errors = \DateTime::getLastErrors();
                 if (!empty($errors['warning_count'])) {
                     return false ;
                 }
-                $sell=Sell::where('order_date',$this->repDate);
+              $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate2[4]);
+              $errors = \DateTime::getLastErrors();
+              if (!empty($errors['warning_count'])) {
+                return false ;
+              }
+
+              if ($this->repDate1 && !$this->repDate2)
+                $sell=Sell::where('order_date','>=',$this->repDate1);
+              if ($this->repDate2 && !$this->repDate1)
+                $sell=Sell::where('order_date','<=',$this->repDate1);
+              if ($this->repDate1 && $this->repDate2)
+                $sell=Sell::whereBetween('order_date',[$this->repDate1,$this->repDate2]);
+
+
                 return $sell;
             }
             // ...

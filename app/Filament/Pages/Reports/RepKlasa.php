@@ -50,10 +50,12 @@ class RepKlasa extends Page implements HasForms,HasActions
     protected static string $view = 'filament.pages.reports.rep-klasa';
     protected ?string $heading="";
 
-    public $repDate;
+  public $repDate1;
+  public $repDate2;
     public function mount(){
-        $this->repDate=now();
-        $this->form->fill(['repDate'=>$this->repDate]);
+      $this->repDate1=now();
+      $this->repDate2=now();
+      $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
     }
     public static function getWidgets(): array
     {
@@ -77,40 +79,46 @@ class RepKlasa extends Page implements HasForms,HasActions
         return [
 
           StatsKlasa::make([
-            'repDate'=>$this->repDate,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
           ]),
 
             KlasaBuy::make([
-                'repDate'=>$this->repDate,]),
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              ]),
             KlasaSell::make([
-                'repDate'=>$this->repDate,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
             KlasaSupp::make([
-                'repDate'=>$this->repDate,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
             KlasaCust::make([
-                'repDate'=>$this->repDate,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
 
         ];
     }
 
-    public function Setdate($repDate){
-        if ($this->chkDate($repDate)) return $this->repDate=$repDate;
-    }
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                DatePicker::make('repDate')
+                DatePicker::make('repDate1')
                  ->live()
                  ->afterStateUpdated(function ($state){
-                     $this->SetDate($state);
-
-                     $this->dispatch('updateRep', repdate: $state);
+                   if ($this->chkDate($state))  $this->repDate1=$state;
+                     $this->dispatch('updateDate1', repdate: $state);
                  })
-                ->label('تاريخ اليومية')
-                ->inlineLabel()
+                ->label('من تاريخ')
+                ->inlineLabel(),
+                DatePicker::make('repDate2')
+                  ->live()
+                  ->afterStateUpdated(function ($state){
+                    if ($this->chkDate($state)) $this->repDate2=$state;
+                    $this->dispatch('updateDate2', repdate: $state);
+                  })
+                  ->label('حتي تاريخ')
+                  ->inlineLabel()
+
             ]);
     }
     public function printAction(): Action
@@ -118,17 +126,13 @@ class RepKlasa extends Page implements HasForms,HasActions
 
         return Action::make('print')
             ->visible(function (){
-                return $this->chkDate($this->repDate);
+                return $this->chkDate($this->repDate1) || $this->chkDate($this->repDate2);
             })
             ->label('طباعة')
             ->button()
             ->color('danger')
             ->icon('heroicon-m-printer')
             ->color('info')
-            ->url(fn (): string => route('pdfklasa', ['repDate'=>$this->repDate]));
+            ->url(fn (): string => route('pdfklasa', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,]));
     }
-
-
-
-
 }

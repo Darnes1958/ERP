@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Tables\Enums\FiltersLayout;
 use App\Models\Buy;
 use App\Models\Customer;
 use App\Models\Sell;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -149,6 +151,8 @@ class SellRep extends Page implements HasForms,HasTable
 
 
      ])
+     ->filtersFormWidth(MaxWidth::Small)
+
      ->filters([
        SelectFilter::make('customer_id')
          ->options(Customer::all()->pluck('name', 'id'))
@@ -161,6 +165,7 @@ class SellRep extends Page implements HasForms,HasTable
            DatePicker::make('Date2')
              ->label('إلي تاريخ'),
          ])
+
          ->indicateUsing(function (array $data): ?string {
            if (! $data['Date1'] && ! $data['Date2']) { return null;   }
            if ( $data['Date1'] && !$data['Date2'])
@@ -183,7 +188,7 @@ class SellRep extends Page implements HasForms,HasTable
                fn (Builder $query, $date): Builder => $query->whereDate('order_date', '<=', $date),
              );
          })
-     ]);
+     ], layout: FiltersLayout::Modal);
  }
 
 }

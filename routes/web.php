@@ -21,5 +21,5 @@ Route::get('/', function () {
 Route::controller(\App\Http\Controllers\PdfController::class)->group(function (){
     route::get('/pdfbuy/{id}', 'PdfBuy')->name('pdfbuy') ;
     route::get('/pdfsell/{id}', 'PdfSell')->name('pdfsell') ;
-    route::get('/pdfklasa/{repDate}', 'PdfKlasa')->name('pdfklasa') ;
+    route::get('/pdfklasa/{repDate1?},{repDate2?}', 'PdfKlasa')->name('pdfklasa') ;
 });

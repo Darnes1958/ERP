@@ -9,6 +9,7 @@ use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
 
 use App\Models\Item;
+use App\Models\OurCompany;
 use App\Models\Place_stock;
 use App\Models\Price_sell;
 use App\Models\Price_type;
@@ -18,7 +19,9 @@ use App\Models\Sell_tran;
 use App\Models\Sell_tran_work;
 use App\Models\Sell_work;
 use App\Models\Setting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
@@ -53,6 +56,8 @@ class CreateSell extends Page
     public $selltranData;
     public $sellStoreData;
 
+    public $id_to_print='';
+
     public function mount()
     {
         $this->sell = Sell_work::find(auth()->id());
@@ -63,8 +68,36 @@ class CreateSell extends Page
         $this->sellForm->fill($this->sell->toArray());
 
         $this->sellTranForm->fill([]);
-        $this->sellStoreForm->fill([]);
+        $this->sellStoreForm->fill(['print'=>true,]);
     }
+
+    public function PrintOrder($id){
+
+      $RepDate=date('Y-m-d');
+      $cus=OurCompany::where('Company',Auth::user()->company)->first();
+      $res=Sell::find($id);
+      $orderdetail=Sell_tran::where('sell_id',$id)->get();
+      info($orderdetail);
+
+      $html = view('PDF.rep-order-sell',
+        ['res'=>$res,'cus'=>$cus,'RepDate'=>$RepDate,'orderdetail'=>$orderdetail])->toArabicHTML();
+
+
+      $pdf = PDF::loadHTML($html)->output();
+      $headers = array(
+        "Content-type" => "application/pdf",
+      );
+
+      return response()->streamDownload(
+        function () use($pdf) {
+          echo $pdf; // Echo download contents directly...
+        },
+        "invoice.pdf",
+        $headers
+      );
+
+    }
+
     protected function getForms(): array
     {
         return array_merge(parent::getForms(), [
@@ -127,6 +160,7 @@ class CreateSell extends Page
       $this->sell->save();
       $this->sellForm->fill($this->sell->toArray());
     }
+
     protected function getSellFormSchema(): array
     {
         return [
@@ -280,6 +314,7 @@ class CreateSell extends Page
                     ->columnSpan(2)
                     ->readOnly()
                     ->default('0'),
+
                     TextInput::make('notes')
                         ->hiddenLabel()
                         ->prefix('ملاحظات')
@@ -827,7 +862,7 @@ class CreateSell extends Page
                                 $this->sellForm->fill($this->sell->toArray());
                                 $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
                                 $this->sellTranForm->fill([]);
-
+                                $this->id_to_print=$id->id;
                             }),
 
 
@@ -850,7 +885,16 @@ class CreateSell extends Page
                                 $this->sellTranForm->fill([]);
 
 
-                            })
+
+                            }),
+                      Action::make('print')
+                        ->icon('heroicon-o-printer')
+                        ->hidden($this->id_to_print=='')
+                        ->iconButton()
+
+                        ->color('blue')
+                        ->url(fn (): string => route('pdfsell', ['id' => $this->id_to_print]))
+
                     ])->extraAttributes(['class' => 'items-center justify-between']),
 
                 ])

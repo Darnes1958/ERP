@@ -4,9 +4,21 @@
   <div  >
 
     <div style="text-align: center">
+     @if($RepDate1 && !$RepDate2)
+      <label style="font-size: 10pt;">{{$RepDate1}}</label>
+      <label style="font-size: 14pt;margin-right: 12px;" >خلاصة الحركة اليومية   من تاريخ : </label>
+     @endif
+     @if($RepDate2 && !$RepDate1)
+         <label style="font-size: 10pt;">{{$RepDate2}}</label>
+         <label style="font-size: 14pt;margin-right: 12px;" >خلاصة الحركة اليومية   حتي تاريخ : </label>
+     @endif
+     @if($RepDate1 && $RepDate2)
+         <label style="font-size: 10pt;">{{$RepDate2}}</label>
+         <label style="font-size: 14pt;margin-right: 12px;" > حتي تاريخ : </label>
+         <label style="font-size: 10pt;">{{$RepDate1}}</label>
+         <label style="font-size: 14pt;margin-right: 12px;" >خلاصة الحركة اليومية   من تاريخ : </label>
+     @endif
 
-      <label style="font-size: 10pt;">{{$RepDate}}</label>
-      <label style="font-size: 14pt;margin-right: 12px;" >خلاصة الحركة اليومية   بتاريخ : </label>
     </div>
 
     <label style="font-size: 14pt;margin-right: 12px;" >مشتريات </label>

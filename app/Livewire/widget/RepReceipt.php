@@ -13,14 +13,21 @@ use Livewire\Attributes\On;
 class RepReceipt extends BaseWidget
 {
 
-    public $repDate;
+  public $repDate1;
+  public $repDate2;
 
-    #[On('updateRep')]
-    public function updaterep($repdate)
-    {
-        $this->repDate=$repdate;
+  #[On('updateDate1')]
+  public function updatedate1($repdate)
+  {
+    $this->repDate1=$repdate;
 
-    }
+  }
+  #[On('updateDate2')]
+  public function updatedate2($repdate)
+  {
+    $this->repDate2=$repdate;
+
+  }
     public array $data_list= [
         'calc_columns' => [
             'val',
@@ -32,13 +39,28 @@ class RepReceipt extends BaseWidget
 
         return $table
             ->query(function (Receipt $buy){
-                if (!$this->repDate) return $buy=Receipt::where('id',null);
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate[4]);
+              if (!$this->repDate1 && !$this->repDate2) return;
+                  $buy=Receipt::where('id',null);
+                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate1[4]);
                 $errors = \DateTime::getLastErrors();
                 if (!empty($errors['warning_count'])) {
                     return false ;
                 }
-                $buy=Receipt::where('receipt_date',$this->repDate);
+              $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate2[4]);
+              $errors = \DateTime::getLastErrors();
+              if (!empty($errors['warning_count'])) {
+                return false ;
+              }
+
+              if ($this->repDate1 && !$this->repDate2)
+                $buy=Receipt::where('receipt_date','>=',$this->repDate1);
+              if ($this->repDate2 && !$this->repDate1)
+                $buy=Receipt::where('receipt_date','<=',$this->repDate1);
+              if ($this->repDate1 && $this->repDate2)
+                $buy=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2]);
+
+
+
                 return $buy;
             }
             // ...

@@ -29,10 +29,12 @@ class RepDaily extends Page implements HasForms
     protected static string $view = 'filament.pages.reports.rep-daily';
     protected ?string $heading="";
 
-    public $repDate;
+    public $repDate1;
+    public $repDate2;
     public function mount(){
-        $this->repDate=now();
-        $this->form->fill(['repDate'=>$this->repDate]);
+        $this->repDate1=now();
+        $this->repDate2=now();
+        $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
     }
     public static function getWidgets(): array
     {
@@ -41,23 +43,22 @@ class RepDaily extends Page implements HasForms
             RepSell::class,
             Recsupp::class,
             RepReceipt::class,
-
         ];
     }
     protected function getFooterWidgets(): array
     {
         return [
             RepBuy::make([
-                'repDate'=>$this->repDate,
+                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
             RepSell::make([
-                'repDate'=>$this->repDate,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
             RepResSupp::make([
-                'repDate'=>$this->repDate,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
             RepReceipt::make([
-                'repDate'=>$this->repDate,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
 
 
@@ -67,13 +68,21 @@ class RepDaily extends Page implements HasForms
     {
         return $form
             ->schema([
-                DatePicker::make('repDate')
+                DatePicker::make('repDate1')
                     ->live()
                     ->afterStateUpdated(function ($state){
-                        $this->repDate=$state;
-                        $this->dispatch('updateRep', repdate: $state);
+                        $this->repDate1=$state;
+                        $this->dispatch('updateDate1', repdate: $state);
                     })
-                    ->label('تاريخ اليومية')
+                    ->label('من تاريخ'),
+                DatePicker::make('repDate2')
+                  ->live()
+                  ->afterStateUpdated(function ($state){
+                    $this->repDate2=$state;
+                    $this->dispatch('updateDate2', repdate: $state);
+                  })
+                  ->label('إلي تاريخ')
+
             ])->columns(6);
     }
 }

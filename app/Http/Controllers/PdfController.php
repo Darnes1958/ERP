@@ -59,53 +59,86 @@ class PdfController extends Controller
 
 
     }
-    public function PdfKlasa($repDate){
+    public function PdfKlasa($repDate1,$repDate2){
 
 
         $cus=OurCompany::where('Company',Auth::user()->company)->first();
-        $buy=Buy::where('order_date',$repDate)
+        $buy=Buy::when($repDate1,function ($q) use($repDate1){
+          $q->where('order_date','>=',$repDate1);
+        })
+          ->when($repDate2,function ($q) use($repDate2){
+            $q->where('order_date','<=',$repDate2);
+          })
             ->join('places','place_id','places.id')
 
             ->selectRaw('places.name, sum(tot) as tot,sum(pay) as pay,sum(baky) as baky')
             ->groupBy('places.name')->get();
-        $sell=Sell::where('order_date',$repDate)
+        $sell=Sell::when($repDate1,function ($q) use($repDate1){
+          $q->where('order_date','>=',$repDate1);
+        })
+          ->when($repDate2,function ($q) use($repDate2){
+            $q->where('order_date','<=',$repDate2);
+          })
             ->join('places','place_id','places.id')
 
             ->selectRaw('places.name, sum(total) as total,sum(pay) as pay,sum(baky) as baky')
             ->groupBy('places.name')->get();
 
-        $supp1=Recsupp::where('receipt_date',$repDate)
+        $supp1=Recsupp::when($repDate1,function ($q) use($repDate1){
+          $q->where('receipt_date','>=',$repDate1);
+        })
+          ->when($repDate2,function ($q) use($repDate2){
+            $q->where('receipt_date','<=',$repDate2);
+          })
+
             ->join('price_types','price_type_id','price_types.id')
-            ->join('accs','acc_id','accs.id')
+            ->leftjoin('accs','acc_id','accs.id')
             ->where('imp_exp',0)
             ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(recsupps.val) as val')
           ->groupby('rec_who','price_types.name','accs.name');
 
-        $supp=Recsupp::where('receipt_date',$repDate)
+        $supp=Recsupp::when($repDate1,function ($q) use($repDate1){
+          $q->where('receipt_date','>=',$repDate1);
+        })
+          ->when($repDate2,function ($q) use($repDate2){
+            $q->where('receipt_date','<=',$repDate2);
+          })
             ->join('price_types','price_type_id','price_types.id')
-          ->join('accs','acc_id','accs.id')
+          ->leftjoin('accs','acc_id','accs.id')
           ->where('imp_exp',1)
-            ->selectRaw('rec_who,price_types.name,accs.name accName,sum(recsupps.val) as exp,0 as val')
+          ->selectRaw('rec_who,price_types.name,accs.name accName,sum(recsupps.val) as exp,0 as val')
           ->groupby('rec_who','price_types.name','accs.name')
             ->union($supp1)->get();
 
-        $cust1=Receipt::where('receipt_date',$repDate)
+        $cust1=Receipt::when($repDate1,function ($q) use($repDate1){
+          $q->where('receipt_date','>=',$repDate1);
+        })
+          ->when($repDate2,function ($q) use($repDate2){
+            $q->where('receipt_date','<=',$repDate2);
+          })
             ->join('price_types','price_type_id','price_types.id')
-            ->join('accs','acc_id','accs.id')
+
+            ->leftjoin('accs','acc_id','accs.id')
             ->where('imp_exp',0)
             ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(receipts.val) as val')
             ->groupby('rec_who','price_types.name','accs.name');
 
-        $cust=Receipt::where('receipt_date',$repDate)
+        $cust=Receipt::when($repDate1,function ($q) use($repDate1){
+          $q->where('receipt_date','>=',$repDate1);
+        })
+          ->when($repDate2,function ($q) use($repDate2){
+            $q->where('receipt_date','<=',$repDate2);
+          })
             ->join('price_types','price_type_id','price_types.id')
-            ->join('accs','acc_id','accs.id')
+            ->leftjoin('accs','acc_id','accs.id')
             ->where('imp_exp',1)
             ->selectRaw('rec_who,price_types.name,accs.name accName,sum(receipts.val) as exp,0 as val')
             ->groupby('rec_who','price_types.name','accs.name')
             ->union($cust1)->get();
 
         $html = view('PDF.pdf-klasa',
-            ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,'cus'=>$cus,'RepDate'=>$repDate])->toArabicHTML();
+            ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
+              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2])->toArabicHTML();
 
         $pdf = PDF::loadHTML($html)->output();
         $headers = array(

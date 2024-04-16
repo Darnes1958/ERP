@@ -15,12 +15,20 @@ class StatsKlasa extends BaseWidget
 {
   protected int | string | array $columnSpan = 'full';
 
-  public $repDate;
+  public $repDate1;
+  public $repDate2;
 
-  #[On('updateRep')]
-  public function updaterep($repdate)
+  #[On('updateDate1')]
+  public function updatedate1($repdate)
   {
-    $this->repDate=$repdate;
+    $this->repDate1=$repdate;
+    info($this->repDate1);
+
+  }
+  #[On('updateDate2')]
+  public function updatedate2($repdate)
+  {
+    $this->repDate2=$repdate;
 
   }
     protected function getStats(): array
@@ -29,24 +37,24 @@ class StatsKlasa extends BaseWidget
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">مشتريات</span>'))
             ->value(new HtmlString('<span class="text-primary-500 ">'.
-              number_format(Buy::where('order_date',$this->repDate)->sum('tot'),2, '.', ',').'</span>')),
+              number_format(Buy::whereBetween('order_date',[$this->repDate1,$this->repDate2])->sum('tot'),2, '.', ',').'</span>')),
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">مبيعات</span>'))
             ->value(new HtmlString('<span class="text-danger-600 ">'.
-              number_format(Sell::where('order_date',$this->repDate)->sum('tot'),2, '.', ',').'</span>')),
+              number_format(Sell::whereBetween('order_date',[$this->repDate1,$this->repDate2])->sum('tot'),2, '.', ',').'</span>')),
 
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">قبض</span>'))
             ->value(new HtmlString('<span class="text-primary-500">'.
-              number_format(Receipt::where('receipt_date',$this->repDate)->where('imp_exp',0)->sum('val') +
-                                 Recsupp::where('receipt_date',$this->repDate)->where('imp_exp',0)->sum('val')
+              number_format(Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->where('imp_exp',0)->sum('val') +
+                                 Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->where('imp_exp',0)->sum('val')
                   ,2, '.', ',').'</span>')),
 
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">دفع</span>'))
             ->value(new HtmlString('<span class="text-danger-600">'.
-              number_format(Receipt::where('receipt_date',$this->repDate)->where('imp_exp',1)->sum('val') +
-                                 Recsupp::where('receipt_date',$this->repDate)->where('imp_exp',1)->sum('val')
+              number_format(Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->where('imp_exp',1)->sum('val') +
+                                 Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->where('imp_exp',1)->sum('val')
                   ,2, '.', ',').'</span>')),
 
         ];
