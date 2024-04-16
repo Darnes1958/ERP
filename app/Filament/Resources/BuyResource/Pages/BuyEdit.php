@@ -10,6 +10,7 @@ use App\Models\Barcode;
 use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Item;
+use App\Models\Kazena;
 use App\Models\Price_buy;
 use App\Models\Receipt;
 use App\Models\Recsupp;
@@ -46,8 +47,6 @@ class BuyEdit extends Page implements HasTable
 
     protected ?string $heading="";
 
-
-
     public $buy;
     public $buytran;
     public $buyData;
@@ -70,6 +69,8 @@ class BuyEdit extends Page implements HasTable
 
             if ($receipt->acc_id)
             $this->buyForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
+            if ($receipt->kazena_id)
+                $this->buyForm->fill(collect($this->record)->put('kazena_id',$receipt->kazena_id)->toArray());
         }
 
         $this->buyTranForm->fill([]);
@@ -150,6 +151,11 @@ class BuyEdit extends Page implements HasTable
                                 $receipt->price_type_id=$state;
                                 $receipt->save();
                             }
+                            if ($receipt){
+                                if ($state!=1) $receipt->kazena_id=null;
+                                $receipt->price_type_id=$state;
+                                $receipt->save();
+                            }
                         })
                         ->columnSpan(2),
                     Select::make('acc_id')
@@ -169,6 +175,23 @@ class BuyEdit extends Page implements HasTable
                         })
                         ->dehydrated()
                         ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')!=1) ),
+                    Select::make('kazena_id')
+                        ->options(Kazena::all()->pluck('name','id'))
+                        ->hiddenLabel()
+                        ->prefix('حساب الخزينة')
+
+                        ->prefixIcon('heroicon-m-currency-dollar')
+                        ->prefixIconColor('warning')
+                        ->columnSpan(2)
+                        ->afterStateUpdated(function ($state,Get $get){
+                            $receipt=Recsupp::find($this->buy->receipt_id);
+                            if ($receipt){
+                                $receipt->kazena_id=$state;
+                                $receipt->save();
+                            }
+                        })
+                        ->dehydrated()
+                        ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')==1) ),
                     TextInput::make('tot')
                         ->hiddenLabel()
                         ->prefix('اجمالي الفاتورة')

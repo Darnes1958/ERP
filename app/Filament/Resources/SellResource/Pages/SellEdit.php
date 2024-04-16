@@ -7,6 +7,7 @@ use App\Models\Acc;
 
 use App\Models\Barcode;
 use App\Models\Item;
+use App\Models\Kazena;
 use App\Models\Place_stock;
 use App\Models\Price_type;
 use App\Models\Receipt;
@@ -61,6 +62,8 @@ class SellEdit extends Page implements HasTable
 
             if ($receipt->acc_id)
                 $this->sellForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
+            if ($receipt->kazena_id)
+                $this->sellForm->fill(collect($this->record)->put('kazena_id',$receipt->kazena_id)->toArray());
         }
 
         $this->sellTranForm->fill([]);
@@ -195,6 +198,9 @@ class SellEdit extends Page implements HasTable
 
         if ($receipt->acc_id)
           $this->sellForm->fill(collect($this->sell)->put('acc_id',$receipt->acc_id)->toArray());
+          if ($receipt->kazena_id)
+              $this->sellForm->fill(collect($this->sell)->put('kazena_id',$receipt->kazena_id)->toArray());
+
       }
         $this->dispatch('gotoitem', test: 'barcode_id');
     }
@@ -211,6 +217,9 @@ class SellEdit extends Page implements HasTable
 
         if ($receipt->acc_id)
           $this->sellForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
+          if ($receipt->kazena_id)
+              $this->sellForm->fill(collect($this->record)->put('kazena_id',$receipt->kazena_id)->toArray());
+
       }
     }
 
@@ -226,6 +235,9 @@ class SellEdit extends Page implements HasTable
         if ($receipt){
             if ($this->sell->price_type_id!=2) $receipt->acc_id=null;
             else $receipt->acc_id=$this->sellData['acc_id'];
+            if ($this->sell->price_type_id!=1) $receipt->kazena_id=null;
+            else $receipt->kazena_id=$this->sellData['kazena_id'];
+
             $receipt->price_type_id=$this->sell->price_type_id;
             $receipt->save();
         }
@@ -327,6 +339,24 @@ class SellEdit extends Page implements HasTable
                         })
                         ->dehydrated()
                         ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')==2) ),
+                    Select::make('kazena_id')
+                        ->options(Kazena::all()->pluck('name','id'))
+                        ->hiddenLabel()
+                        ->prefix('حساب الخزينة')
+
+                        ->prefixIcon('heroicon-m-currency-dollar')
+                        ->prefixIconColor('warning')
+                        ->columnSpan(2)
+                        ->afterStateUpdated(function ($state,Get $get){
+                            $receipt=Receipt::where('sell_id',$this->sell->id)->first();
+                            if ($receipt){
+                                $receipt->kazena_id=$state;
+                                $receipt->save();
+                            }
+                        })
+                        ->dehydrated()
+                        ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')==1) ),
+
                     TextInput::make('tot')
                         ->hiddenLabel()
                         ->prefix('اجمالي الفاتورة')
@@ -393,6 +423,7 @@ class SellEdit extends Page implements HasTable
                                         'sell_id'=>$this->sell->id,
                                         'price_type_id'=>$this->sell->price_type_id,
                                         'acc_id'=>$this->sellData['acc_id'],
+                                        'kazena_id'=>$this->sellData['kazena_id'],
                                         'rec_who'=>6,
                                         'imp_exp'=>0,
                                         'val'=>$this->sell->pay,
@@ -403,6 +434,8 @@ class SellEdit extends Page implements HasTable
                                 }
                                 if ($receipt->acc_id)
                                  $this->sellForm->fill(collect($this->sell)->put('acc_id',$receipt->acc_id)->toArray());
+                                if ($receipt->kazena_id)
+                                    $this->sellForm->fill(collect($this->sell)->put('kazena_id',$receipt->kazena_id)->toArray());
 
                             }
                         })

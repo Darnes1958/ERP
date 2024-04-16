@@ -793,6 +793,52 @@ class CreateSell extends Page
                         ->visible(function (){
                             return $this->sell->pay>0 && $this->sell->price_type_id==2;
                         }),
+                    Select::make('kazena_id')
+                        ->relationship('Kazena','name')
+                        ->label('الخزينة')
+                        ->inlineLabel()
+                        ->createOptionForm([
+                            Section::make('ادخال حساب خزينة جديد')
+                                ->schema([
+                                    TextInput::make('name')
+                                        ->label('اسم الخزينة')
+                                        ->required()
+                                        ->autofocus()
+                                        ->columnSpan(2)
+                                        ->unique(ignoreRecord: true)
+                                        ->validationMessages([
+                                            'unique' => ' :attribute مخزون مسبقا ',
+                                        ])        ,
+
+                                    TextInput::make('balance')
+                                        ->label('رصيد بداية المدة')
+                                        ->numeric()
+                                        ->required()                          ,
+                                ])
+                        ])
+                        ->editOptionForm([
+                            Section::make('تعديل بيانات خزينة')
+                                ->schema([
+                                    TextInput::make('name')
+                                        ->label('اسم الخزينة')
+                                        ->required()
+                                        ->autofocus()
+                                        ->columnSpan(2)
+                                        ->unique(ignoreRecord: true)
+                                        ->validationMessages([
+                                            'unique' => ' :attribute مخزون مسبقا ',
+                                        ])        ,
+
+                                    TextInput::make('raseed')
+                                        ->label('رصيد بداية المدة')
+                                        ->numeric()
+                                        ->required()
+
+                                ])->columns(2)
+                        ])
+                        ->visible(function (){
+                            return $this->sell->pay>0 && $this->sell->price_type_id==1;
+                        }),
                     \Filament\Forms\Components\Actions::make([
                         Action::make('store')
                             ->label('تخزين')
@@ -829,6 +875,14 @@ class CreateSell extends Page
                                     $acc=$this->sellStoreData['acc_id'];
                                 }
                                 else $acc=null;
+                                if ($this->sell->pay>0 && $this->sell->price_type_id==1) {
+                                    if (!$this->sellStoreData['kazena_id'])
+                                    {
+                                        Notification::make()->title('يجب اختيار الخزينة ')->color('danger')->icon('heroicon-m-no-symbol')->send();return;
+                                    }
+                                    $kaz=$this->sellStoreData['kazena_id'];
+                                }
+                                else $kaz=null;
                                 unset($this->sell['id'],$this->sell['created_at'],$this->sell['updated_at']);
                                 $id=Sell::create($this->sell->toArray());
                               $selltran=Sell_tran_work::where('sell_id',Auth::id())->get();
@@ -850,6 +904,7 @@ class CreateSell extends Page
                                         'rec_who'=>6,
                                         'imp_exp'=>0,
                                         'val'=>$this->sell->pay,
+                                        'kazena_id'=>$kaz,
                                         'acc_id'=>$acc,
                                         'notes'=>'فاتورة مبيعات رقم '.strval($id->id),
                                         'user_id'=>Auth::id()

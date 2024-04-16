@@ -106,6 +106,14 @@ class CreateBuy extends Page implements HasTable
              $record=Buys_work::find(Auth::id());
              return $record->pay>0 && $record->price_type_id==2;
            }),
+            Select::make('kazena_id')
+                ->relationship('Kazena','name')
+                ->label('الخزينة')
+                ->inlineLabel()
+                ->visible(function (){
+                    $record=Buys_work::find(Auth::id());
+                    return $record->pay>0 && $record->price_type_id==1;
+                }),
           \Filament\Forms\Components\Actions::make([
             Action::make('store')
               ->label('تخزين')
@@ -125,6 +133,14 @@ class CreateBuy extends Page implements HasTable
                 }
                 else $acc=null;
 
+                  if ($this->buy->pay>0 && $this->buy->price_type_id==1) {
+                      if (!$this->buyStoreData['kazena_id'])
+                      {
+                          Notification::make()->title('يجب اختيار الخزينة ')->color('danger')->icon('heroicon-m-no-symbol')->send();return;
+                      }
+                      $kaz=$this->buyStoreData['kazena_id'];
+                  }
+                  else $kaz=null;
 
                 unset($this->buy['id']);
                 $id=Buy::create($this->buy->toArray());
@@ -146,6 +162,7 @@ class CreateBuy extends Page implements HasTable
                     'rec_who'=>5,
                     'imp_exp'=>1,
                     'val'=>$this->buy->pay,
+                    'kazena_id'=>$kaz,
                     'acc_id'=>$acc,
                     'notes'=>'فاتورة مشتريات رقم '.strval($id->id),
                     'user_id'=>Auth::id()

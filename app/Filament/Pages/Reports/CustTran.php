@@ -9,6 +9,7 @@ use App\Models\Receipt;
 use App\Models\Sell;
 use App\Models\Setting;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -16,6 +17,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
+use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -35,12 +37,23 @@ class CustTran extends Page implements HasForms,HasTable
 
   public $cust_id;
   public $repDate;
+  public $formData;
 
   public function mount(){
     $this->repDate=now();
 
-    $this->form->fill(['repDate'=>$this->repDate,]);
+    $this->myForm->fill(['repDate'=>$this->repDate,'raseed'=>0,'mden'=>0,'daen'=>0]);
   }
+
+    protected function getForms(): array
+    {
+        return array_merge(parent::getForms(), [
+            "myForm" => $this->makeForm()
+                ->schema($this->getMyFormSchema())
+                ->statePath('formData'),
+
+        ]);
+    }
 
   public function getTableRecordKey(Model $record): string
   {
@@ -93,30 +106,62 @@ class CustTran extends Page implements HasForms,HasTable
         TextColumn::make('notes')
          ->label('ملاحظات')
       ])
+        ->emptyStateHeading('لا توجد بيانات')
       ->defaultSort('created_at')
       ->striped();
   }
 
-  public function form(Form $form): Form
+    protected function getMyFormSchema(): array
   {
-    return $form
+    return [
+       Section::make()
       ->schema([
         Select::make('cust_id')
          ->options(Customer::all()->pluck('name','id'))
          ->searchable()
          ->preload()
          ->live()
-          ->afterStateUpdated(function ($state){
+          ->afterStateUpdated(function ($state,Set $set){
             $this->cust_id=$state;
+            if ($this->repDate) {
+                $mden=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                $daen=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                $set('mden',number_format($mden, 2, '.', ','));
+                $set('daen',number_format($daen, 2, '.', ','));
+                $set('raseed',number_format($daen-$mden, 2, '.', ','));
+
+
+            }
           })
          ->label('الزبون'),
         DatePicker::make('repDate')
           ->live()
-          ->afterStateUpdated(function ($state){
+          ->afterStateUpdated(function ($state,Set $set){
             $this->repDate=$state;
+              if ($this->repDate && $this->cust_id) {
+                  $mden=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                  $daen=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                  $set('mden',number_format($mden, 2, '.', ','));
+                  $set('daen',number_format($daen, 2, '.', ','));
+                  $set('raseed',number_format($daen-$mden, 2, '.', ','));
+
+
+              }
           })
           ->label('من تاريخ'),
-      ])->columns(6);
+
+        TextInput::make('mden')
+         ->readOnly()
+         ->label('مدين'),
+        TextInput::make('daen')
+              ->readOnly()
+              ->label('دائن'),
+       TextInput::make('raseed')
+              ->readOnly()
+              ->label('الرصيد'),
+      ])
+      ->columns(6)
+      ];
   }
 
 }

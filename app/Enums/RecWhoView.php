@@ -14,6 +14,7 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
   case دفـع_فاتورة = 5;
   case قبـض_فاتورة = 6;
   case فاتورة_مبيعات = 7;
+  case فاتورة_مشتريات = 8;
 
 
   public function getLabel(): ?string
@@ -30,6 +31,7 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
       self::قبـض_فاتورة => 'success',
       self::دفـع_فاتورة => 'danger',
       self::فاتورة_مبيعات => 'blue',
+        self::فاتورة_مشتريات => 'Fuchsia',
 
     };
   }
@@ -43,6 +45,7 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
         self::قبـض_فاتورة => 'heroicon-m-arrow-left-circle',
         self::دفـع_فاتورة => 'heroicon-m-arrow-right-circle',
       self::فاتورة_مبيعات => 'heroicon-m-shopping-cart',
+        self::فاتورة_مشتريات => 'heroicon-m-shopping-cart',
 
     };
   }

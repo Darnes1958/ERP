@@ -1,4 +1,4 @@
 <x-filament-panels::page>
-    {{$this->form}}
+    {{$this->myForm}}
     {{$this->table}}
 </x-filament-panels::page>

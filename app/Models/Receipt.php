@@ -29,6 +29,10 @@ class Receipt extends Model
         return $this->belongsTo(Acc::class);
     }
 
+    public function Kazena(){
+        return $this->belongsTo(Kazena::class);
+    }
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

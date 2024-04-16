@@ -7,6 +7,7 @@ use App\Filament\Resources\RecsuppResource\Pages;
 use App\Filament\Resources\RecsuppResource\RelationManagers;
 use App\Models\Acc;
 use App\Models\Buy;
+use App\Models\Kazena;
 use App\Models\Recsupp;
 
 use App\Models\Supplier;
@@ -103,6 +104,53 @@ class RecsuppResource extends Resource
 
               ])->columns(2)
           ]),
+          Select::make('kazena_id')
+              ->label('الخزينة')
+              ->relationship('Kazena','name')
+              ->searchable()
+              ->required()
+              ->live()
+              ->preload()
+              ->visible(fn(Get $get): bool =>($get('price_type_id')==1 ))
+              ->createOptionForm([
+                  Section::make('ادخال حساب خزينة جديد')
+                      ->schema([
+                          TextInput::make('name')
+                              ->label('اسم الخزينة')
+                              ->required()
+                              ->autofocus()
+                              ->columnSpan(2)
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])        ,
+
+                          TextInput::make('balance')
+                              ->label('رصيد بداية المدة')
+                              ->numeric()
+                              ->required()                          ,
+                      ])
+              ])
+              ->editOptionForm([
+                  Section::make('تعديل بيانات خزينة')
+                      ->schema([
+                          TextInput::make('name')
+                              ->label('اسم الخزينة')
+                              ->required()
+                              ->autofocus()
+                              ->columnSpan(2)
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])        ,
+
+                          TextInput::make('raseed')
+                              ->label('رصيد بداية المدة')
+                              ->numeric()
+                              ->required()
+
+                      ])->columns(2)
+              ]),
         Select::make('buy_id')
           ->label('رقم الفاتورة')
           ->options(fn (Get $get): Collection => Buy::query()
@@ -218,6 +266,7 @@ class RecsuppResource extends Resource
                     ->description(function (Recsupp $record){
                         $name=null;
                         if ($record->acc_id) {$name=Acc::find($record->acc_id)->name;}
+                        if ($record->kazena_id) {$name=Kazena::find($record->kazena_id)->name;}
                         return $name;
                     })
           ->label('طريقة الدفع'),

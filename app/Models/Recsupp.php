@@ -26,6 +26,9 @@ class Recsupp extends Model
     public function Acc(){
         return $this->belongsTo(Acc::class);
     }
+    public function Kazena(){
+        return $this->belongsTo(Kazena::class);
+    }
 
 
   public function __construct(array $attributes = [])

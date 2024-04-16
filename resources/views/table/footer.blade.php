@@ -11,10 +11,17 @@
                 @if ($column->getName() == $calc_columns[$i])
                     <div class="filament-tables-column-wrapper">
                         <div class="filament-tables-text-column px-2 py-2 flex w-full justify-start text-start">
-                            <div class="inline-flex items-center space-x-1 rtl:space-x-reverse">
+                            <div class="inline-flex items-center space-x-1 rtl:space-x-reverse ">
+                                @if($calc_columns[$i]=='mden')
+                                    <span class="font-medium  text-danger-600">
+                                    {{ number_format($records->sum($calc_columns[$i]),2, '.', ',') }}
+                                </span>
+                                @endif
+                                @if($calc_columns[$i]!='mden')
                                 <span class="font-medium text-indigo-700">
                                     {{ number_format($records->sum($calc_columns[$i]),2, '.', ',') }}
                                 </span>
+                                    @endif
                             </div>
                         </div>
                     </div>
