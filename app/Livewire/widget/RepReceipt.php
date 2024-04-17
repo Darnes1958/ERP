@@ -77,6 +77,8 @@ class RepReceipt extends BaseWidget
                     ->label('المورد'),
                 Tables\Columns\TextColumn::make('val')
                     ->label('المبلغ'),
+                Tables\Columns\TextColumn::make('Kazena.name')
+                    ->label('الخزينة'),
                 Tables\Columns\TextColumn::make('rec_who')
                     ->label('البيان')
                     ->badge(),

@@ -152,4 +152,55 @@ class PdfController extends Controller
 
 
     }
+    public function PdfDaily(Request $request){
+
+
+        $cus=OurCompany::where('Company',Auth::user()->company)->first();
+        if ($request->repDate1 && !$request->repDate2)
+            $buy=Buy::where('order_date','>=',$request->repDate1)->get();
+        if ($request->repDate2 && !$request->repDate1)
+            $buy=Buy::where('order_date','=<',$request->repDate1)->get();
+        if ($request->repDate1 && $request->repDate2)
+            $buy=Buy::whereBetween('order_date',[$request->repDate1,$request->repDate2])->get();
+
+
+        if ($request->repDate1 && !$request->repDate2)
+            $sell=Sell::where('order_date','>=',$request->repDate1)->get();
+        if ($request->repDate2 && !$request->repDate1)
+            $sell=Sell::where('order_date','<=',$request->repDate1)->get();
+        if ($request->repDate1 && $request->repDate2)
+            $sell=Sell::whereBetween('order_date',[$request->repDate1,$request->repDate2])->get();
+
+        if ($request->repDate1 && !$request->repDate2)
+            $supp=Recsupp::where('receipt_date','>=',$request->repDate1)->get();
+        if ($request->repDate2 && !$request->repDate1)
+            $supp=Recsupp::where('receipt_date','<=',$request->repDate1)->get();
+        if ($request->repDate1 && $request->repDate2)
+            $supp=Recsupp::whereBetween('receipt_date',[$request->repDate1,$request->repDate2])->get();
+
+        if ($request->repDate1 && !$request->repDate2)
+            $cust=Receipt::where('receipt_date','>=',$request->repDate1)->get();
+        if ($request->repDate2 && !$request->repDate1)
+            $cust=Receipt::where('receipt_date','<=',$request->repDate1)->get();
+        if ($request->repDate1 && $request->repDate2)
+            $cust=Receipt::whereBetween('receipt_date',[$request->repDate1,$request->repDate2])->get();
+
+        $html = view('PDF.pdf-daily',
+            ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
+                'cus'=>$cus,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2])->toArabicHTML();
+
+
+
+        $pdf = PDF::loadHTML($html)->output();
+        $headers = array(
+            "Content-type" => "application/pdf",
+        );
+        return response()->streamDownload(
+            fn () => print($pdf),
+            "invoice.pdf",
+            $headers
+        );
+
+
+    }
 }

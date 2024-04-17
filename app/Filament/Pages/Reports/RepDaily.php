@@ -7,6 +7,9 @@ use App\Livewire\widget\RepReceipt;
 use App\Livewire\widget\RepResSupp;
 use App\Livewire\widget\RepSell;
 use App\Models\Recsupp;
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -64,6 +67,14 @@ class RepDaily extends Page implements HasForms
 
         ];
     }
+    public function chkDate($repDate){
+        try {
+            Carbon::parse($repDate);
+            return true;
+        } catch (InvalidFormatException $e) {
+            return false;
+        }
+    }
     public function form(Form $form): Form
     {
         return $form
@@ -84,5 +95,19 @@ class RepDaily extends Page implements HasForms
                   ->label('إلي تاريخ')
 
             ])->columns(6);
+    }
+    public function printAction(): Action
+    {
+
+        return Action::make('print')
+            ->visible(function (){
+                return $this->chkDate($this->repDate1) || $this->chkDate($this->repDate2);
+            })
+            ->label('طباعة')
+            ->button()
+            ->color('danger')
+            ->icon('heroicon-m-printer')
+            ->color('info')
+            ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,]));
     }
 }
