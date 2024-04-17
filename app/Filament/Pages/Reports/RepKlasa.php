@@ -31,8 +31,8 @@ class RepKlasa extends Page implements HasForms,HasActions
     use InteractsWithForms,InteractsWithActions;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'خلاصة الحركة اليومية';
-    protected static ?string $navigationGroup = 'تقارير';
-    protected static ?int $navigationSort=5;
+    protected static ?string $navigationGroup = 'الحركة اليومية';
+    protected static ?int $navigationSort=2;
 
     public function chkDate($repDate){
         try {

@@ -20,7 +20,8 @@ class SuppRaseed extends Page implements HasForms,HasTable
     use InteractsWithTable,InteractsWithForms;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='أرصدة الموردين';
-    protected static ?string $navigationGroup='تقارير';
+    protected static ?string $navigationGroup='زبائن وموردين';
+  protected static ?int $navigationSort=8;
     protected ?string $heading="";
 
     protected static string $view = 'filament.pages.reports.supp-raseed';

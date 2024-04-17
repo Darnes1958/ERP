@@ -21,7 +21,8 @@ class RepMakzoon extends Page implements HasTable
 
     protected static string $view = 'filament.pages.reports.rep-makzoon';
     protected static ?string $navigationLabel='تقرير عن المخزون';
-    protected static ?string $navigationGroup='تقارير';
+  protected static ?string $navigationGroup='مخازن و أصناف';
+  protected static ?int $navigationSort=6;
     protected ?string $heading="";
 
   public array $data_list= [

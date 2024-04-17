@@ -31,7 +31,8 @@ class ItemTran extends Page implements HasForms,HasTable
 
     protected static string $view = 'filament.pages.reports.item-tran';
     protected static ?string $navigationLabel='حركة صنف';
-    protected static ?string $navigationGroup='تقارير';
+  protected static ?string $navigationGroup='مخازن و أصناف';
+  protected static ?int $navigationSort=4;
     protected ?string $heading='';
     public static function shouldRegisterNavigation(): bool
     {

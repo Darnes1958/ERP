@@ -32,6 +32,7 @@ class ItemResource extends Resource
     protected static ?string $model = Item::class;
 
     protected static ?string $pluralModelLabel='أصناف';
+  protected static ?string $navigationGroup='مخازن و أصناف';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

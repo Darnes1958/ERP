@@ -31,7 +31,8 @@ class CustTran extends Page implements HasForms,HasTable
   use InteractsWithTable,InteractsWithForms;
   protected static ?string $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel='حركة زبون';
-  protected static ?string $navigationGroup='تقارير';
+  protected static ?string $navigationGroup='زبائن وموردين';
+  protected static ?int $navigationSort=5;
   protected ?string $heading="";
   protected static string $view = 'filament.pages.reports.cust-tran';
 

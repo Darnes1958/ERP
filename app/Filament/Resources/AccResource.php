@@ -25,6 +25,7 @@ class AccResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='حسابات مصرفية';
+  protected static ?string $navigationGroup='مصارف وخزائن';
 
     public static function shouldRegisterNavigation(): bool
     {

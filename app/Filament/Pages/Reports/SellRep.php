@@ -32,8 +32,9 @@ class SellRep extends Page implements HasForms,HasTable
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.reports.sell-rep';
-    protected static ?string $navigationLabel = 'فواتير مبيعات';
-    protected static ?string $navigationGroup = 'تقارير';
+    protected static ?string $navigationLabel = 'تقرير فواتير مبيعات';
+    protected static ?string $navigationGroup = 'فواتير مبيعات';
+    protected static ?int $navigationSort=3;
     protected ?string $heading = "";
 
     public static function shouldRegisterNavigation(): bool

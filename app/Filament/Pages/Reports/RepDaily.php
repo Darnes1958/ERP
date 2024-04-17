@@ -19,8 +19,8 @@ class RepDaily extends Page implements HasForms
     use InteractsWithForms;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'الحركة اليومية';
-    protected static ?string $navigationGroup = 'تقارير';
-    protected static ?int $navigationSort=4;
+    protected static ?string $navigationGroup = 'الحركة اليومية';
+    protected static ?int $navigationSort=1;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasRole('Admin');

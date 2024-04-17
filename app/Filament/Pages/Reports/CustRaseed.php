@@ -21,7 +21,8 @@ class CustRaseed extends Page implements HasForms,HasTable
     use InteractsWithTable,InteractsWithForms;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='أرصدة الزبائن';
-    protected static ?string $navigationGroup='تقارير';
+    protected static ?string $navigationGroup='زبائن وموردين';
+  protected static ?int $navigationSort=6;
     protected ?string $heading="";
 
     protected static string $view = 'filament.pages.reports.cust-raseed';

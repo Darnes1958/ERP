@@ -24,7 +24,8 @@ class SuppTran extends Page implements HasForms,HasTable
     use InteractsWithTable,InteractsWithForms;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='حركة مورد';
-    protected static ?string $navigationGroup='تقارير';
+    protected static ?string $navigationGroup='زبائن وموردين';
+  protected static ?int $navigationSort=7;
     protected ?string $heading="";
     protected static string $view = 'filament.pages.reports.supp-tran';
 
