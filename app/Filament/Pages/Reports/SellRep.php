@@ -48,6 +48,7 @@ class SellRep extends Page implements HasForms,HasTable
             'tot',
             'pay',
             'baky',
+          'sell_tran_sum_profit',
         ],
     ];
  public function table(Table $table): Table
