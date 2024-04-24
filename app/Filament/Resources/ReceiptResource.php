@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Kazena;
 use App\Models\Receipt;
 use App\Models\Sell;
+use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
@@ -191,6 +192,12 @@ class ReceiptResource extends Resource
                     ->required()
                     ->live()
                     ->preload()
+                    ->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+                    ->default(function (){
+                        $res=Kazena::where('user_id',Auth::id())->first();
+                        if ($res) return $res->id;
+                        else return null;
+                    })
                     ->visible(fn(Get $get): bool =>($get('price_type_id')==1 ))
                     ->createOptionForm([
                         Section::make('ادخال حساب خزينة جديد')
@@ -204,7 +211,14 @@ class ReceiptResource extends Resource
                                     ->validationMessages([
                                         'unique' => ' :attribute مخزون مسبقا ',
                                     ])        ,
-
+                                Forms\Components\Select::make('user_id')
+                                    ->label('المستخدم')
+                                    ->searchable()
+                                    ->preload()
+                                    ->options(User::
+                                    where('company',Auth::user()->company)
+                                        ->where('id','!=',1)
+                                        ->pluck('name','id')),
                                 TextInput::make('balance')
                                     ->label('رصيد بداية المدة')
                                     ->numeric()
@@ -223,7 +237,14 @@ class ReceiptResource extends Resource
                                     ->validationMessages([
                                         'unique' => ' :attribute مخزون مسبقا ',
                                     ])        ,
-
+                                Forms\Components\Select::make('user_id')
+                                    ->label('المستخدم')
+                                    ->searchable()
+                                    ->preload()
+                                    ->options(User::
+                                    where('company',Auth::user()->company)
+                                        ->where('id','!=',1)
+                                        ->pluck('name','id')),
                                 TextInput::make('raseed')
                                     ->label('رصيد بداية المدة')
                                     ->numeric()

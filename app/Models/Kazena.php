@@ -18,6 +18,7 @@ class Kazena extends Model
     public function Recsupp(){
         return $this->hasMany(Recsupp::class);
     }
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

@@ -24,6 +24,7 @@ class MasrofatResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralLabel='مصروفات';
+    protected static ?string $navigationGroup='مصروفات';
 
     public static function form(Form $form): Form
     {
@@ -130,6 +131,7 @@ class MasrofatResource extends Resource
                     }),
                 Forms\Components\DatePicker::make('masr_date')
                  ->required()
+                 ->default(now())
                 ->label('التاريخ'),
                 TextInput::make('val')
                  ->numeric()

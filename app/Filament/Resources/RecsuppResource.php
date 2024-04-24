@@ -11,6 +11,7 @@ use App\Models\Kazena;
 use App\Models\Recsupp;
 
 use App\Models\Supplier;
+use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -104,53 +105,7 @@ class RecsuppResource extends Resource
 
               ])->columns(2)
           ]),
-          Select::make('kazena_id')
-              ->label('الخزينة')
-              ->relationship('Kazena','name')
-              ->searchable()
-              ->required()
-              ->live()
-              ->preload()
-              ->visible(fn(Get $get): bool =>($get('price_type_id')==1 ))
-              ->createOptionForm([
-                  Section::make('ادخال حساب خزينة جديد')
-                      ->schema([
-                          TextInput::make('name')
-                              ->label('اسم الخزينة')
-                              ->required()
-                              ->autofocus()
-                              ->columnSpan(2)
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])        ,
 
-                          TextInput::make('balance')
-                              ->label('رصيد بداية المدة')
-                              ->numeric()
-                              ->required()                          ,
-                      ])
-              ])
-              ->editOptionForm([
-                  Section::make('تعديل بيانات خزينة')
-                      ->schema([
-                          TextInput::make('name')
-                              ->label('اسم الخزينة')
-                              ->required()
-                              ->autofocus()
-                              ->columnSpan(2)
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])        ,
-
-                          TextInput::make('raseed')
-                              ->label('رصيد بداية المدة')
-                              ->numeric()
-                              ->required()
-
-                      ])->columns(2)
-              ]),
         Select::make('buy_id')
           ->label('رقم الفاتورة')
           ->options(fn (Get $get): Collection => Buy::query()
@@ -229,6 +184,73 @@ class RecsuppResource extends Resource
                               ->validationMessages([
                                   'unique' => ' :attribute مخزون مسبقا ',
                               ])  ,
+                          TextInput::make('raseed')
+                              ->label('رصيد بداية المدة')
+                              ->numeric()
+                              ->required()
+
+                      ])->columns(2)
+              ]),
+          Select::make('kazena_id')
+              ->label('الخزينة')
+              ->relationship('Kazena','name')
+              ->searchable()
+              ->required()
+              ->live()
+              ->preload()
+              ->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+              ->default(function (){
+                  $res=Kazena::where('user_id',Auth::id())->first();
+                  if ($res) return $res->id;
+                  else return null;
+              })
+              ->visible(fn(Get $get): bool =>($get('price_type_id')==1 ))
+              ->createOptionForm([
+                  Section::make('ادخال حساب خزينة جديد')
+                      ->schema([
+                          TextInput::make('name')
+                              ->label('اسم الخزينة')
+                              ->required()
+                              ->autofocus()
+                              ->columnSpan(2)
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])        ,
+                          Forms\Components\Select::make('user_id')
+                              ->label('المستخدم')
+                              ->searchable()
+                              ->preload()
+                              ->options(User::
+                              where('company',Auth::user()->company)
+                                  ->where('id','!=',1)
+                                  ->pluck('name','id')),
+                          TextInput::make('balance')
+                              ->label('رصيد بداية المدة')
+                              ->numeric()
+                              ->required()                          ,
+                      ])
+              ])
+              ->editOptionForm([
+                  Section::make('تعديل بيانات خزينة')
+                      ->schema([
+                          TextInput::make('name')
+                              ->label('اسم الخزينة')
+                              ->required()
+                              ->autofocus()
+                              ->columnSpan(2)
+                              ->unique(ignoreRecord: true)
+                              ->validationMessages([
+                                  'unique' => ' :attribute مخزون مسبقا ',
+                              ])        ,
+                          Forms\Components\Select::make('user_id')
+                              ->label('المستخدم')
+                              ->searchable()
+                              ->preload()
+                              ->options(User::
+                              where('company',Auth::user()->company)
+                                  ->where('id','!=',1)
+                                  ->pluck('name','id')),
                           TextInput::make('raseed')
                               ->label('رصيد بداية المدة')
                               ->numeric()

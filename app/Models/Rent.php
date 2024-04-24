@@ -10,7 +10,9 @@ class Rent extends Model
 {
     protected $connection = 'other';
 
-
+    public function Renttran(){
+        return $this->hasMany(Rent::class);
+    }
 
     public function __construct(array $attributes = [])
     {
