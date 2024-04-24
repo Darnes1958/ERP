@@ -23,4 +23,6 @@ Route::controller(\App\Http\Controllers\PdfController::class)->group(function ()
     route::get('/pdfsell/{id}', 'PdfSell')->name('pdfsell') ;
     route::get('/pdfklasa/{repDate1?},{repDate2?}', 'PdfKlasa')->name('pdfklasa') ;
     route::get('/pdfdaily/{repDate1?},{repDate2?}', 'PdfDaily')->name('pdfdaily') ;
+    route::get('/pdfcusttran/{tran_date?},{cust_id?}', 'PdfCusTtran')->name('pdfcusttran') ;
+    route::get('/pdfsupptran/{tran_date?},{cust_id?}', 'PdfSuppTran')->name('pdfsupptran') ;
 });

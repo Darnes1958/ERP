@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Buy;
 use App\Models\Buy_tran;
+use App\Models\Cust_tran;
 use App\Models\OurCompany;
 use App\Models\Receipt;
 use App\Models\Recsupp;
 use App\Models\Sell;
 use App\Models\Sell_tran;
+use App\Models\Supp_tran;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,6 +61,60 @@ class PdfController extends Controller
 
 
     }
+    public function PdfCusTtran(Request $request){
+
+    $RepDate=date('Y-m-d');
+    $cus=OurCompany::where('Company',Auth::user()->company)->first();
+    $RepTable=Cust_tran::
+    where('customer_id',$request->cust_id)
+      ->where('repDate','>=',$request->tran_date)->get();
+    $mden=Cust_tran::where('customer_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('mden');
+    $daen=Cust_tran::where('customer_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('daen');
+    $raseed=$daen-$mden;
+
+    $html = view('PDF.pdf-jeha-tran',
+      ['RepTable'=>$RepTable,'cus'=>$cus,'RepDate'=>$RepDate,'tran_date'=>$request->tran_date,
+        'mden'=>$mden,'daen'=>$daen,'raseed'=>$raseed])->toArabicHTML();
+
+    $pdf = PDF::loadHTML($html)->output();
+    $headers = array(
+      "Content-type" => "application/pdf",
+    );
+    return response()->streamDownload(
+      fn () => print($pdf),
+      "invoice.pdf",
+      $headers
+    );
+
+
+  }
+    public function PdfSuppTran(Request $request){
+
+    $RepDate=date('Y-m-d');
+    $cus=OurCompany::where('Company',Auth::user()->company)->first();
+    $RepTable=Supp_tran::
+    where('supplier_id',$request->cust_id)
+      ->where('repDate','>=',$request->tran_date)->get();
+    $mden=Supp_tran::where('supplier_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('mden');
+    $daen=Supp_tran::where('supplier_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('daen');
+    $raseed=$daen-$mden;
+
+    $html = view('PDF.pdf-supp-tran',
+      ['RepTable'=>$RepTable,'cus'=>$cus,'RepDate'=>$RepDate,'tran_date'=>$request->tran_date,
+        'mden'=>$mden,'daen'=>$daen,'raseed'=>$raseed])->toArabicHTML();
+
+    $pdf = PDF::loadHTML($html)->output();
+    $headers = array(
+      "Content-type" => "application/pdf",
+    );
+    return response()->streamDownload(
+      fn () => print($pdf),
+      "invoice.pdf",
+      $headers
+    );
+
+
+  }
     public function PdfKlasa($repDate1,$repDate2){
 
 

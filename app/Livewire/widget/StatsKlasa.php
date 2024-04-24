@@ -41,7 +41,7 @@ class StatsKlasa extends BaseWidget
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">مبيعات</span>'))
             ->value(new HtmlString('<span class="text-danger-600 ">'.
-              number_format(Sell::whereBetween('order_date',[$this->repDate1,$this->repDate2])->sum('tot'),2, '.', ',').'</span>')),
+              number_format(Sell::whereBetween('order_date',[$this->repDate1,$this->repDate2])->sum('total'),2, '.', ',').'</span>')),
 
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">قبض</span>'))

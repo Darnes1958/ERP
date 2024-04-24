@@ -7,7 +7,12 @@ use App\Models\Customer;
 use App\Models\Place_stock;
 use App\Models\Receipt;
 use App\Models\Sell;
+use App\Models\Sell_tran;
 use App\Models\Setting;
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
+use Filament\Actions\Action;
+use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -17,11 +22,13 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +46,8 @@ class CustTran extends Page implements HasForms,HasTable
   public $cust_id;
   public $repDate;
   public $formData;
+
+  public Sell $sell;
 
   public function mount(){
     $this->repDate=now();
@@ -80,6 +89,7 @@ class CustTran extends Page implements HasForms,HasTable
         TextColumn::make('id')
           ->sortable()
           ->searchable()
+
           ->label('الرقم الألي'),
 
         TextColumn::make('rec_who')
@@ -109,6 +119,7 @@ class CustTran extends Page implements HasForms,HasTable
       ])
         ->emptyStateHeading('لا توجد بيانات')
       ->defaultSort('created_at')
+
       ->striped();
   }
 
@@ -160,9 +171,29 @@ class CustTran extends Page implements HasForms,HasTable
        TextInput::make('raseed')
               ->readOnly()
               ->label('الرصيد'),
+        \Filament\Forms\Components\Actions::make([
+          \Filament\Forms\Components\Actions\Action::make('printorder')
+          ->label('طباعة')
+            ->visible(function (){
+              return $this->chkDate($this->repDate) && $this->cust_id;
+            })
+
+            ->button()
+          ->color('danger')
+          ->icon('heroicon-m-printer')
+          ->color('info')
+          ->url(fn (): string => route('pdfcusttran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,]))
+        ])->verticalAlignment(VerticalAlignment::End),
       ])
       ->columns(6)
       ];
   }
-
+  public function chkDate($repDate){
+    try {
+      Carbon::parse($repDate);
+      return true;
+    } catch (InvalidFormatException $e) {
+      return false;
+    }
+  }
 }

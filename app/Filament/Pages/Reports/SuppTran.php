@@ -5,6 +5,8 @@ namespace App\Filament\Pages\Reports;
 use App\Models\Supp_tran;
 use App\Models\Customer;
 use App\Models\Supplier;
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -13,6 +15,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -162,9 +165,29 @@ class SuppTran extends Page implements HasForms,HasTable
                         ->prefixIconColor('success')
                         ->readOnly()
                         ->label('الرصيد'),
+                  \Filament\Forms\Components\Actions::make([
+                    \Filament\Forms\Components\Actions\Action::make('printorder')
+                      ->label('طباعة')
+                      ->visible(function (){
+                        return $this->chkDate($this->repDate) && $this->cust_id;
+                      })
+
+                      ->button()
+                      ->color('danger')
+                      ->icon('heroicon-m-printer')
+                      ->color('info')
+                      ->url(fn (): string => route('pdfsupptran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,]))
+                  ])->verticalAlignment(VerticalAlignment::End),
                 ])
-                ->columns(6)
+                ->columns(7)
         ];
     }
-
+  public function chkDate($repDate){
+    try {
+      Carbon::parse($repDate);
+      return true;
+    } catch (InvalidFormatException $e) {
+      return false;
+    }
+  }
 }
