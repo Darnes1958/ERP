@@ -119,7 +119,6 @@ class CustTran extends Page implements HasForms,HasTable
       ])
         ->emptyStateHeading('لا توجد بيانات')
       ->defaultSort('created_at')
-
       ->striped();
   }
 
