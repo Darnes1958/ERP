@@ -46,29 +46,7 @@ class Arbah extends Page implements HasForms,HasActions
     $this->repDate2=now();
     $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
   }
-  public function form(Form $form): Form
-  {
-    return $form
-      ->schema([
-        DatePicker::make('repDate1')
-          ->live()
-          ->afterStateUpdated(function ($state){
-            if ($this->chkDate($state))  $this->repDate1=$state;
-            $this->dispatch('updateDate1', repdate: $state);
-          })
-          ->label('من تاريخ')
-          ->inlineLabel(),
-        DatePicker::make('repDate2')
-          ->live()
-          ->afterStateUpdated(function ($state){
-            if ($this->chkDate($state)) $this->repDate2=$state;
-            $this->dispatch('updateDate2', repdate: $state);
-          })
-          ->label('حتي تاريخ')
-          ->inlineLabel()
 
-      ]);
-  }
   protected function getFooterWidgets(): array
   {
     return [
