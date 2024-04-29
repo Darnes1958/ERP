@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\Item_tran;
 use App\Models\Recsupp;
 use App\Models\Sell_tran;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -75,6 +76,16 @@ class ItemTran extends Page implements HasForms,HasTable
            ->label('من تاريخ'),
 
       ])->columns(6);
+  }
+  public function printAction(): Action
+  {
+    return Action::make('print')
+      ->label('Excel')
+      ->button()
+      ->color('danger')
+      ->icon('heroicon-m-printer')
+      ->color('info')
+      ->url(fn (): string => route('itemtranexl', ['item_id'=>$this->item_id,'repDate'=>$this->repDate,]));
   }
 
     public function getTableRecordKey(Model $record): string

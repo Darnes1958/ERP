@@ -1,4 +1,16 @@
 <x-filament-panels::page>
-{{$this->form}}
+    <div class="flex ">
+        <div class="w-6/12">
+            {{ $this->form }}
+        </div>
+
+        <div class="w-3/12 " >
+            {{ $this->printAction }}
+        </div>
+
+
+    </div>
+
+
     {{$this->table}}
 </x-filament-panels::page>

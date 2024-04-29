@@ -178,10 +178,18 @@ class CustTran extends Page implements HasForms,HasTable
             })
 
             ->button()
-          ->color('danger')
+
           ->icon('heroicon-m-printer')
           ->color('info')
-          ->url(fn (): string => route('pdfcusttran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,]))
+          ->url(fn (): string => route('pdfcusttran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,])),
+          \Filament\Forms\Components\Actions\Action::make('Exl')
+            ->label('Excel')
+            ->visible(function (){
+              return $this->chkDate($this->repDate) && $this->cust_id;
+            })
+            ->button()
+            ->color('success')
+            ->url(fn (): string => route('custtranexl', ['repDate'=>$this->repDate,'cust_id'=>$this->cust_id,]))
         ])->verticalAlignment(VerticalAlignment::End),
       ])
       ->columns(6)

@@ -26,3 +26,8 @@ Route::controller(\App\Http\Controllers\PdfController::class)->group(function ()
     route::get('/pdfcusttran/{tran_date?},{cust_id?}', 'PdfCusTtran')->name('pdfcusttran') ;
     route::get('/pdfsupptran/{tran_date?},{cust_id?}', 'PdfSuppTran')->name('pdfsupptran') ;
 });
+
+Route::controller(\App\Http\Controllers\ExlController::class)->group(function () {
+  Route::get('itemtranexl/{item_id?},{repDate?}', 'ItemTranExl')->name('itemtranexl');
+  Route::get('custtranexl/{cust_id?},{repDate?}', 'CustTranExl')->name('custtranexl');
+});
