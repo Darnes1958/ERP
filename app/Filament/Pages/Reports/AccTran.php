@@ -4,8 +4,9 @@ namespace App\Filament\Pages\Reports;
 
 use App\Models\Acc;
 use App\Models\Acc_tran;
-use App\Models\Cust_tran;
-use App\Models\Customer;
+
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -13,6 +14,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -76,7 +78,18 @@ class AccTran extends Page  implements HasForms,HasTable
                         $this->repDate2=$state;
 
                     })
-                    ->label('إلي تاريخ')
+                    ->label('إلي تاريخ'),
+                \Filament\Forms\Components\Actions::make([
+
+                    \Filament\Forms\Components\Actions\Action::make('Exl')
+                        ->label('Excel')
+                        ->visible(function (){
+                            return ($this->chkDate($this->repDate1) || $this->chkDate($this->repDate2)) && $this->acc_id;
+                        })
+                        ->button()
+                        ->color('success')
+                        ->url(fn (): string => route('acctranexl', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'acc_id'=>$this->acc_id,]))
+                ])->verticalAlignment(VerticalAlignment::End),
 
             ])->columns(6);
     }
@@ -136,6 +149,15 @@ class AccTran extends Page  implements HasForms,HasTable
 
             ])
             ->defaultSort('receipt_date')
-            ->striped();
+            ->striped()
+            ;
+    }
+    public function chkDate($repDate){
+        try {
+            Carbon::parse($repDate);
+            return true;
+        } catch (InvalidFormatException $e) {
+            return false;
+        }
     }
 }

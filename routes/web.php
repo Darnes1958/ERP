@@ -30,4 +30,6 @@ Route::controller(\App\Http\Controllers\PdfController::class)->group(function ()
 Route::controller(\App\Http\Controllers\ExlController::class)->group(function () {
   Route::get('itemtranexl/{item_id?},{repDate?}', 'ItemTranExl')->name('itemtranexl');
   Route::get('custtranexl/{cust_id?},{repDate?}', 'CustTranExl')->name('custtranexl');
+  Route::get('acctranexl/{acc_id?},{repDate1?},{repDate2?}', 'AccTranExl')->name('acctranexl');
+  Route::get('kazenatranexl/{kazena_id?},{repDate1?},{repDate2?}', 'KazenaTranExl')->name('kazenatranexl');
 });
