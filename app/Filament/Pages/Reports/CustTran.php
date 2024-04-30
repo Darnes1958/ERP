@@ -2,7 +2,10 @@
 
 namespace App\Filament\Pages\Reports;
 
-use App\Models\Cust_tran;
+
+use App\Filament\Resources\SellResource\Pages\EditSell;
+use App\Filament\Resources\SellResource\Pages\SellEdit;
+use App\Models\Cust_tran2;
 use App\Models\Customer;
 use App\Models\Place_stock;
 use App\Models\Receipt;
@@ -67,7 +70,7 @@ class CustTran extends Page implements HasForms,HasTable
 
   public function getTableRecordKey(Model $record): string
   {
-    return uniqid();
+    return $record->idd;
   }
 
 
@@ -75,12 +78,26 @@ class CustTran extends Page implements HasForms,HasTable
   {
     return $table
       ->query(function (){
-        $report=Cust_tran::
+        $report=Cust_tran2::
           where('customer_id',$this->cust_id)
           ->where('repDate','>=',$this->repDate);
         return $report;
       })
 
+      ->actions([
+        \Filament\Tables\Actions\Action::make('عرض')
+          ->visible(function (Model $record) {return $record->rec_who->value==7;})
+          ->modalHeading(false)
+          ->action(fn (Cust_tran2 $record) => $record->idd)
+          ->modalSubmitAction(false)
+          ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+          ->modalContent(fn (Cust_tran2 $record): View => view(
+            'filament.pages.reports.views.view-sell-tran',
+            ['record' => Sell::with('Sell_tran')->where('id',$record->id)->first()],
+          ))
+          ->icon('heroicon-o-eye')
+          ->iconButton(),
+        ])
       ->columns([
         TextColumn::make('repDate')
           ->sortable()
@@ -118,7 +135,7 @@ class CustTran extends Page implements HasForms,HasTable
          ->label('ملاحظات')
       ])
         ->emptyStateHeading('لا توجد بيانات')
-      ->defaultSort('created_at')
+      ->defaultSort('idd')
       ->striped();
   }
 
@@ -135,8 +152,8 @@ class CustTran extends Page implements HasForms,HasTable
           ->afterStateUpdated(function ($state,Set $set){
             $this->cust_id=$state;
             if ($this->repDate) {
-                $mden=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
-                $daen=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
                 $set('mden',number_format($mden, 2, '.', ','));
                 $set('daen',number_format($daen, 2, '.', ','));
                 $set('raseed',number_format($daen-$mden, 2, '.', ','));
@@ -150,8 +167,8 @@ class CustTran extends Page implements HasForms,HasTable
           ->afterStateUpdated(function ($state,Set $set){
             $this->repDate=$state;
               if ($this->repDate && $this->cust_id) {
-                  $mden=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
-                  $daen=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                  $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                  $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
                   $set('mden',number_format($mden, 2, '.', ','));
                   $set('daen',number_format($daen, 2, '.', ','));
                   $set('raseed',number_format($daen-$mden, 2, '.', ','));
