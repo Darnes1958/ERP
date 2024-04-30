@@ -2,11 +2,16 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Buy;
+use App\Models\Cust_tran2;
+use App\Models\Sell;
 use App\Models\Supp_tran;
 use App\Models\Customer;
+use App\Models\Supp_tran2;
 use App\Models\Supplier;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
+use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -20,6 +25,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 
 class SuppTran extends Page implements HasForms,HasTable
@@ -54,7 +60,7 @@ class SuppTran extends Page implements HasForms,HasTable
 
     public function getTableRecordKey(Model $record): string
     {
-        return uniqid();
+        return $record->idd;
     }
 
 
@@ -62,12 +68,35 @@ class SuppTran extends Page implements HasForms,HasTable
     {
         return $table
             ->query(function (){
-                $report=Supp_tran::
+                $report=Supp_tran2::
                 where('supplier_id',$this->cust_id)
                     ->where('repDate','>=',$this->repDate);
                 return $report;
             })
             ->emptyStateHeading('لا توجد بيانات')
+            ->actions([
+                \Filament\Tables\Actions\Action::make('عرض')
+                    ->visible(function (Model $record) {return $record->rec_who->value==8;})
+                    ->modalHeading(false)
+                    ->action(fn (Supp_tran2 $record) =>  $record->idd)
+                    ->modalSubmitActionLabel('طباعة')
+                    ->modalSubmitAction(
+                        fn (\Filament\Actions\StaticAction $action,Supp_tran2 $record) =>
+                        $action->color('blue')
+                            ->icon('heroicon-o-printer')
+                            ->url(function () use($record){
+                                $this->order_no=$record->id;
+                                return route('pdfbuy', ['id' => $record->id]);
+                            })
+                    )
+                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalContent(fn (Supp_tran2 $record): View => view(
+                        'filament.pages.reports.views.view-buy-tran',
+                        ['record' => Buy::with('Buy_tran')->where('id',$record->id)->first()],
+                    ))
+                    ->icon('heroicon-o-eye')
+                    ->iconButton(),
+            ])
             ->columns([
                 TextColumn::make('repDate')
                     ->sortable()

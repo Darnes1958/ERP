@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class Cust_tran2 extends Model
 {
-    use HasFactory;protected $connection = 'other';
+
+    protected $connection = 'other';
   protected $table = 'cust_tran2';
   protected $primaryKey = 'idd';
   public function __construct(array $attributes = [])

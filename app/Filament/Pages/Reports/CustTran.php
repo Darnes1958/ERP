@@ -49,6 +49,7 @@ class CustTran extends Page implements HasForms,HasTable
   public $cust_id;
   public $repDate;
   public $formData;
+  public $order_no;
 
   public Sell $sell;
 
@@ -88,8 +89,17 @@ class CustTran extends Page implements HasForms,HasTable
         \Filament\Tables\Actions\Action::make('عرض')
           ->visible(function (Model $record) {return $record->rec_who->value==7;})
           ->modalHeading(false)
-          ->action(fn (Cust_tran2 $record) => $record->idd)
-          ->modalSubmitAction(false)
+          ->action(fn (Cust_tran2 $record) =>  $record->idd)
+            ->modalSubmitActionLabel('طباعة')
+            ->modalSubmitAction(
+                fn (\Filament\Actions\StaticAction $action,Cust_tran2 $record) =>
+                $action->color('blue')
+                    ->icon('heroicon-o-printer')
+                    ->url(function () use($record){
+                        $this->order_no=$record->id;
+                        return route('pdfsell', ['id' => $record->id]);
+                    })
+            )
           ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
           ->modalContent(fn (Cust_tran2 $record): View => view(
             'filament.pages.reports.views.view-sell-tran',
