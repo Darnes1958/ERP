@@ -69,6 +69,11 @@
                 $("#price_input").focus();
                 $("#price_input").select();
             }
+            if (postid == 'notes') {
+                $("#notes").focus();
+                $("#notes").select();
+            }
+
         });
         });
     </script>

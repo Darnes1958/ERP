@@ -305,7 +305,6 @@ class ReceiptResource extends Resource
                 ->label('زبون معين'),
               Tables\Filters\Filter::make('is_sell')
                 ->label('ايصالات فاتورة')
-
                 ->query(fn (Builder $query): Builder => $query->whereIn('rec_who', [3,4])),
               Tables\Filters\Filter::make('is_imp')
                 ->label('ايصالات قبض')
