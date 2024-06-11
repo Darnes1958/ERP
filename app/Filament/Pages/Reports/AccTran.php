@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Reports;
 use App\Models\Acc;
 use App\Models\Acc_tran;
 
+use App\Models\Kazena;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Forms\Components\DatePicker;
@@ -98,16 +99,21 @@ class AccTran extends Page  implements HasForms,HasTable
         return $table
             ->query(function (){
                 $report=Acc_tran::
-                where('acc_id',$this->acc_id)
-                ->where('acc_id','!=',null)
+                when($this->acc_id==null,function ($q){
+                    $q->where('id',null);
+                })
+                ->where(function ($q){
+                    $q->where('acc_id',$this->acc_id)
+                      ->orwhere('acc2_id',$this->acc_id);
+                      })
+
+
                     ->when($this->repDate1,function ($q){
                         $q->where('receipt_date','>=',$this->repDate1);
                     })
                     ->when($this->repDate2,function ($q){
                         $q->where('receipt_date','<=',$this->repDate2);
-                    })
-
-                ;
+                    });
                 return $report;
             })
             ->emptyStateHeading('لا توجد بيانات')
@@ -115,6 +121,14 @@ class AccTran extends Page  implements HasForms,HasTable
             ->columns([
                 TextColumn::make('rec_who')
                     ->sortable()
+                    ->description(function (Acc_tran $record) {
+                        if ($record->rec_who->value ==10) return 'من '.Acc::find($record->acc2_id)->name;
+                        if ($record->rec_who->value ==11 ) return 'إلي '.Kazena::find($record->kazena2_id)->name;
+                        if ($record->rec_who->value ==12){
+                         if ($record->acc_id==$this->acc_id) return 'الي '.Acc::find($record->acc2_id)->name;
+                         if ($record->acc2_id==$this->acc_id) return 'من '.Acc::find($record->acc_id)->name;
+                        }
+                    })
                     ->searchable()
                     ->label('البيان'),
                 TextColumn::make('receipt_date')
@@ -124,6 +138,15 @@ class AccTran extends Page  implements HasForms,HasTable
 
                 TextColumn::make('mden')
                     ->color('danger')
+                    ->state(function (Acc_tran $record){
+                     if ($record->rec_who->value>8){
+                       if ($record->acc2_id==$this->acc_id) return $record->daen;
+                       else return 0;
+                     } else return $record->mden;
+
+                    }
+
+                    )
                     ->searchable()
                     ->numeric(
                         decimalPlaces: 2,
@@ -134,6 +157,16 @@ class AccTran extends Page  implements HasForms,HasTable
                 TextColumn::make('daen')
                     ->color('info')
                     ->searchable()
+                    ->state(function (Acc_tran $record){
+                        if ($record->rec_who->value>8){
+                            if ($record->acc2_id==$this->acc_id) return 0;
+                            else return $record->daen;
+                        } else return $record->daen;
+
+                    }
+
+                    )
+
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',

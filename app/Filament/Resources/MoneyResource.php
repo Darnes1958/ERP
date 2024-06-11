@@ -48,7 +48,6 @@ class MoneyResource extends Resource
                 ->label('نوع الايصال')
                 ->default(1)
                 ->live()
-                ->default(1)
                 ->columnSpan(2)
                 ->options(RecWhoMoney::class)
                 ->columnSpanFull(),
@@ -57,7 +56,7 @@ class MoneyResource extends Resource
                 ->schema([
                  Select::make('kazena_id')
                    ->label('من الخزينة')
-                   ->relationship('Kazena','name')
+                     ->options(Kazena::all()->pluck('name','id'))
                    ->searchable()
                    ->required(function (Forms\Get $get){
                      return $get('rec_who')==1 || $get('rec_who')==2;
@@ -69,19 +68,20 @@ class MoneyResource extends Resource
                    ->preload(),
                  Select::make('acc_id')
                    ->label('من الحساب المصرفي')
+                   ->options(Acc::all()->pluck('name','id'))
                    ->relationship('Acc','name')
                    ->searchable()
                    ->required(function (Forms\Get $get){
                      return $get('rec_who')==3 || $get('rec_who')==4;
                    })
-                   ->live()
+
                    ->visible(function (Forms\Get $get){
                      return $get('rec_who')==3 || $get('rec_who')==4;
                    })
                    ->preload(),
                  Select::make('kazena2_id')
                    ->label('إلي الحزينة')
-                   ->relationship('Kazena','name')
+                     ->options(Kazena::all()->pluck('name','id'))
                    ->searchable()
                    ->required(function (Forms\Get $get){
                      return $get('rec_who')==1 || $get('rec_who')==3;
@@ -93,7 +93,7 @@ class MoneyResource extends Resource
                    ->preload(),
                  Select::make('acc2_id')
                    ->label('إلي الحساب المصرفي')
-                   ->relationship('Acc','name')
+                     ->options(Acc::all()->pluck('name','id'))
                    ->searchable()
                    ->required(function (Forms\Get $get){
                      return $get('rec_who')==2 || $get('rec_who')==4;

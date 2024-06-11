@@ -16,4 +16,5 @@ class EditMoney extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
 }

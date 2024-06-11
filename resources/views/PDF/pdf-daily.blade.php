@@ -74,7 +74,6 @@
       </tbody>
     </table>
 
-
     <label style="font-size: 14pt;margin-right: 12px;" >مبيعات  </label>
     <table  width="100%"   align="right" >
       <thead style="  margin-top: 8px;">
@@ -126,11 +125,6 @@
 
       </tbody>
     </table>
-
-
-
-
-
 
     <label style="font-size: 14pt;margin-right: 12px;" >الموردين</label>
       <table   align="right" >

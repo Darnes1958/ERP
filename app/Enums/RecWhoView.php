@@ -15,7 +15,10 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
   case قبـض_فاتورة = 6;
   case فاتورة_مبيعات = 7;
   case فاتورة_مشتريات = 8;
-
+  case من_خزينة_الي_خزينة = 9;
+  case من_خزينة_الي_مصرف = 10;
+  case من_مصرف_الي_خزينة = 11;
+  case من_مصرف_الي_مصرف = 12;
 
   public function getLabel(): ?string
   {
@@ -31,8 +34,11 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
       self::قبـض_فاتورة => 'success',
       self::دفـع_فاتورة => 'danger',
       self::فاتورة_مبيعات => 'blue',
-        self::فاتورة_مشتريات => 'Fuchsia',
-
+      self::فاتورة_مشتريات => 'Fuchsia',
+      self::من_خزينة_الي_خزينة => 'success',
+      self::من_خزينة_الي_مصرف => 'success',
+      self::من_مصرف_الي_خزينة => 'danger',
+      self::من_مصرف_الي_مصرف => 'danger',
     };
   }
   public function getIcon(): ?string
@@ -42,11 +48,14 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
       self::دفع => 'heroicon-m-arrow-long-right',
       self::قبض_فاتورة => 'heroicon-m-arrow-long-left',
       self::دفع_فاتورة => 'heroicon-m-arrow-long-right',
-        self::قبـض_فاتورة => 'heroicon-m-arrow-left-circle',
-        self::دفـع_فاتورة => 'heroicon-m-arrow-right-circle',
+      self::قبـض_فاتورة => 'heroicon-m-arrow-left-circle',
+      self::دفـع_فاتورة => 'heroicon-m-arrow-right-circle',
       self::فاتورة_مبيعات => 'heroicon-m-shopping-cart',
-        self::فاتورة_مشتريات => 'heroicon-m-shopping-cart',
-
+      self::فاتورة_مشتريات => 'heroicon-m-shopping-cart',
+      self::من_خزينة_الي_خزينة => 'heroicon-m-banknotes',
+      self::من_خزينة_الي_مصرف => 'heroicon-m-banknotes',
+      self::من_مصرف_الي_خزينة => 'heroicon-m-building-library',
+      self::من_مصرف_الي_مصرف => 'heroicon-m-building-library',
     };
   }
 }
