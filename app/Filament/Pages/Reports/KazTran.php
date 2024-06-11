@@ -113,6 +113,15 @@ class KazTran extends Page implements HasForms,HasTable
       ->columns([
         TextColumn::make('rec_who')
           ->sortable()
+          ->description(function (Acc_tran $record) {
+            if ($record->rec_who->value ==10) return 'الي '.Acc::find($record->acc2_id)->name;
+            if ($record->rec_who->value ==11 ) return 'من '.Acc::find($record->acc2_id)->name;
+            if ($record->rec_who->value ==9){
+              if ($record->mden==0) return 'الي '.Kazena::find($record->kazena2_id)->name;
+              else return 'من '.Kazena::find($record->kazena2_id)->name;
+            }
+          })
+
           ->searchable()
           ->label('البيان'),
         TextColumn::make('receipt_date')
