@@ -15,6 +15,8 @@ class KlasaBuy extends BaseWidget
   public $repDate1;
   public $repDate2;
 
+
+
     #[On('updateDate1')]
     public function updatedate1($repdate)
     {

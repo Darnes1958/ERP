@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Reports;
 
 use App\Livewire\widget\KlasaBuy;
 use App\Livewire\widget\KlasaCust;
+use App\Livewire\widget\KlasaMasr;
 use App\Livewire\widget\KlasaSell;
 use App\Livewire\widget\KlasaSupp;
 use App\Livewire\widget\RepBuy;
@@ -28,11 +29,13 @@ use Carbon\Exceptions\InvalidFormatException;
 
 class RepKlasa extends Page implements HasForms,HasActions
 {
+
     use InteractsWithForms,InteractsWithActions;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'خلاصة الحركة اليومية';
     protected static ?string $navigationGroup = 'الحركة اليومية';
     protected static ?int $navigationSort=2;
+
 
     public function chkDate($repDate){
         try {
@@ -65,12 +68,13 @@ class RepKlasa extends Page implements HasForms,HasActions
             KlasaSell::class,
             KlasaSupp::class,
             KlasaCust::class,
-
+            KlasaMasr::class,
             StatsKlasa::class,
             RepBuy::class,
             RepSell::class,
             Recsupp::class,
             RepReceipt::class,
+
 
         ];
     }
@@ -94,6 +98,9 @@ class RepKlasa extends Page implements HasForms,HasActions
             KlasaCust::make([
               'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
+          KlasaMasr::make([
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+          ]),
 
         ];
     }
