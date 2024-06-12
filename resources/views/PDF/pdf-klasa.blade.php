@@ -142,7 +142,7 @@
           <label class="page"></label>
           <label> صفحة رقم </label>
         </div>
-        @php $sumva+=$item->val;$sumexp+=$item->exp; @endphp
+        @php $sumval+=$item->val;$sumexp+=$item->exp; @endphp
       @endforeach
       <tr class="font-size-12 " style="font-weight: bold">
         <td> {{number_format($sumexp, 2, '.', ',')}} </td>
