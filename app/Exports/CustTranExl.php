@@ -87,7 +87,7 @@ class CustTranExl implements FromCollection,WithMapping,
           ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $event->sheet->setCellValue('C5', 'كشف حساب الزبون :  '.$this->cust_name.'      من تاريخ  '.$this->repDate);
-        $event->sheet->setCellValue('E7','مدين : '.$this->mden.'    دارئن : '.$this->daen.'    الرصيد : '.$this->daen-$this->mden);
+        $event->sheet->setCellValue('E7','مدين : '.$this->mden.'    دارئن : '.$this->daen.'    الرصيد : '.$this->mden-$this->daen);
         $event->sheet->getDelegate()->setRightToLeft(true);
 
       },

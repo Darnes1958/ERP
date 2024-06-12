@@ -106,6 +106,7 @@ class SellResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('id','desc')
             ->columns([
                 TextColumn::make('id')
                     ->searchable()
@@ -151,6 +152,11 @@ class SellResource extends Resource
                     ->icon('heroicon-m-pencil')
                     ->color('info')
                     ->url(fn(Model $record) => self::getUrl('selledit', ['record' => $record])),
+                Tables\Actions\Action::make('tarsell')
+                    ->iconButton()
+                    ->icon('heroicon-m-arrows-right-left')
+                    ->color('info')
+                    ->url(fn(Model $record) => self::getUrl('tarsell', ['record' => $record])),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton()
                     ->modalHeading('حذف فاتورة مبيعات')
@@ -180,6 +186,7 @@ class SellResource extends Resource
             'selledit' => Pages\SellEdit::route('/{record}/selledit'),
             'create' => Pages\CreateSell::route('/create'),
             'edit' => Pages\EditSell::route('/{record}/edit'),
+            'tarsell' => Pages\TarSell::route('/{record}/tarsell'),
         ];
     }
 }

@@ -28,7 +28,7 @@ class EditRecsupp extends EditRecord
   }
     protected function afterSave(): void
     {
-        if ($this->rec_who == 3 || $this->rec_who == 4)
+        if ($this->rec_who == 3 || $this->rec_who == 4 || $this->rec_who == 5 || $this->rec_who == 6)
         {
 
             $imp=Recsupp::where('buy_id',$this->buy_to_save)->whereIn('rec_who',[3,6])

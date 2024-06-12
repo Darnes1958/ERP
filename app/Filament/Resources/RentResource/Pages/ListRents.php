@@ -80,6 +80,10 @@ class ListRents extends ListRecords
                         ->searchable()
                         ->preload()
                         ->required(),
+                    DatePicker::make('tran_date')
+                        ->required()
+                        ->default(now())
+                        ->label('التاريخ'),
                     TextInput::make('val')
                         ->label('المبلغ')
                         ->required(),
@@ -91,7 +95,7 @@ class ListRents extends ListRecords
 
                     $tran=new Renttran;
                     $tran->rent_id=$data['rent_id'];
-                    $tran->tran_date=now();
+                    $tran->tran_date=$data['tran_date'];;
                     $tran->tran_type='سحب';
                     $tran->val=$data['val'];
                     $tran->notes=$data['notes'];

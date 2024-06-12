@@ -17,12 +17,13 @@ class EditReceipt extends EditRecord
     public $rec_who;
     protected function afterSave(): void
     {
-        if ($this->rec_who == 3 || $this->rec_who == 4)
+        if ($this->rec_who == 3 || $this->rec_who == 4 || $this->rec_who == 5 || $this->rec_who == 6)
         {
-            $imp=Receipt::where('sell_id',$this->sell_to_save)->where('rec_who',[3,6])
+            $imp=Receipt::where('sell_id',$this->sell_to_save)->wherein('rec_who',[3,6])
                 ->sum('val');
-            $exp=Receipt::where('sell_id',$this->sell_to_save)->where('rec_who',[4,5])
+            $exp=Receipt::where('sell_id',$this->sell_to_save)->wherein('rec_who',[4,5])
                 ->sum('val');
+
             $sell=Sell::find($this->sell_to_save);
             $sell->pay=$imp-$exp;
             $sell->baky=$sell->total-$sell->pay;

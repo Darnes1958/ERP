@@ -255,6 +255,8 @@ class ReceiptResource extends Resource
                 TextInput::make('notes')
                  ->columnSpan(3)
                  ->label('ملاحظات'),
+                Hidden::make('sell_id'),
+
                 Hidden::make('imp_exp')
                 ->default(0),
                 Hidden::make('user_id')
@@ -265,6 +267,7 @@ class ReceiptResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('id','desc')
             ->columns([
                 TextColumn::make('index')
                     ->label('ت')
@@ -343,15 +346,17 @@ class ReceiptResource extends Resource
                 })
             ])
             ->actions([
-              Tables\Actions\EditAction::make()->iconButton()->color('blue')->visible(fn(Receipt $record) =>$record->rec_who->value<5),
+              Tables\Actions\EditAction::make()->iconButton()->color('blue')->visible(fn(Receipt $record) =>$record->rec_who->value<7),
               Tables\Actions\DeleteAction::make()->iconButton()
-                  ->visible(fn(Receipt $record) =>$record->rec_who->value<5)
+                  ->visible(fn(Receipt $record) =>$record->rec_who->value<7)
                 ->modalHeading('حذف الإيصال')
                 ->after(function (Receipt $record) {
-                  if ($record->rec_who==3 || $record->rec_who==4) {
+
+                  if ($record->rec_who->value==3 || $record->rec_who->value==4 || $record->rec_who->value==5 || $record->rec_who->value==6) {
 
                     $sum=Receipt::where('sell_id',$record->sell_id)->whereIn('rec_who',[3,6])->sum('val');
                     $sub=Receipt::where('sell_id',$record->sell_id)->whereIn('rec_who',[4,5])->sum('val');
+
                     $sell=Sell::find($record->sell_id);
                     $sell->pay=$sum-$sub;
                     $sell->baky=$sell->total-$sum+$sub;

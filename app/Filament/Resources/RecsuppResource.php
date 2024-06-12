@@ -271,6 +271,7 @@ class RecsuppResource extends Resource
   public static function table(Table $table): Table
   {
     return $table
+       ->defaultSort('id','desc')
       ->columns([
         TextColumn::make('id')
           ->label('الرقم الألي'),
@@ -346,11 +347,11 @@ class RecsuppResource extends Resource
           })
       ])
       ->actions([
-        Tables\Actions\EditAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<5),
-        Tables\Actions\DeleteAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<5)
+        Tables\Actions\EditAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<7),
+        Tables\Actions\DeleteAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<7)
           ->modalHeading('حذف الإيصال')
           ->after(function (Recsupp $record) {
-            if ($record->rec_who->value==3 || $record->rec_who->value==4) {
+              if ($record->rec_who->value==3 || $record->rec_who->value==4 || $record->rec_who->value==5 || $record->rec_who->value==6) {
                 $sum=Recsupp::where('buy_id',$record->buy_id)->whereIn('rec_who',[3,6])->sum('val');
                 $sub=Recsupp::where('buy_id',$record->buy_id)->whereIn('rec_who',[4,5])->sum('val');
               $buy=Buy::find($record->buy_id);

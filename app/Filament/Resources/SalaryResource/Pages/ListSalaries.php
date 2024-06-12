@@ -84,6 +84,10 @@ class ListSalaries extends ListRecords
               ->searchable()
               ->preload()
                ->required(),
+              DatePicker::make('tran_date')
+                ->required()
+                ->default(now())
+                ->label('التاريخ'),
               TextInput::make('val')
                 ->label('المبلغ')
                 ->required(),
@@ -95,7 +99,7 @@ class ListSalaries extends ListRecords
 
                   $tran=new Salarytran;
                   $tran->salary_id=$data['salary_id'];
-                  $tran->tran_date=now();
+                  $tran->tran_date=$data['tran_date'];
                   $tran->tran_type='سحب';
                   $tran->val=$data['val'];
                   $tran->notes=$data['notes'];
@@ -121,6 +125,10 @@ class ListSalaries extends ListRecords
                 ->searchable()
                 ->preload()
                 ->required(),
+                DatePicker::make('tran_date')
+                    ->required()
+                    ->default(now())
+                    ->label('التاريخ'),
               TextInput::make('val')
                 ->label('المبلغ')
                 ->required(),
@@ -131,7 +139,7 @@ class ListSalaries extends ListRecords
 
               $tran=new Salarytran;
               $tran->salary_id=$data['salary_id'];
-              $tran->tran_date=now();
+                $tran->tran_date=$data['tran_date'];
               $tran->tran_type='اضافة';
               $tran->val=$data['val'];
               $tran->notes=$data['notes'];

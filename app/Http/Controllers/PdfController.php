@@ -70,7 +70,7 @@ class PdfController extends Controller
       ->where('repDate','>=',$request->tran_date)->get();
     $mden=Cust_tran::where('customer_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('mden');
     $daen=Cust_tran::where('customer_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('daen');
-    $raseed=$daen-$mden;
+    $raseed=$mden-$daen;
 
     $html = view('PDF.pdf-jeha-tran',
       ['RepTable'=>$RepTable,'cus'=>$cus,'RepDate'=>$RepDate,'tran_date'=>$request->tran_date,
@@ -97,7 +97,7 @@ class PdfController extends Controller
       ->where('repDate','>=',$request->tran_date)->get();
     $mden=Supp_tran::where('supplier_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('mden');
     $daen=Supp_tran::where('supplier_id',$request->cust_id)->where('repDate','>=',$request->tran_date)->sum('daen');
-    $raseed=$daen-$mden;
+    $raseed=$mden-$daen;
 
     $html = view('PDF.pdf-supp-tran',
       ['RepTable'=>$RepTable,'cus'=>$cus,'RepDate'=>$RepDate,'tran_date'=>$request->tran_date,

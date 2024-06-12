@@ -58,12 +58,14 @@ class SellEdit extends Page implements HasTable
 
         $this->sellForm->fill($this->record->toArray());
         if ($this->sell->pay!=0){
-            $receipt=Receipt::where('sell_id',$this->sell->id)->first();
 
-            if ($receipt->acc_id)
-                $this->sellForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
-            if ($receipt->kazena_id)
-                $this->sellForm->fill(collect($this->record)->put('kazena_id',$receipt->kazena_id)->toArray());
+            $receipt=Receipt::where('sell_id',$this->sell->id)->first();
+            if ($receipt) {
+                if ($receipt->acc_id)
+                    $this->sellForm->fill(collect($this->record)->put('acc_id', $receipt->acc_id)->toArray());
+                if ($receipt->kazena_id)
+                    $this->sellForm->fill(collect($this->record)->put('kazena_id', $receipt->kazena_id)->toArray());
+            }
         }
 
         $this->sellTranForm->fill([]);
@@ -127,12 +129,35 @@ class SellEdit extends Page implements HasTable
                 ->iconColor('success')
                 ->send();
         else {
+            $tar=Sell_tran::where('sell_id',$this->sell_id)->where('item_id',$res->item_id)->first();
+            if ($tar && $tar->tar_sell_id)
+            {
+                Notification::make()
+                    ->title('توجد كمية مرجعة من هذا الصنف لا يجوز تعديله ')
+                    ->icon('heroicon-o-check')
+                    ->iconColor('success')
+                    ->send();
+                $this->sellTranForm->fill([]);
+                return;
+            }
             $this->itemFill($res->item_id,$res->id,$res->item->stock1);
             $this->dispatch('gotoitem', test: 'q1');
         }
     }
     public function ChkItem(){
         $res=Item::find($this->selltranData['item_id']);
+
+        $tar=Sell_tran::where('sell_id',$this->sell_id)->where('item_id',$res->id)->first();
+        if ($tar && $tar->tar_sell_id)
+        {
+            Notification::make()
+                ->title('توجد كمية مرجعة من هذا الصنف لا يجوز تعديله ')
+                ->icon('heroicon-o-check')
+                ->iconColor('success')
+                ->send();
+            $this->sellTranForm->fill([]);
+            return;
+        }
 
         $this->itemFill($res->id,$res->barcode,$res->stock1);
         if ($res->price1==0) $this->dispatch('gotoitem', test: 'price1');
@@ -217,8 +242,8 @@ class SellEdit extends Page implements HasTable
 
         if ($receipt->acc_id)
           $this->sellForm->fill(collect($this->record)->put('acc_id',$receipt->acc_id)->toArray());
-          if ($receipt->kazena_id)
-              $this->sellForm->fill(collect($this->record)->put('kazena_id',$receipt->kazena_id)->toArray());
+        if ($receipt->kazena_id)
+          $this->sellForm->fill(collect($this->record)->put('kazena_id',$receipt->kazena_id)->toArray());
 
       }
     }
@@ -592,7 +617,12 @@ class SellEdit extends Page implements HasTable
                     ->sortable(),
                 TextColumn::make('Item.name')
                     ->label('اسم الصنف')
-                    ->color('info')
+                    ->description(function (Sell_tran $record){
+                        if ($record->tar_sell_id) return 'توجد كمية مرجعة رقم ألي ('.$record->tar_sell_id.')';
+                    })
+                    ->color(function(Sell_tran $record){
+                        if ($record->tar_sell_id) return 'danger'; else return 'info';
+                    })
                     ->sortable(),
                 TextColumn::make('q1')
                     ->label('الكمية'),
@@ -634,8 +664,8 @@ class SellEdit extends Page implements HasTable
                     ->icon('heroicon-m-trash')
                     ->iconButton()->color('danger')
                     ->hiddenLabel()
-                    ->hidden(function (){
-                        return Sell_tran::where('sell_id',$this->sell_id)->count()==1;
+                    ->hidden(function (Sell_tran $record){
+                        return Sell_tran::where('sell_id',$this->sell_id)->count()==1 || $record->tar_sell_id;
                     })
                     ->requiresConfirmation(),
             ])

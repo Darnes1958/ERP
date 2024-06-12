@@ -58,7 +58,7 @@ class SellRep extends Page implements HasForms,HasTable
       $sell->all();
       return $sell;
     })
-
+     ->defaultSort('id','desc')
      ->columns([
        TextColumn::make('id')
          ->searchable()

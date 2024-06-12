@@ -166,7 +166,7 @@ class CustTran extends Page implements HasForms,HasTable
                 $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
                 $set('mden',number_format($mden, 2, '.', ','));
                 $set('daen',number_format($daen, 2, '.', ','));
-                $set('raseed',number_format($daen-$mden, 2, '.', ','));
+                $set('raseed',number_format($mden-$daen, 2, '.', ','));
 
 
             }
@@ -181,7 +181,7 @@ class CustTran extends Page implements HasForms,HasTable
                   $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
                   $set('mden',number_format($mden, 2, '.', ','));
                   $set('daen',number_format($daen, 2, '.', ','));
-                  $set('raseed',number_format($daen-$mden, 2, '.', ','));
+                  $set('raseed',number_format($mden-$daen, 2, '.', ','));
 
 
               }
