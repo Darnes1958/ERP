@@ -17,11 +17,23 @@
                                     {{ number_format($records->sum($calc_columns[$i]),2, '.', ',') }}
                                  </span>
                                 @endif
-                                @if($calc_columns[$i]!='mden' && $calc_columns[$i]!='safi')
+                                @if($calc_columns[$i]!='mden' && $calc_columns[$i]!='safi' && $calc_columns[$i]!='raseed')
                                  <span class="font-medium text-indigo-700">
                                     {{ number_format($records->sum($calc_columns[$i]),2, '.', ',') }}
                                  </span>
                                 @endif
+                                    @if($calc_columns[$i]=='raseed' )
+                                        @if($records->sum($calc_columns[$i])<0)
+                                            <span class="font-medium text-danger-600">
+                                             {{ number_format($records->sum($calc_columns[$i]),2, '.', ',') }}
+                                         </span>
+                                        @else
+                                            <span class="font-medium text-indigo-700">
+                                            {{ number_format($records->sum($calc_columns[$i]),2, '.', ',') }}
+                                         </span>
+                                        @endif
+
+                                    @endif
                             </div>
                         </div>
                     </div>

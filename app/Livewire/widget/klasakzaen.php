@@ -2,11 +2,16 @@
 
 namespace App\Livewire\widget;
 
+use App\Filament\Pages\Reports\KazTran;
+use App\Models\Acc_tran;
+use App\Models\Kazena;
+use App\Models\Recsupp;
 use App\Models\Tar_sell;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Livewire\Attributes\On;
 
@@ -14,6 +19,11 @@ class klasakzaen extends BaseWidget
 {
     public $repDate1;
     public $repDate2;
+  public function mount(){
+    $this->repDate1=now();
+    $this->repDate2=now();
+
+  }
 
     #[On('updateDate1')]
     public function updatedate1($repdate)
@@ -29,59 +39,47 @@ class klasakzaen extends BaseWidget
         'calc_columns' => [
             'mden',
             'daen',
+            'raseed',
+
         ],
     ];
-
+  public function getTableRecordKey(Model $record): string
+  {
+    return uniqid();
+  }
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Tar_sell $sell){
-                if (!$this->repDate1 && !$this->repDate2) return;
-                $tar_sell=Tar_sell::where('id',null);
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate1[4]);
-                $errors = \DateTime::getLastErrors();
-                if (!empty($errors['warning_count'])) {
-                    return false ;
-                }
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate2[4]);
-                $errors = \DateTime::getLastErrors();
-                if (!empty($errors['warning_count'])) {
-                    return false ;
-                }
+            ->query(function (Acc_tran $rec){
 
-                if ($this->repDate1 && !$this->repDate2)
-                    $sell=Tar_sell::where('tar_date','>=',$this->repDate1);
-                if ($this->repDate2 && !$this->repDate1)
-                    $sell=Tar_Sell::where('tar_date','<=',$this->repDate1);
-                if ($this->repDate1 && $this->repDate2)
-                    $sell=Tar_Sell::whereBetween('tar_date',[$this->repDate1,$this->repDate2]);
-
-
-                return $sell;
+              $rec=Acc_tran::
+                where('receipt_date','>=',$this->repDate1)
+                ->where('receipt_date','<=',$this->repDate2)
+                ->where('kazena_id','!=',null)
+                ->join('kazenas','kazena_id','kazenas.id')
+                ->selectRaw('kazenas.name,sum(mden) as mden,sum(daen) as daen,sum(mden-daen) raseed')
+                ->groupby('kazenas.name');
+                return $rec;
             }
-            // ...
-            )
-            ->heading(new HtmlString('<div class="text-danger-600 text-lg">ترجيع المبيعات</div>'))
-            ->defaultPaginationPageOption(5)
 
-            ->defaultSort('order_date','desc')
+            )
+            ->heading(new HtmlString('<div class="text-danger-600 text-lg">أرصدة الخزائن</div>'))
+            ->defaultPaginationPageOption(5)
+            ->defaultSort('name')
             ->striped()
             ->columns([
-                TextColumn::make('id')
-                    ->label('الرقم الألي'),
-                TextColumn::make('Item.name')
-                    ->label('اسم الصنف'),
-                TextColumn::make('q1')
-                    ->label('الكمية'),
-                TextColumn::make('sub_tot')
-                    ->label('الاجمالي'),
-                TextColumn::make('notes')
-                    ->label('ملاحظات'),
 
+                TextColumn::make('name')
+                    ->label('البيان'),
+                TextColumn::make('mden')
+                    ->label('مدين'),
+                TextColumn::make('daen')
+                    ->label('دائن'),
+                TextColumn::make('raseed')
+                  ->color(function ($state){if ($state<0) return 'danger'; else return 'info';})
+                    ->label('الرصيد'),
             ])
-            ->actions([
-                //
-            ])
+
             ->emptyStateHeading('لا توجد بيانات')
             ->contentFooter(view('table.footer', $this->data_list))
             ;
