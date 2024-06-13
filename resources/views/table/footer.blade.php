@@ -28,5 +28,6 @@
                 @endif
             @endfor
         </x-table.cell>
+
     @endforeach
 </x-table.row>

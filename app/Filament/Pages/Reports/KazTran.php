@@ -29,11 +29,15 @@ class KazTran extends Page implements HasForms,HasTable
   protected static ?string $navigationGroup='مصارف وخزائن';
   protected ?string $heading="";
 
-    protected static string $view = 'filament.pages.reports.kaz-tran';
+  protected static string $view = 'filament.pages.reports.kaz-tran';
 
   public $repDate1;
   public $repDate2;
   public $kazena_id;
+
+  public $mden=null;
+  public $daen=null;
+  public $balance=null;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -63,12 +67,25 @@ class KazTran extends Page implements HasForms,HasTable
           ->live()
           ->afterStateUpdated(function ($state){
             $this->kazena_id=$state;
+            $this->balance=Kazena::find($state)->balance;
+            $this->daen=0;
+
+              $this->mden=$this->balance+Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('mden');
+
+              $this->daen=Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('daen');
           })
           ->label('الحساب'),
         DatePicker::make('repDate1')
           ->live()
           ->afterStateUpdated(function ($state){
             $this->repDate1=$state;
+            if ($this->repDate1 && $this->balance)
+            {
+              $this->mden=$this->balance+Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('mden');
+              $this->daen=Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('daen');
+            }
+
+
           })
           ->label('من تاريخ'),
         DatePicker::make('repDate2')
@@ -109,6 +126,10 @@ class KazTran extends Page implements HasForms,HasTable
         return $report;
       })
       ->emptyStateHeading('لا توجد بيانات')
+
+      ->header(function () {return view('table.acc_header', [
+        'mden' => $this->mden,'daen'=>$this->daen,'balance'=>$this->balance,
+      ]); })
       ->contentFooter(view('table.footer', $this->data_list))
       ->columns([
         TextColumn::make('rec_who')

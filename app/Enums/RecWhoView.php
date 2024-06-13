@@ -19,6 +19,7 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
   case من_خزينة_الي_مصرف = 10;
   case من_مصرف_الي_خزينة = 11;
   case من_مصرف_الي_مصرف = 12;
+  case مصروفات = 13;
 
   public function getLabel(): ?string
   {
@@ -39,6 +40,7 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
       self::من_خزينة_الي_مصرف => 'success',
       self::من_مصرف_الي_خزينة => 'danger',
       self::من_مصرف_الي_مصرف => 'danger',
+      self::مصروفات => 'info',
     };
   }
   public function getIcon(): ?string
@@ -56,6 +58,7 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
       self::من_خزينة_الي_مصرف => 'heroicon-m-banknotes',
       self::من_مصرف_الي_خزينة => 'heroicon-m-building-library',
       self::من_مصرف_الي_مصرف => 'heroicon-m-building-library',
+      self::مصروفات => 'heroicon-m-gift',
     };
   }
 }
