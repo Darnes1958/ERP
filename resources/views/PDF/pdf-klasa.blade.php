@@ -120,7 +120,7 @@
           <tr style="background:lightgray">
               <th style="width: 14%;">دفع</th>
               <th style="width: 14%;">قبض</th>
-              <th >الحساب المصرفي</th>
+              <th >الحساب المصرفي / الخزينة</th>
               <th style="width: 20%;">طريقة الدفع</th>
               <th style="width: 20%;">البيان</th>
 
@@ -133,8 +133,12 @@
         <tr class="font-size-12">
           <td> {{number_format($item->exp, 2, '.', ',')}} </td>
           <td> {{number_format($item->val, 2, '.', ',')}} </td>
+            @if($item->accName)
+                <td> {{$item->accName}}  </td>
+            @else
+                <td> {{$item->kazenaName}}  </td>
+            @endif
           <td> {{$item->name}}  </td>
-          <td> {{$item->accName}}  </td>
           <td >{{$item->rec_who->name}}  </td>
         </tr>
         <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
@@ -165,7 +169,7 @@
           <tr style="background:lightgray">
               <th style="width: 14%;">دفع</th>
               <th style="width: 14%;">قبض</th>
-              <th >الحساب المصرفي</th>
+              <th >الحساب المصرفي / الخزينة</th>
               <th style="width: 20%;">طريقة الدفع</th>
               <th style="width: 20%;">البيان</th>
 
@@ -177,7 +181,11 @@
               <tr class="font-size-12">
                   <td> {{number_format($item->exp, 2, '.', ',')}} </td>
                   <td> {{number_format($item->val, 2, '.', ',')}} </td>
-                  <td> {{$item->accName}}  </td>
+                  @if($item->accName)
+                      <td> {{$item->accName}}  </td>
+                  @else
+                      <td> {{$item->kazenaName}}  </td>
+                  @endif
                   <td> {{$item->name}}  </td>
                   <td >{{$item->rec_who->name}}  </td>
               </tr>
@@ -203,9 +211,41 @@
       </table>
       @endif
 
-
+      @if($masr)
+          <label style="font-size: 14pt;margin-right: 12px;" >المصروفات</label>
+          <table style=" width:80%"   align="right" >
+              <thead style="  margin-top: 8px;">
+              <tr style="background:lightgray">
+                  <th style="width: 14%;">المبلغ</th>
+                  <th style="width: 20%;">دفعت من</th>
+                  <th style="width: 20%;">البيان</th>
+              </tr>
+              </thead>
+              <tbody >
+              @php $sumval=0; @endphp
+              @foreach($masr as $key=>$item)
+                  <tr class="font-size-12">
+                      <td> {{number_format($item->val, 2, '.', ',')}} </td>
+                      <td> {{$item->acc_name}} </td>
+                      <td> {{$item->name}}  </td>
+                  </tr>
+                  <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
+                              display: flex;  justify-content: center;">
+                      <label class="page"></label>
+                      <label> صفحة رقم </label>
+                  </div>
+                  @php $sumval+=$item->val; @endphp
+              @endforeach
+              <tr class="font-size-12 " style="font-weight: bold">
+                  <td> {{number_format($sumval, 2, '.', ',')}} </td>
+                  <td>   </td>
+                  <td style="font-weight:normal;">الإجمــــــــالي  </td>
+              </tr>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              </tbody>
+          </table>
+      @endif
   </div>
-
-
-
 @endsection

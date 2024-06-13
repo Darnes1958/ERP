@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Cust_tran;
+use App\Models\Masr_view;
 use App\Models\OurCompany;
 use App\Models\Receipt;
 use App\Models\Recsupp;
@@ -146,12 +147,12 @@ class PdfController extends Controller
           ->when($repDate2,function ($q) use($repDate2){
             $q->where('receipt_date','<=',$repDate2);
           })
-
             ->join('price_types','price_type_id','price_types.id')
             ->leftjoin('accs','acc_id','accs.id')
+            ->leftjoin('kazenas','kazena_id','kazenas.id')
             ->where('imp_exp',0)
-            ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(recsupps.val) as val')
-          ->groupby('rec_who','price_types.name','accs.name');
+            ->selectRaw('rec_who,price_types.name,accs.name accName,kazenas.name kazenaName,0 as exp,sum(recsupps.val) as val')
+          ->groupby('rec_who','price_types.name','accs.name','kazenas.name');
 
         $supp=Recsupp::when($repDate1,function ($q) use($repDate1){
           $q->where('receipt_date','>=',$repDate1);
@@ -161,9 +162,10 @@ class PdfController extends Controller
           })
             ->join('price_types','price_type_id','price_types.id')
           ->leftjoin('accs','acc_id','accs.id')
+          ->leftjoin('kazenas','kazena_id','kazenas.id')
           ->where('imp_exp',1)
-          ->selectRaw('rec_who,price_types.name,accs.name accName,sum(recsupps.val) as exp,0 as val')
-          ->groupby('rec_who','price_types.name','accs.name')
+          ->selectRaw('rec_who,price_types.name,accs.name accName,kazenas.name kazenaName,sum(recsupps.val) as exp,0 as val')
+          ->groupby('rec_who','price_types.name','accs.name','kazenas.name')
             ->union($supp1)->get();
 
         $cust1=Receipt::when($repDate1,function ($q) use($repDate1){
@@ -173,11 +175,11 @@ class PdfController extends Controller
             $q->where('receipt_date','<=',$repDate2);
           })
             ->join('price_types','price_type_id','price_types.id')
-
             ->leftjoin('accs','acc_id','accs.id')
+            ->leftjoin('kazenas','kazena_id','kazenas.id')
             ->where('imp_exp',0)
-            ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(receipts.val) as val')
-            ->groupby('rec_who','price_types.name','accs.name');
+            ->selectRaw('rec_who,price_types.name,accs.name accName,kazenas.name kazenaName,0 as exp,sum(receipts.val) as val')
+            ->groupby('rec_who','price_types.name','accs.name','kazenas.name');
 
         $cust=Receipt::when($repDate1,function ($q) use($repDate1){
           $q->where('receipt_date','>=',$repDate1);
@@ -187,14 +189,24 @@ class PdfController extends Controller
           })
             ->join('price_types','price_type_id','price_types.id')
             ->leftjoin('accs','acc_id','accs.id')
+            ->leftjoin('kazenas','kazena_id','kazenas.id')
             ->where('imp_exp',1)
-            ->selectRaw('rec_who,price_types.name,accs.name accName,sum(receipts.val) as exp,0 as val')
-            ->groupby('rec_who','price_types.name','accs.name')
+            ->selectRaw('rec_who,price_types.name,accs.name accName,kazenas.name kazenaName,sum(receipts.val) as exp,0 as val')
+            ->groupby('rec_who','price_types.name','accs.name','kazenas.name')
             ->union($cust1)->get();
+
+        $masr=Masr_view::when($repDate1,function ($q) use($repDate1){
+            $q->where('masr_date','>=',$repDate1);
+        })
+            ->when($repDate2,function ($q)  use($repDate2){
+                $q->where('masr_date','<=',$repDate2);
+            })
+            ->selectRaw('name, acc_name,sum(val) as val')
+            ->groupBy('name','acc_name')->get();
 
         $html = view('PDF.pdf-klasa',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
-              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2])->toArabicHTML();
+              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr])->toArabicHTML();
 
         $pdf = PDF::loadHTML($html)->output();
         $headers = array(

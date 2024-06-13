@@ -37,7 +37,11 @@ class KazTran extends Page implements HasForms,HasTable
 
   public $mden=null;
   public $daen=null;
+  public $last_mden=null;
+  public $last_daen=null;
   public $balance=null;
+  public $raseed;
+  public $last_raseed;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -48,6 +52,7 @@ class KazTran extends Page implements HasForms,HasTable
     'calc_columns' => [
       'mden',
       'daen',
+      'order_id',
     ],
   ];
 
@@ -68,11 +73,12 @@ class KazTran extends Page implements HasForms,HasTable
           ->afterStateUpdated(function ($state){
             $this->kazena_id=$state;
             $this->balance=Kazena::find($state)->balance;
-            $this->daen=0;
-
-              $this->mden=$this->balance+Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('mden');
-
-              $this->daen=Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('daen');
+            $this->last_mden=$this->balance+Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('mden');
+            $this->last_daen=Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('daen');
+            $this->last_raseed=abs($this->last_mden-$this->last_daen);
+            $this->mden=$this->last_mden+Acc_tran::where('kazena_id',$this->kazena_id)->whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->sum('mden');
+            $this->daen=$this->last_daen+Acc_tran::where('kazena_id',$this->kazena_id)->whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->sum('daen');
+            $this->raseed=abs($this->mden-$this->daen);
           })
           ->label('الحساب'),
         DatePicker::make('repDate1')
@@ -81,21 +87,25 @@ class KazTran extends Page implements HasForms,HasTable
             $this->repDate1=$state;
             if ($this->repDate1 && $this->balance)
             {
-              $this->mden=$this->balance+Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('mden');
-              $this->daen=Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('daen');
+                $this->last_mden=$this->balance+Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('mden');
+                $this->last_daen=Acc_tran::where('kazena_id',$this->kazena_id)->where('receipt_date','<',$this->repDate1)->sum('daen');
+                $this->last_raseed=abs($this->last_mden-$this->last_daen);
+                $this->mden=$this->last_mden+Acc_tran::where('kazena_id',$this->kazena_id)->whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->sum('mden');
+                $this->daen=$this->last_daen+Acc_tran::where('kazena_id',$this->kazena_id)->whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->sum('daen');
+                $this->raseed=abs($this->mden-$this->daen);
             }
-
-
           })
           ->label('من تاريخ'),
         DatePicker::make('repDate2')
           ->live()
           ->afterStateUpdated(function ($state){
-            $this->repDate2=$state;
+              $this->repDate2=$state;
+              $this->mden=$this->last_mden+Acc_tran::where('kazena_id',$this->kazena_id)->whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->sum('mden');
+              $this->daen=$this->last_daen+Acc_tran::where('kazena_id',$this->kazena_id)->whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->sum('daen');
+              $this->raseed=abs($this->mden-$this->daen);
           })
           ->label('إلي تاريخ'),
           \Filament\Forms\Components\Actions::make([
-
               \Filament\Forms\Components\Actions\Action::make('Exl')
                   ->label('Excel')
                   ->visible(function (){
@@ -128,9 +138,10 @@ class KazTran extends Page implements HasForms,HasTable
       ->emptyStateHeading('لا توجد بيانات')
 
       ->header(function () {return view('table.acc_header', [
-        'mden' => $this->mden,'daen'=>$this->daen,'balance'=>$this->balance,
+        'last_mden' => $this->last_mden,'last_daen'=>$this->last_daen,'balance'=>$this->balance,'last_raseed'=>$this->last_raseed,
       ]); })
-      ->contentFooter(view('table.footer', $this->data_list))
+
+      ->contentFooter(function (){return view('table.acc_footer', $this->data_list,['raseed'=>$this->raseed,'mden'=>$this->mden,'daen'=>$this->daen,]);} )
       ->columns([
         TextColumn::make('rec_who')
           ->sortable()

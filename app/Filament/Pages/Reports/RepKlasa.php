@@ -8,6 +8,7 @@ use App\Livewire\widget\KlasaCust;
 use App\Livewire\widget\KlasaMasr;
 use App\Livewire\widget\KlasaSell;
 use App\Livewire\widget\KlasaSupp;
+use App\Livewire\widget\KlasaTar;
 use App\Livewire\widget\RepBuy;
 use App\Livewire\widget\RepReceipt;
 use App\Livewire\widget\RepResSupp;
@@ -29,13 +30,11 @@ use Carbon\Exceptions\InvalidFormatException;
 
 class RepKlasa extends Page implements HasForms,HasActions
 {
-
     use InteractsWithForms,InteractsWithActions;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'خلاصة الحركة اليومية';
     protected static ?string $navigationGroup = 'الحركة اليومية';
     protected static ?int $navigationSort=2;
-
 
     public function chkDate($repDate){
         try {
@@ -101,6 +100,9 @@ class RepKlasa extends Page implements HasForms,HasActions
           KlasaMasr::make([
             'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
           ]),
+            KlasaTar::make([
+                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            ]),
 
         ];
     }
