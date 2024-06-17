@@ -14,6 +14,9 @@ class Tar_sell extends Model
   public function Sell(){
     return $this->belongsTo(Sell::class);
   }
+  public function Item(){
+    return $this->belongsTo(Item::class);
+  }
 
   public function Sell_tran(){
     return $this->hasMany(Sell_tran::class);

@@ -2,13 +2,8 @@
 
 namespace App\Livewire\widget;
 
-use App\Filament\Pages\Reports\KazTran;
 use App\Models\Acc_tran;
-use App\Models\Kazena;
-use App\Models\Recsupp;
-use App\Models\Tar_sell;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Model;
@@ -43,7 +38,7 @@ class klasakzaen extends BaseWidget
 
         ],
     ];
-  public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model $record): string
   {
     return uniqid();
   }
@@ -69,13 +64,13 @@ class klasakzaen extends BaseWidget
             ->striped()
             ->columns([
 
-                TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->label('البيان'),
-                TextColumn::make('mden')
+                Tables\Columns\TextColumn::make('mden')
                     ->label('مدين'),
-                TextColumn::make('daen')
+                Tables\Columns\TextColumn::make('daen')
                     ->label('دائن'),
-                TextColumn::make('raseed')
+                Tables\Columns\TextColumn::make('raseed')
                   ->color(function ($state){if ($state<0) return 'danger'; else return 'info';})
                     ->label('الرصيد'),
             ])

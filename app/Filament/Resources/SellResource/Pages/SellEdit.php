@@ -617,12 +617,12 @@ class SellEdit extends Page implements HasTable
                     ->sortable(),
                 TextColumn::make('Item.name')
                     ->label('اسم الصنف')
-                    ->description(function (Sell_tran $record){
-                        if ($record->tar_sell_id) return 'توجد كمية مرجعة رقم ألي ('.$record->tar_sell_id.')';
-                    })
-                    ->color(function(Sell_tran $record){
-                        if ($record->tar_sell_id) return 'danger'; else return 'info';
-                    })
+                  ->description(function (Sell_tran $record){
+                    if ($record->tar_sell_id) return ' كمية مرجعة  ('.$record->Tar_sell->q1.') بتاريخ '.$record->Tar_sell->tar_date;
+                  })
+                  ->color(function(Sell_tran $record){
+                    if ($record->tar_sell_id) return 'primary'; else return 'info';
+                  })
                     ->sortable(),
                 TextColumn::make('q1')
                     ->label('الكمية'),

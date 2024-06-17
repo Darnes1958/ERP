@@ -2,7 +2,7 @@
 
 namespace App\Livewire\widget;
 
-use App\Models\Buy;
+
 use App\Models\Sell;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,6 +15,11 @@ class KlasaSell extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
+  public function mount(){
+    $this->repDate1=now();
+    $this->repDate2=now();
+
+  }
 
   #[On('updateDate1')]
   public function updatedate1($repdate)
@@ -43,18 +48,7 @@ class KlasaSell extends BaseWidget
     {
         return $table
             ->query(function(Sell $rec){
-              if (!$this->repDate1 && !$this->repDate2)
-                  return $rec=Sell::where('id',null);
-              $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate1[4]);
-              $errors = \DateTime::getLastErrors();
-              if (!empty($errors['warning_count'])) {
-                return false ;
-              }
-              $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate2[4]);
-              $errors = \DateTime::getLastErrors();
-              if (!empty($errors['warning_count'])) {
-                return false ;
-              }
+
                 $rec=Sell::when($this->repDate1,function ($q){
                   $q->where('order_date','>=',$this->repDate1);
                 })

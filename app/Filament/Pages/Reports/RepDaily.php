@@ -3,9 +3,12 @@
 namespace App\Filament\Pages\Reports;
 
 use App\Livewire\widget\RepBuy;
+use App\Livewire\widget\RepMasr;
 use App\Livewire\widget\RepReceipt;
 use App\Livewire\widget\RepResSupp;
 use App\Livewire\widget\RepSell;
+use App\Livewire\widget\RepTarBuy;
+use App\Livewire\widget\RepTarSell;
 use App\Models\Recsupp;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
@@ -46,6 +49,9 @@ class RepDaily extends Page implements HasForms
             RepSell::class,
             Recsupp::class,
             RepReceipt::class,
+            RepTarSell::class,
+            RepTarBuy::class,
+            RepMasr::class,
         ];
     }
     protected function getFooterWidgets(): array
@@ -63,6 +69,15 @@ class RepDaily extends Page implements HasForms
             RepReceipt::make([
               'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
             ]),
+          RepTarSell::make([
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+          ]),
+          RepTarBuy::make([
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+          ]),
+          RepMasr::make([
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+          ]),
 
 
         ];
@@ -85,6 +100,7 @@ class RepDaily extends Page implements HasForms
                         $this->repDate1=$state;
                         $this->dispatch('updateDate1', repdate: $state);
                     })
+                    ->columnSpan(2)
                     ->label('من تاريخ'),
                 DatePicker::make('repDate2')
                   ->live()
@@ -92,6 +108,7 @@ class RepDaily extends Page implements HasForms
                     $this->repDate2=$state;
                     $this->dispatch('updateDate2', repdate: $state);
                   })
+                  ->columnSpan(2)
                   ->label('إلي تاريخ')
 
             ])->columns(6);

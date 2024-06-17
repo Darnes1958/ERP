@@ -155,7 +155,7 @@ class SellResource extends Resource
                 Tables\Actions\Action::make('tarsell')
                     ->iconButton()
                     ->icon('heroicon-m-arrows-right-left')
-                    ->color('info')
+                    ->color('primary')
                     ->url(fn(Model $record) => self::getUrl('tarsell', ['record' => $record])),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton()

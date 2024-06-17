@@ -84,7 +84,7 @@ class CustTran extends Page implements HasForms,HasTable
           ->where('repDate','>=',$this->repDate);
         return $report;
       })
-
+      ->deferLoading()
       ->actions([
         \Filament\Tables\Actions\Action::make('عرض')
           ->visible(function (Model $record) {return $record->rec_who->value==7;})

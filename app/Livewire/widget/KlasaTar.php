@@ -17,6 +17,11 @@ class KlasaTar extends BaseWidget
 {
     public $repDate1;
     public $repDate2;
+  public function mount(){
+    $this->repDate1=now();
+    $this->repDate2=now();
+
+  }
 
     #[On('updateDate1')]
     public function updatedate1($repdate)
@@ -41,18 +46,7 @@ class KlasaTar extends BaseWidget
     {
         return $table
             ->query(function (Tar_sell $rec){
-                if (!$this->repDate1 && !$this->repDate2) return;
-                $rec=Tar_sell::where('id',null);
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate1[4]);
-                $errors = \DateTime::getLastErrors();
-                if (!empty($errors['warning_count'])) {
-                    return false ;
-                }
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate2[4]);
-                $errors = \DateTime::getLastErrors();
-                if (!empty($errors['warning_count'])) {
-                    return false ;
-                }
+
                 $rec=Tar_sell::when($this->repDate1,function ($q){
                     $q->where('tar_date','>=',$this->repDate1);
                 })

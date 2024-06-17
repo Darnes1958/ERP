@@ -56,7 +56,7 @@ class BuyRep extends Page implements HasForms,HasTable
         $buy->all();
         return $buy;
       })
-
+      ->defaultSort('id','desc')
       ->columns([
         TextColumn::make('id')
           ->searchable()
@@ -99,14 +99,13 @@ class BuyRep extends Page implements HasForms,HasTable
         ->contentFooter(view('table.footer', $this->data_list))
       ->actions([
 
-        Action::make('عرض')
+        Action::make('عرض ')
           ->modalHeading(false)
-          ->action(fn (Buy $record) => $record->id())
           ->modalSubmitAction(false)
           ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
           ->modalContent(fn (Buy $record): View => view(
-            'filament.pages.reports.views.view-buy-tran',
-            ['record' => $record],
+            'filament.pages.reports.views.view-buy-tran-widget',
+            ['buy_id' => $record->id],
           ))
           ->icon('heroicon-o-eye')
           ->iconButton(),

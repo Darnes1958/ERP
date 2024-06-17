@@ -14,7 +14,9 @@ class Tar_buy extends Model
   public function Buy(){
     return $this->belongsTo(Buy::class);
   }
-
+  public function Item(){
+    return $this->belongsTo(Item::class);
+  }
   public function Buy_tran(){
     return $this->hasMany(Buy_tran::class);
   }

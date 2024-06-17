@@ -133,15 +133,13 @@ class SellRep extends Page implements HasForms,HasTable
      ])
        ->contentFooter(view('table.footer', $this->data_list))
      ->actions([
-
-         Action::make('عرض')
+       Action::make('عرض ')
          ->modalHeading(false)
-         ->action(fn (Sell $record) => $record->id())
          ->modalSubmitAction(false)
          ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
          ->modalContent(fn (Sell $record): View => view(
-           'filament.pages.reports.views.view-sell-tran',
-           ['record' => $record],
+           'filament.pages.reports.views.view-sell-tran-widget',
+           ['sell_id' => $record->id],
          ))
          ->icon('heroicon-o-eye')
          ->iconButton(),
@@ -150,8 +148,6 @@ class SellRep extends Page implements HasForms,HasTable
              ->iconButton()
              ->color('blue')
              ->url(fn (Sell $record): string => route('pdfsell', ['id' => $record->id]))
-
-
      ])
      ->filtersFormWidth(MaxWidth::Small)
 

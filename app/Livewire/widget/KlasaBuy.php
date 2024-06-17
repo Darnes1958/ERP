@@ -14,13 +14,14 @@ class KlasaBuy extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
-
-
+  public function mount(){
+    $this->repDate1=now();
+    $this->repDate2=now();
+  }
     #[On('updateDate1')]
     public function updatedate1($repdate)
     {
         $this->repDate1=$repdate;
-
     }
   #[On('updateDate2')]
   public function updatedate2($repdate)
@@ -28,7 +29,6 @@ class KlasaBuy extends BaseWidget
     $this->repDate2=$repdate;
 
   }
-
     public array $data_list= [
         'calc_columns' => [
             'tot',
@@ -44,19 +44,6 @@ class KlasaBuy extends BaseWidget
     {
         return $table
             ->query(function(Buy $buy){
-                if (!$this->repDate1 && !$this->repDate2)
-                  return $buy=Buy::where('id',null);
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate1[4]);
-                $errors = \DateTime::getLastErrors();
-                if (!empty($errors['warning_count'])) {
-                    return false ;
-                }
-              $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate2[4]);
-              $errors = \DateTime::getLastErrors();
-              if (!empty($errors['warning_count'])) {
-                return false ;
-              }
-
                $buy=Buy::when($this->repDate1,function ($q){
                  $q->where('order_date','>=',$this->repDate1);
                })

@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Reports;
 
 
+use App\Livewire\widget\KlasaBox;
 use App\Livewire\widget\KlasaBuy;
 use App\Livewire\widget\KlasaCust;
 use App\Livewire\widget\klasakzaen;
@@ -10,6 +11,7 @@ use App\Livewire\widget\KlasaMasr;
 use App\Livewire\widget\KlasaSell;
 use App\Livewire\widget\KlasaSupp;
 use App\Livewire\widget\KlasaTar;
+use App\Livewire\widget\KlasaTarBuy;
 use App\Livewire\widget\RepBuy;
 use App\Livewire\widget\RepReceipt;
 use App\Livewire\widget\RepResSupp;
@@ -60,11 +62,11 @@ class RepKlasa extends Page implements HasForms,HasActions
       $this->repDate2=now();
       $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
 
+
     }
     public static function getWidgets(): array
     {
         return [
-
             KlasaBuy::class,
             KlasaSell::class,
             KlasaSupp::class,
@@ -76,9 +78,8 @@ class RepKlasa extends Page implements HasForms,HasActions
             Recsupp::class,
             RepReceipt::class,
             klasakzaen::class,
-
-
-
+            KlasaTarBuy::class,
+          KlasaTar::class,
 
         ];
     }
@@ -105,12 +106,17 @@ class RepKlasa extends Page implements HasForms,HasActions
           KlasaMasr::make([
             'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
           ]),
-            KlasaTar::make([
-                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
-            ]),
           klasakzaen::make([
             'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
           ]),
+
+            KlasaTar::make([
+                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            ]),
+          KlasaTarBuy::make([
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+          ]),
+
 
         ];
     }

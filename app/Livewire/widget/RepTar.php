@@ -15,6 +15,11 @@ class RepTar extends BaseWidget
 {
     public $repDate1;
     public $repDate2;
+  public function mount(){
+    $this->repDate1=now();
+    $this->repDate2=now();
+
+  }
 
     #[On('updateDate1')]
     public function updatedate1($repdate)
@@ -36,18 +41,7 @@ class RepTar extends BaseWidget
     {
         return $table
             ->query(function (Tar_sell $sell){
-                if (!$this->repDate1 && !$this->repDate2) return;
-                $tar_sell=Tar_sell::where('id',null);
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate1[4]);
-                $errors = \DateTime::getLastErrors();
-                if (!empty($errors['warning_count'])) {
-                    return false ;
-                }
-                $dateTime = \DateTime::createFromFormat('d/m/Y',$this->repDate2[4]);
-                $errors = \DateTime::getLastErrors();
-                if (!empty($errors['warning_count'])) {
-                    return false ;
-                }
+
 
                 if ($this->repDate1 && !$this->repDate2)
                     $sell=Tar_sell::where('tar_date','>=',$this->repDate1);

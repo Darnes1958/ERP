@@ -51,7 +51,14 @@ class TarSell extends Page implements HasTable
         $this->sell_id=$this->record->id;
         $this->sell=Sell::find($this->sell_id);
 
-        $this->tarsellForm->fill(['sell_id'=>$this->record->id,'tar_date'=>now(),'q1'=>1]);
+        $this->tarsellForm->fill([
+          'sell_id'=>$this->record->id,
+          'name'=>$this->record->Customer->name,
+          'order_date'=>$this->record->order_date,
+          'total'=>$this->record->total,
+          'tar_date'=>now(),
+          'q1'=>1
+        ]);
 
 
 
@@ -89,8 +96,26 @@ class TarSell extends Page implements HasTable
                         ->autofocus()
                         ->columnSpan(2)
                         ->required(),
+                  TextInput::make('name')
+                    ->hiddenLabel()
+                    ->prefix('الزبون')
+                    ->columnSpan(4)
+                    ->disabled(),
+                  TextInput::make('order_date')
+                    ->hiddenLabel()
+                    ->prefix('تاريخ الفاتورة')
+                    ->columnSpan(2)
+                    ->disabled(),
+                  TextInput::make('total')
+                    ->hiddenLabel()
+                    ->prefix('اجمالي الفاتورة')
+                    ->columnSpan(2)
+                    ->disabled(),
                     Select::make('item_id')
-                        ->options(Item::wherein('id',Sell_tran::where('sell_id',$this->sell_id)->select('item_id'))->pluck('name','id'))
+                        ->options(Item::wherein('id',Sell_tran::
+                            where('sell_id',$this->sell_id)
+                          ->where('tar_sell_id',null)
+                          ->select('item_id'))->pluck('name','id'))
                         ->hiddenLabel()
                         ->prefix('الصنف')
                         ->prefixIcon('heroicon-m-user')
@@ -185,7 +210,12 @@ class TarSell extends Page implements HasTable
                     ->sortable(),
                 TextColumn::make('Item.name')
                     ->label('اسم الصنف')
-                    ->color('info')
+                    ->description(function (Sell_tran $record){
+                       if ($record->tar_sell_id) return ' كمية مرجعة  ('.$record->Tar_sell->q1.') بتاريخ '.$record->Tar_sell->tar_date;
+                        })
+                    ->color(function(Sell_tran $record){
+                      if ($record->tar_sell_id) return 'primary'; else return 'info';
+                     })
                     ->sortable(),
                 TextColumn::make('q1')
                     ->label('الكمية'),
@@ -209,7 +239,42 @@ class TarSell extends Page implements HasTable
                     }),
             ])
 
+            ->actions([
+              \Filament\Tables\Actions\Action::make('del_tar')
+              ->visible(function (Sell_tran $record){
+                return  $record->tar_sell_id;
+              })
+                ->icon('heroicon-m-trash')
+                ->iconButton()->color('primary')
+                ->requiresConfirmation()
+               ->action(function (Sell_tran $record){
 
+                  $this->selltran=Sell_tran::find($record->id)  ;
+                  $this->tarsell=Tar_sell::find($this->selltran->Tar_sell->id);
+                 $this->incAll($this->sell_id,$this->selltran->item_id,$this->sell->place_id,$this->selltran->q1,
+                   $this->selltran->q2);
+                 $this->selltran->q1+=$this->tarsell->q1;
+                 $this->selltran->tar_sell_id=null;
+                 $this->selltran->sub_tot+=$this->tarsell->sub_tot;
+                 $this->selltran->save();
+                 $this->decAll($this->selltran->id,$this->sell_id,$this->selltran->item_id,
+                   $this->sell->place_id,$this->selltran->q1,$this->selltran->q2);
+
+                 $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
+                 $this->sell->tot=$tot;
+                 $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
+                 $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
+                 $this->sell->baky=$this->sell->total-$this->sell->pay;
+                 $this->sell->save();
+
+                 $this->tarsell->delete();
+
+                 $this->tarsellForm->fill(['sell_id'=>$this->sell_id,'tar_date'=>now(),'q1'=>1,'item_id'=>null]);
+                 $this->resetTable();
+
+
+               }),
+            ])
 
             ->striped();
     }

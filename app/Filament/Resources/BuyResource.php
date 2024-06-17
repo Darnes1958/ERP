@@ -49,6 +49,8 @@ class BuyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
+            ->defaultSort('id','desc')
             ->columns([
                 TextColumn::make('id')
                     ->searchable()
@@ -82,6 +84,11 @@ class BuyResource extends Resource
                     ->icon('heroicon-m-pencil')
                     ->color('info')
                     ->url(fn(Model $record) => self::getUrl('buyedit', ['record' => $record])),
+              Tables\Actions\Action::make('tarbuy')
+                ->iconButton()
+                ->icon('heroicon-m-arrows-right-left')
+                ->color('primary')
+                ->url(fn(Model $record) => self::getUrl('tarbuy', ['record' => $record])),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton()
                     ->modalHeading('حذف فاتورة شراء')
@@ -118,6 +125,7 @@ class BuyResource extends Resource
             'create' => Pages\CreateBuy::route('/create'),
             'edit' => Pages\EditBuy::route('/{record}/edit'),
             'buyedit' => Pages\BuyEdit::route('/{record}/buyedit'),
+          'tarbuy' => Pages\TarBuy::route('/{record}/tarbuy'),
         ];
     }
 }

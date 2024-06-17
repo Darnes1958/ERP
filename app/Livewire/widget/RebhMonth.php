@@ -17,6 +17,11 @@ class RebhMonth extends BaseWidget
     use AksatTrait;
   public $repDate1;
   public $repDate2;
+  public function mount(){
+    $this->repDate1=now();
+    $this->repDate2=now();
+
+  }
 
   #[On('updateDate1')]
   public function updatedate1($repdate)
