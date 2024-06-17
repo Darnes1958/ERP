@@ -131,18 +131,19 @@ class RepKlasa extends Page implements HasForms,HasActions
                    if ($this->chkDate($state))  $this->repDate1=$state;
                      $this->dispatch('updateDate1', repdate: $state);
                  })
-                ->label('من تاريخ')
-                ->inlineLabel(),
+
+                ->prefix('من تاريخ')
+                ->hiddenLabel(),
                 DatePicker::make('repDate2')
                   ->live()
                   ->afterStateUpdated(function ($state){
                     if ($this->chkDate($state)) $this->repDate2=$state;
                     $this->dispatch('updateDate2', repdate: $state);
                   })
-                  ->label('حتي تاريخ')
-                  ->inlineLabel()
+                  ->prefix('حتي تاريخ')
+                  ->hiddenLabel()
 
-            ]);
+            ])->columns(2);
     }
     public function printAction(): Action
     {

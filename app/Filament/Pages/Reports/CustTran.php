@@ -85,6 +85,7 @@ class CustTran extends Page implements HasForms,HasTable
         return $report;
       })
       ->deferLoading()
+
       ->actions([
         \Filament\Tables\Actions\Action::make('عرض')
           ->visible(function (Model $record) {return $record->rec_who->value==7;})

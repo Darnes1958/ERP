@@ -12,6 +12,8 @@ use App\Models\Recsupp;
 use App\Models\Sell;
 use App\Models\Sell_tran;
 use App\Models\Supp_tran;
+use App\Models\Tar_buy;
+use App\Models\Tar_sell;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -118,7 +120,6 @@ class PdfController extends Controller
   }
     public function PdfKlasa($repDate1,$repDate2){
 
-
         $cus=OurCompany::where('Company',Auth::user()->company)->first();
         $buy=Buy::when($repDate1,function ($q) use($repDate1){
           $q->where('order_date','>=',$repDate1);
@@ -204,9 +205,17 @@ class PdfController extends Controller
             ->selectRaw('name, acc_name,sum(val) as val')
             ->groupBy('name','acc_name')->get();
 
-        $html = view('PDF.pdf-klasa',
+      $tar_sell=Tar_sell::whereBetween('tar_date',[$repDate1,$repDate2])
+        ->selectRaw('tar_date,sum(sub_tot) as sub_tot')
+        ->groupBy('tar_date')->get();
+      $tar_buy=Tar_buy::whereBetween('tar_date',[$repDate1,$repDate2])
+        ->selectRaw('tar_date,sum(sub_tot) as sub_tot')
+        ->groupBy('tar_date')->get();
+
+      $html = view('PDF.pdf-klasa',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
-              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr])->toArabicHTML();
+              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr,
+              'tar_buy'=>$tar_buy,'tar_sell'=>$tar_sell])->toArabicHTML();
 
         $pdf = PDF::loadHTML($html)->output();
         $headers = array(

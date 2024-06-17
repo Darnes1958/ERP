@@ -210,6 +210,72 @@
           </tbody>
       </table>
       @endif
+      @if($tar_buy)
+          <label style="font-size: 14pt;margin-right: 12px;" >ترجيع مشتريات</label>
+          <table style=" width:80%"   align="right" >
+              <thead style="  margin-top: 8px;">
+              <tr style="background:lightgray">
+                  <th style="width: 16%;">الإجمالي</th>
+                  <th style="width: 26%;">التاريخ</th>
+              </tr>
+              </thead>
+              <tbody >
+              @php $sumval=0; @endphp
+              @foreach($tar_buy as $key=>$item)
+                  <tr class="font-size-12">
+                      <td> {{number_format($item->sub_tot, 2, '.', ',')}} </td>
+                      <td> {{$item->tar_date}}  </td>
+                  </tr>
+                  <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
+                              display: flex;  justify-content: center;">
+                      <label class="page"></label>
+                      <label> صفحة رقم </label>
+                  </div>
+                  @php $sumval+=$item->sub_tot; @endphp
+              @endforeach
+              <tr class="font-size-12 " style="font-weight: bold">
+                  <td> {{number_format($sumval, 2, '.', ',')}} </td>
+
+                  <td style="font-weight:normal;">الإجمــــــــالي  </td>
+              </tr>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              </tbody>
+          </table>
+      @endif
+      @if($tar_sell)
+          <label style="font-size: 14pt;margin-right: 12px;" >ترجيع مبيعات</label>
+          <table style=" width:80%"   align="right" >
+              <thead style="  margin-top: 8px;">
+              <tr style="background:lightgray">
+                  <th style="width: 16%;">الإجمالي</th>
+                  <th style="width: 26%;">التاريخ</th>
+              </tr>
+              </thead>
+              <tbody >
+              @php $sumval=0; @endphp
+              @foreach($tar_sell as $key=>$item)
+                  <tr class="font-size-12">
+                      <td> {{number_format($item->sub_tot, 2, '.', ',')}} </td>
+                      <td> {{$item->tar_date}}  </td>
+                  </tr>
+                  <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
+                              display: flex;  justify-content: center;">
+                      <label class="page"></label>
+                      <label> صفحة رقم </label>
+                  </div>
+                  @php $sumval+=$item->sub_tot; @endphp
+              @endforeach
+              <tr class="font-size-12 " style="font-weight: bold">
+                  <td> {{number_format($sumval, 2, '.', ',')}} </td>
+
+                  <td style="font-weight:normal;">الإجمــــــــالي  </td>
+              </tr>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              </tbody>
+          </table>
+      @endif
 
       @if($masr)
           <label style="font-size: 14pt;margin-right: 12px;" >المصروفات</label>
