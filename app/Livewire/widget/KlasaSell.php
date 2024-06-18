@@ -67,7 +67,7 @@ class KlasaSell extends BaseWidget
             ->emptyStateHeading('لا توجد بيانات')
             ->heading(new HtmlString('<div class="text-primary-400 text-lg">المبيعات</div>'))
             ->contentFooter(view('table.footer', $this->data_list))
-            ->paginated(false)
+          ->defaultPaginationPageOption(5)
             ->defaultSort('total')
             ->columns([
                 Tables\Columns\TextColumn::make('name')

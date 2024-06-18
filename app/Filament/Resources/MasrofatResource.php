@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MasrofatResource\Pages;
 use App\Filament\Resources\MasrofatResource\RelationManagers;
+use App\Models\Item;
 use App\Models\Masr_type;
 use App\Models\Masrofat;
 use Filament\Actions\DeleteAction;
@@ -16,7 +17,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class MasrofatResource extends Resource
 {
@@ -137,9 +140,8 @@ class MasrofatResource extends Resource
                  ->numeric()
                  ->required()
                  ->label('المبلغ'),
-                TextInput::make('notes')
-                 ->label('ملاحظات')
-
+              TextInput::make('note')
+                ->label('ملاحظات'),
             ]);
     }
 

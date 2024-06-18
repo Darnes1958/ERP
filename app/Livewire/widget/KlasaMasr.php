@@ -64,7 +64,7 @@ class KlasaMasr extends BaseWidget
       ->emptyStateHeading('لا توجد بيانات')
       ->heading(new HtmlString('<div class="text-primary-400 text-lg">المصروفات</div>'))
       ->contentFooter(view('table.footer', $this->data_list))
-      ->paginated(false)
+      ->defaultPaginationPageOption(5)
       ->defaultSort('val')
       ->columns([
         TextColumn::make('name')
