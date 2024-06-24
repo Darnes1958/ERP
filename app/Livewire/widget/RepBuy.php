@@ -69,6 +69,7 @@ class RepBuy extends BaseWidget
                 ->striped()
                 ->columns([
                     Tables\Columns\TextColumn::make('id')
+                        ->sortable()
                         ->label('رقم الفاتورة'),
                     Tables\Columns\TextColumn::make('Supplier.name')
                         ->label('المورد'),

@@ -108,6 +108,10 @@ class BuyEdit extends Page implements HasTable
                             $res=Buy::find($this->buy_id);
                             $res->order_date=$state;
                             $res->save();
+                          Notification::make()
+                            ->title('تم تحزين البيانات بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpan(2)
                         ->inlineLabel()
@@ -122,6 +126,10 @@ class BuyEdit extends Page implements HasTable
                         ->afterStateUpdated(function ($state){
                             $this->buy->supplier_id=$state;
                             $this->buy->save();
+                          Notification::make()
+                            ->title('تم تحزين البيانات بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpan(3),
 
@@ -156,6 +164,10 @@ class BuyEdit extends Page implements HasTable
                                 $receipt->price_type_id=$state;
                                 $receipt->save();
                             }
+                          Notification::make()
+                            ->title('تم تحزين البيانات بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpan(2),
                     Select::make('acc_id')
@@ -171,6 +183,10 @@ class BuyEdit extends Page implements HasTable
                            if ($receipt){
                                $receipt->acc_id=$state;
                                $receipt->save();
+                             Notification::make()
+                               ->title('تم تحزين البيانات بنجاح')
+                               ->success()
+                               ->send();
                            }
                         })
                         ->dehydrated()
@@ -189,6 +205,10 @@ class BuyEdit extends Page implements HasTable
                                 $receipt->kazena_id=$state;
                                 $receipt->save();
                             }
+                          Notification::make()
+                            ->title('تم تحزين البيانات بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->dehydrated()
                         ->visible(fn(Get $get): bool =>( $get('pay')>0 && $get('price_type_id')==1) ),
@@ -241,6 +261,10 @@ class BuyEdit extends Page implements HasTable
                                 }
 
                             }
+                          Notification::make()
+                            ->title('تم تحزين البيانات بنجاح')
+                            ->success()
+                            ->send();
 
                         })
                         ->id('pay'),
@@ -257,6 +281,10 @@ class BuyEdit extends Page implements HasTable
                         ->afterStateUpdated(function ($state){
                             $this->buy->notes=$state;
                             $this->buy->save();
+                          Notification::make()
+                            ->title('تم تحزين البيانات بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpanFull(),
 

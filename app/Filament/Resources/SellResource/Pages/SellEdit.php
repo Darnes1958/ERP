@@ -245,7 +245,12 @@ class SellEdit extends Page implements HasTable
         if ($receipt->kazena_id)
           $this->sellForm->fill(collect($this->record)->put('kazena_id',$receipt->kazena_id)->toArray());
 
+
       }
+      Notification::make()
+        ->title('تم التعديل بنجاح')
+        ->success()
+        ->send();
     }
 
     public function updatePriceType(){
@@ -265,6 +270,10 @@ class SellEdit extends Page implements HasTable
 
             $receipt->price_type_id=$this->sell->price_type_id;
             $receipt->save();
+          Notification::make()
+            ->title('تم تحزين طريقة الدفع بنجاح')
+            ->success()
+            ->send();
         }
     }
     public function updateNonDiffer(){
@@ -283,7 +292,12 @@ class SellEdit extends Page implements HasTable
         $this->sell->baky=$this->sell->total-$this->sell->pay;
 
         $this->sell->save();
+
         $this->sellForm->fill($this->sell->toArray());
+      Notification::make()
+        ->title('تم تحزين النسبة بنجاح')
+        ->success()
+        ->send();
     }
 
 
@@ -311,6 +325,10 @@ class SellEdit extends Page implements HasTable
                             $res=Sell::find($this->sell_id);
                             $res->order_date=$state;
                             $res->save();
+                          Notification::make()
+                            ->title('تم تحزين التاريخ بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpan(2)
 
@@ -325,6 +343,10 @@ class SellEdit extends Page implements HasTable
                         ->afterStateUpdated(function ($state){
                             $this->sell->customer_id=$state;
                             $this->sell->save();
+                          Notification::make()
+                            ->title('تم تحزين الزبون بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpan(4),
 
@@ -360,6 +382,10 @@ class SellEdit extends Page implements HasTable
                             if ($receipt){
                                 $receipt->acc_id=$state;
                                 $receipt->save();
+                              Notification::make()
+                                ->title('تم تحزين الحساب بنجاح')
+                                ->success()
+                                ->send();
                             }
                         })
                         ->dehydrated()
@@ -377,6 +403,10 @@ class SellEdit extends Page implements HasTable
                             if ($receipt){
                                 $receipt->kazena_id=$state;
                                 $receipt->save();
+                              Notification::make()
+                                ->title('تم تحزين الخزينة بنجاح')
+                                ->success()
+                                ->send();
                             }
                         })
                         ->dehydrated()
@@ -463,6 +493,10 @@ class SellEdit extends Page implements HasTable
                                     $this->sellForm->fill(collect($this->sell)->put('kazena_id',$receipt->kazena_id)->toArray());
 
                             }
+                          Notification::make()
+                            ->title('تم تحزين المدفوع بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->id('pay'),
                     TextInput::make('baky')
@@ -484,6 +518,10 @@ class SellEdit extends Page implements HasTable
                         ->afterStateUpdated(function ($state){
                             $this->sell->notes=$state;
                             $this->sell->save();
+                          Notification::make()
+                            ->title('تم تحزين الملاحظات بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpanFull(),
 

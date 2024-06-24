@@ -274,10 +274,13 @@ class RecsuppResource extends Resource
        ->defaultSort('id','desc')
       ->columns([
         TextColumn::make('id')
+          ->searchable()
           ->label('الرقم الألي'),
         TextColumn::make('receipt_date')
+          ->searchable()
           ->label('التاريخ'),
         TextColumn::make('supplier.name')
+          ->searchable()
           ->label('اسم المورد'),
         TextColumn::make('price_type.name')
              ->color(function (Recsupp $record) {

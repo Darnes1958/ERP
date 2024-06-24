@@ -111,6 +111,11 @@ class SuppTran extends Page implements HasForms,HasTable
                     ->sortable()
                     ->searchable()
                     ->label('البيان'),
+              TextColumn::make('price_type_name')
+                ->sortable()
+                ->searchable()
+                ->label('طريقة الدفع'),
+
                 TextColumn::make('mden')
                     ->color('danger')
                     ->searchable()

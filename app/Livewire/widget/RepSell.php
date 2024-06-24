@@ -68,6 +68,7 @@ class RepSell extends BaseWidget
             ->striped()
             ->columns([
                 Tables\Columns\TextColumn::make('id')
+                    ->sortable()
                     ->label('رقم الفاتورة'),
                 Tables\Columns\TextColumn::make('Customer.name')
                     ->label('الزبون'),

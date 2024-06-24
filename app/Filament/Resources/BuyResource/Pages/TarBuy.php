@@ -161,16 +161,16 @@ class TarBuy extends Page implements HasTable
                 $this->buytran->q1-=$this->tarbuyData['q1'];
                 $this->buytran->qs1-=$this->tarbuyData['q1'];
                 $this->buytran->tar_buy_id=$tar->id;
-                $this->buytran->sub_input-=$tar->sub_tot;
+               // $this->buytran->sub_input-=$tar->sub_tot;
                 $this->buytran->save();
                 $this->incAllBuy($this->buytran->item_id,$this->buy->place_id,$this->buytran->q1
                   ,$this->buy->price_type_id,$this->buytran->price_input);
 
 
-                $tot = Buy_tran::where('buy_id', $this->buy_id)->sum('sub_input');
-                $this->buy->tot=$tot;
-                $this->buy->baky=$this->buy->tot-$this->buy->pay;
-                $this->buy->save();
+                //$tot = Buy_tran::where('buy_id', $this->buy_id)->sum('sub_input');
+                //$this->buy->tot=$tot;
+                //$this->buy->baky=$this->buy->tot-$this->buy->pay;
+                //$this->buy->save();
 
                 $this->tarbuyForm->fill(['buy_id'=>$this->buy->id,'tar_date'=>now(),'q1'=>1,'item_id'=>null]);
                 $this->resetTable();

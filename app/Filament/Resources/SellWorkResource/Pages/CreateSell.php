@@ -125,6 +125,10 @@ class CreateSell extends Page
         $this->updateDiffer();
       }
       else {$this->sellData['rate'] = 0;$this->updateNonDiffer();}
+      Notification::make()
+        ->title('تم تحزين طريقة الدفع بنجاح')
+        ->success()
+        ->send();
 
     }
     public function updateSells()
@@ -132,6 +136,10 @@ class CreateSell extends Page
         $this->sell->update($this->sellForm->getState());
         if ($this->sell->price_type_id==2) $this->updateDiffer();
         else $this->updateNonDiffer();
+      Notification::make()
+        ->title('تم تحزين البيانات بنجاح')
+        ->success()
+        ->send();
     }
     public function updatePay()
     {
@@ -140,6 +148,10 @@ class CreateSell extends Page
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
+      Notification::make()
+        ->title('تم تحزين البيانات بنجاح')
+        ->success()
+        ->send();
     }
 
     public function updateNonDiffer(){
@@ -159,6 +171,10 @@ class CreateSell extends Page
 
       $this->sell->save();
       $this->sellForm->fill($this->sell->toArray());
+      Notification::make()
+        ->title('تم تحزين البيانات بنجاح')
+        ->success()
+        ->send();
     }
 
     protected function getSellFormSchema(): array
@@ -321,6 +337,10 @@ class CreateSell extends Page
                         ->afterStateUpdated(function ($state){
                             $this->sell->notes=$state;
                             $this->sell->save();
+                          Notification::make()
+                            ->title('تم تحزين البيانات بنجاح')
+                            ->success()
+                            ->send();
                         })
                         ->columnSpanFull(),
 

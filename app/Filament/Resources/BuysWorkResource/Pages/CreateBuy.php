@@ -84,6 +84,10 @@ class CreateBuy extends Page implements HasTable
   public function updateBuys()
   {
      $this->buy->update($this->buyForm->getState());
+    Notification::make()
+      ->title('تم تحزين البيانات بنجاح')
+      ->success()
+      ->send();
   }
   public function updatePay()
   {
@@ -91,6 +95,10 @@ class CreateBuy extends Page implements HasTable
     $this->buy->baky=$this->buy->tot-$this->buy->pay;
     $this->buy->save();
     $this->buyForm->fill($this->buy->toArray());
+    Notification::make()
+      ->title('تم تحزين البيانات بنجاح')
+      ->success()
+      ->send();
   }
 
   protected function getBuyStoreFormSchema(): array
@@ -329,6 +337,10 @@ class CreateBuy extends Page implements HasTable
             ->afterStateUpdated(function ($state){
               $this->buy->notes=$state;
               $this->buy->save();
+              Notification::make()
+                ->title('تم تحزين البيانات بنجاح')
+                ->success()
+                ->send();
             })
         ])
         ->columns(8)

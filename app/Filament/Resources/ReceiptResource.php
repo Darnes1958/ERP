@@ -273,10 +273,13 @@ class ReceiptResource extends Resource
                     ->label('ت')
                     ->rowIndex(),
                 TextColumn::make('id')
+                  ->searchable()
                  ->label('الرقم الألي'),
                 TextColumn::make('receipt_date')
+                  ->searchable()
                     ->label('التاريخ'),
                 TextColumn::make('customer.name')
+                  ->searchable()
                     ->label('اسم الزبون'),
                 TextColumn::make('price_type.name')
                     ->color(function (Receipt $record) {

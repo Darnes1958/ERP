@@ -38,6 +38,10 @@ class ListSalaries extends ListRecords
                     ->displayFormat('Y/m')
                     ->format('Y/m')
                       ->closeOnDateSelection(),
+                  DatePicker::make('tran_date')
+                    ->required()
+                    ->default(now())
+                    ->label('التاريخ'),
 
                 ])
                 ->action(function (array $data) {
@@ -48,7 +52,7 @@ class ListSalaries extends ListRecords
                       foreach ($main as $item) {
                           $tran=new Salarytran;
                           $tran->salary_id=$item->id;
-                          $tran->tran_date=now();
+                          $tran->tran_date=$data['tran_date'];
                           $tran->tran_type='مرتب';
                           $tran->val=$item->sal;
                           $tran->notes='مرتب شهر '.$data['month'];
