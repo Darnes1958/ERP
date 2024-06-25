@@ -13,7 +13,15 @@ class Salarytran extends Model
     public function Salary(){
         return $this->belongsTo(Salary::class);
     }
-    public function __construct(array $attributes = [])
+  public function Acc(){
+    return $this->belongsTo(Acc::class);
+  }
+
+  public function Kazena(){
+    return $this->belongsTo(Kazena::class);
+  }
+
+  public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
         if (Auth::check()) {

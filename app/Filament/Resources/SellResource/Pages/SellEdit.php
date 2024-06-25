@@ -336,7 +336,7 @@ class SellEdit extends Page implements HasTable
                     Select::make('customer_id')
                         ->relationship('Customer','name')
                         ->hiddenLabel()
-
+                        ->searchable()
                         ->prefix('الزبون')
                         ->prefixIcon('heroicon-m-user')
                         ->prefixIconColor('info')

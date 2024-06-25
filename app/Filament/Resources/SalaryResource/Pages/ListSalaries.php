@@ -4,10 +4,13 @@ namespace App\Filament\Resources\SalaryResource\Pages;
 
 use App\Filament\Resources\SalaryResource;
 use App\Livewire\Traits\AksatTrait;
+use App\Models\Acc;
+use App\Models\Kazena;
 use App\Models\Main;
 use App\Models\Salary;
 use App\Models\Salarytran;
 use Filament\Actions;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -16,6 +19,7 @@ use Filament\Forms\Set;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class ListSalaries extends ListRecords
 {
@@ -82,12 +86,44 @@ class ListSalaries extends ListRecords
              ->color('success')
               ->icon('heroicon-o-minus-circle')
              ->form([
+              Radio::make('pay_type')
+               ->options([
+                 1=>'نقدا',
+                 2=>'مصرفي',
+               ])
+               ->live()
+               ->default(1)
+               ->label('طريقة الدفع'),
+
               Select::make('salary_id')
               ->label('الاسم')
               ->options(Salary::all()->pluck('name','id'))
               ->searchable()
               ->preload()
                ->required(),
+               Select::make('acc_id')
+                 ->label('المصرف')
+                 ->options(Acc::all()->pluck('name','id'))
+                 ->searchable()
+                 ->required()
+                 ->live()
+                 ->preload()
+                 ->visible(fn(Get $get): bool =>($get('pay_type')==2 )),
+               Select::make('kazena_id')
+                 ->label('الخزينة')
+                 ->options(Kazena::all()->pluck('name','id'))
+                 ->searchable()
+                 ->required()
+                 ->live()
+                 ->preload()
+                 //->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+                 ->default(function (){
+                   $res=Kazena::where('user_id',Auth::id())->first();
+                   if ($res) return $res->id;
+                   else return null;
+                 })
+                 ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
+
               DatePicker::make('tran_date')
                 ->required()
                 ->default(now())
@@ -105,6 +141,8 @@ class ListSalaries extends ListRecords
                   $tran->salary_id=$data['salary_id'];
                   $tran->tran_date=$data['tran_date'];
                   $tran->tran_type='سحب';
+                  if ($data['pay_type']==2) $tran->acc_id=$data['acc_id'];
+                  else $tran->kazena_id=$data['kazena_id'];
                   $tran->val=$data['val'];
                   $tran->notes=$data['notes'];
                   $tran->month='0';
@@ -123,12 +161,42 @@ class ListSalaries extends ListRecords
             ->color('success')
             ->icon('heroicon-o-plus-circle')
             ->form([
+              Radio::make('pay_type')
+                ->options([
+                  1=>'نقدا',
+                  2=>'مصرفي',
+                ])
+                ->live()
+                ->default(1)
+                ->label('طريقة الدفع'),
               Select::make('salary_id')
                 ->label('الاسم')
                 ->options(Salary::all()->pluck('name','id'))
                 ->searchable()
                 ->preload()
                 ->required(),
+              Select::make('acc_id')
+                ->label('المصرف')
+                ->options(Acc::all()->pluck('name','id'))
+                ->searchable()
+                ->required()
+                ->live()
+                ->preload()
+                ->visible(fn(Get $get): bool =>($get('pay_type')==2 )),
+              Select::make('kazena_id')
+                ->label('الخزينة')
+                ->options(Kazena::all()->pluck('name','id'))
+                ->searchable()
+                ->required()
+                ->live()
+                ->preload()
+                //->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+                ->default(function (){
+                  $res=Kazena::where('user_id',Auth::id())->first();
+                  if ($res) return $res->id;
+                  else return null;
+                })
+                ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
                 DatePicker::make('tran_date')
                     ->required()
                     ->default(now())
@@ -140,11 +208,13 @@ class ListSalaries extends ListRecords
                 ->label('ملاحظات'),
             ])
             ->action(function (array $data) {
-
               $tran=new Salarytran;
               $tran->salary_id=$data['salary_id'];
                 $tran->tran_date=$data['tran_date'];
               $tran->tran_type='اضافة';
+              if ($data['pay_type']==2) $tran->acc_id=$data['acc_id'];
+              else $tran->kazena_id=$data['kazena_id'];
+
               $tran->val=$data['val'];
               $tran->notes=$data['notes'];
               $tran->month='0';
@@ -162,12 +232,44 @@ class ListSalaries extends ListRecords
           Actions\Action::make('خصم')
             ->color('danger')
             ->form([
+              Radio::make('pay_type')
+                ->options([
+                  1=>'نقدا',
+                  2=>'مصرفي',
+                ])
+                ->live()
+                ->default(1)
+                ->label('طريقة الدفع'),
+
               Select::make('salary_id')
                 ->label('الاسم')
                 ->options(Salary::all()->pluck('name','id'))
                 ->searchable()
                 ->preload()
                 ->required(),
+              Select::make('acc_id')
+                ->label('المصرف')
+                ->options(Acc::all()->pluck('name','id'))
+                ->searchable()
+                ->required()
+                ->live()
+                ->preload()
+                ->visible(fn(Get $get): bool =>($get('pay_type')==2 )),
+              Select::make('kazena_id')
+                ->label('الخزينة')
+                ->options(Kazena::all()->pluck('name','id'))
+                ->searchable()
+                ->required()
+                ->live()
+                ->preload()
+                //->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+                ->default(function (){
+                  $res=Kazena::where('user_id',Auth::id())->first();
+                  if ($res) return $res->id;
+                  else return null;
+                })
+                ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
+
               TextInput::make('val')
                 ->label('المبلغ')
                 ->required(),
@@ -180,6 +282,9 @@ class ListSalaries extends ListRecords
               $tran->salary_id=$data['salary_id'];
               $tran->tran_date=now();
               $tran->tran_type='خصم';
+              if ($data['pay_type']==2) $tran->acc_id=$data['acc_id'];
+              else $tran->kazena_id=$data['kazena_id'];
+
               $tran->val=$data['val'];
               $tran->notes=$data['notes'];
               $tran->month='0';

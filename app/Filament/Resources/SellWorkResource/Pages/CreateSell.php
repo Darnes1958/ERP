@@ -191,6 +191,7 @@ class CreateSell extends Page
                         ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
                         ->required(),
                     Select::make('customer_id')
+                        ->searchable()
                         ->hiddenLabel()
                         ->prefix('الزبون')
                         ->extraAttributes(['x-on:change' => "\$wire.updateSells"])

@@ -12,11 +12,15 @@
                     <div class="filament-tables-column-wrapper">
                         <div class="filament-tables-text-column px-2 py-2 flex w-full justify-start text-start">
                             <div class="inline-flex items-center space-x-1 rtl:space-x-reverse ">
-
-                                 <span class="font-medium text-indigo-700">
-                                    {{ number_format($records->where('imp_exp',0)->sum($calc_columns[$i])-
-                                                     $records->where('imp_exp',1)->sum($calc_columns[$i]),2, '.', ',') }}
+                               @if($raseed<0)
+                                 <span class="font-medium text-danger-600">
+                                    {{ number_format(abs($raseed),2, '.', ',') }}
                                  </span>
+                                @else
+                                  <span class="font-medium text-indigo-700">
+                                    {{ number_format($raseed,2, '.', ',') }}
+                                  </span>
+                                @endif
                             </div>
                         </div>
                     </div>

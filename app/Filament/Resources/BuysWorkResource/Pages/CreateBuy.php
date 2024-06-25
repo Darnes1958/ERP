@@ -226,6 +226,7 @@ class CreateBuy extends Page implements HasTable
             ->required(),
           Select::make('supplier_id')
             ->label('المورد')
+            ->searchable()
             ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
             ->relationship('Supplier','name')
             ->live()

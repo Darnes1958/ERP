@@ -61,6 +61,19 @@ class SalaryTranView extends Page implements HasTable, HasForms
                 TextColumn::make('tran_type')
                     ->sortable()
                     ->label('البيان'),
+              TextColumn::make('pay_type')
+                ->state(function (Salarytran $record){
+                  if ($record->kazena_id)  return $record->Kazena->name;
+                  if ($record->acc_id)  return $record->Acc->name;
+
+                })
+                ->color(function (Salarytran $record){
+                  if ($record->kazena_id)  return 'success';
+                  if ($record->acc_id)  return 'info';
+
+                })
+                ->label('دفعت من '),
+
                 TextColumn::make('month')
                     ->sortable()
                     ->label('عن شهر'),

@@ -15,6 +15,7 @@ class RepResSupp extends BaseWidget
 
   public $repDate1;
   public $repDate2;
+  public $raseed;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -44,16 +45,16 @@ class RepResSupp extends BaseWidget
 
         return $table
             ->query(function (Recsupp $buy){
-
-
               if ($this->repDate1 && !$this->repDate2)
                 $buy=Recsupp::where('receipt_date','>=',$this->repDate1);
               if ($this->repDate2 && !$this->repDate1)
                 $buy=Recsupp::where('receipt_date','<=',$this->repDate1);
               if ($this->repDate1 && $this->repDate2)
                 $buy=Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2]);
-
-
+              $this->raseed=Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+                  ->where('imp_exp',0)->sum('val') -
+                Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+                  ->where('imp_exp',1)->sum('val') ;
                 return $buy;
             }
             // ...
@@ -78,7 +79,7 @@ class RepResSupp extends BaseWidget
 
             ])
             ->emptyStateHeading('لا توجد بيانات')
-            ->contentFooter(view('table.footer', $this->data_list))
+          ->contentFooter(function (){return view('table.Recfooter', $this->data_list,['raseed'=>$this->raseed,]);} )
             ;
     }
 }

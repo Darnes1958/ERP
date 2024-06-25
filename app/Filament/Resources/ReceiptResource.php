@@ -300,6 +300,7 @@ class ReceiptResource extends Resource
 
                     ->badge(),
                 TextColumn::make('val')
+                  ->searchable()
                     ->label('المبلغ'),
                 TextColumn::make('notes')
                     ->label('ملاحظات'),

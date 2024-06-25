@@ -119,6 +119,7 @@ class BuyEdit extends Page implements HasTable
                     Select::make('supplier_id')
                         ->relationship('Supplier','name')
                         ->hiddenLabel()
+                        ->searchable()
 
                         ->prefix('المورد')
                         ->prefixIcon('heroicon-m-user')

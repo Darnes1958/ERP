@@ -10,6 +10,9 @@ class Acc extends Model
 {
     protected $connection = 'other';
 
+  public function SalaryTran(){
+    return $this->hasMany(Salarytran::class);
+  }
     public function Receipt(){
         return $this->hasMany(Receipt::class);
     }

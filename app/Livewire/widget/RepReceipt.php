@@ -15,6 +15,7 @@ class RepReceipt extends BaseWidget
 
   public $repDate1;
   public $repDate2;
+  public $raseed;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -53,7 +54,10 @@ class RepReceipt extends BaseWidget
               if ($this->repDate1 && $this->repDate2)
                 $buy=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2]);
 
-
+              $this->raseed=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+                                         ->where('imp_exp',0)->sum('val') -
+                                     Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+                                       ->where('imp_exp',1)->sum('val') ;
 
                 return $buy;
             }
@@ -81,7 +85,8 @@ class RepReceipt extends BaseWidget
 
             ])
             ->emptyStateHeading('لا توجد بيانات')
-            ->contentFooter(view('table.footer', $this->data_list))
+            ->contentFooter(function (){return view('table.Recfooter', $this->data_list,['raseed'=>$this->raseed,]);} )
+
             ;
     }
 }

@@ -300,6 +300,7 @@ class RecsuppResource extends Resource
           ->label('البيان')
           ->badge(),
         TextColumn::make('val')
+          ->searchable()
           ->label('المبلغ'),
 
         TextColumn::make('notes')
