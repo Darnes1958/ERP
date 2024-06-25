@@ -5,6 +5,7 @@ namespace App\Filament\Resources\SupplierResource\Pages;
 use App\Filament\Resources\SupplierResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
 class EditSupplier extends EditRecord
 {
@@ -13,7 +14,7 @@ class EditSupplier extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء موردين')),
         ];
     }
 }

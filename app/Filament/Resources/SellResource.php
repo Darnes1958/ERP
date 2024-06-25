@@ -36,7 +36,7 @@ class SellResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مبيعات');
+        return Auth::user()->can('تعديل مبيعات');
     }
 
     public static function form(Form $form): Form
@@ -159,6 +159,7 @@ class SellResource extends Resource
                     ->url(fn(Model $record) => self::getUrl('tarsell', ['record' => $record])),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton()
+                    ->visible(Auth::user()->can('الغاء مبيعات'))
                     ->modalHeading('حذف فاتورة مبيعات')
                     ->modalDescription('هل انت متأكد من الغاء هذه الفاتورة ؟')
                     ->before(function(Sell $record) {

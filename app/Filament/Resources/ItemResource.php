@@ -39,7 +39,7 @@ class ItemResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مشتريات');
+        return Auth::user()->can('ادخال مشتريات');
     }
 
     public static function form(Form $form): Form
@@ -290,7 +290,10 @@ class ItemResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()->iconButton(),
               Tables\Actions\DeleteAction::make()
-                  ->hidden(fn ($record) => $record->Buy_tran()->exists())
+                  ->hidden(fn ($record):bool =>
+                  $record->Buy_tran()->exists()
+                  || Auth::user()->can('الغاء مشتريات')
+                  )
 
                   ->iconButton(),
             ])

@@ -43,7 +43,7 @@ class ReceiptResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('زبائن');
+        return Auth::user()->can('ادخال ايصالات زبائن');
     }
 
     public static function form(Form $form): Form
@@ -352,7 +352,9 @@ class ReceiptResource extends Resource
             ->actions([
               Tables\Actions\EditAction::make()->iconButton()->color('blue')->visible(fn(Receipt $record) =>$record->rec_who->value<7),
               Tables\Actions\DeleteAction::make()->iconButton()
-                  ->visible(fn(Receipt $record) =>$record->rec_who->value<7)
+                  ->visible(fn(Receipt $record): bool =>
+                      $record->rec_who->value<7
+                       || !Auth::user()->can('االغاء ايصالات زبائن'))
                 ->modalHeading('حذف الإيصال')
                 ->after(function (Receipt $record) {
 
@@ -371,9 +373,7 @@ class ReceiptResource extends Resource
                 }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+               //
             ]);
     }
 

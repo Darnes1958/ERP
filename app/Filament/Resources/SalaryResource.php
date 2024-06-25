@@ -38,8 +38,11 @@ class SalaryResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')
+                 ->required()
                  ->label('الاسم'),
                 TextInput::make('sal')
+                    ->required()
+                    ->numeric()
                     ->label('المرتب'),
             ]);
     }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\MasrofatResource\Pages;
 use App\Filament\Resources\MasrofatResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
 class EditMasrofat extends EditRecord
 {
@@ -13,7 +14,7 @@ class EditMasrofat extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
         ];
     }
 }

@@ -29,7 +29,7 @@ class CustomerResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مبيعات');
+        return Auth::user()->can('زبائن');
     }
 
     public static function form(Form $form): Form
@@ -93,7 +93,8 @@ class CustomerResource extends Resource
                  ->hidden(fn(Customer $record)=>
                    Sell::where('customer_id',$record->id)->exists()
                    || $record->id<3
-                   || Receipt::where('customer_id',$record->id)->exists()),
+                   || Receipt::where('customer_id',$record->id)->exists()
+                   || !Auth::user()->can('الغاء زبائن')),
             ]);
     }
 

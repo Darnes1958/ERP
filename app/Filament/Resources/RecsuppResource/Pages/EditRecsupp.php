@@ -9,6 +9,7 @@ use App\Models\Recsupp;
 use Filament\Actions;
 use Filament\Forms\Get;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
 class EditRecsupp extends EditRecord
 {
@@ -20,7 +21,6 @@ class EditRecsupp extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
   {
-
       $this->buy_to_save=$data['buy_id'];
       $this->rec_who=$data['rec_who'];
 
@@ -45,7 +45,7 @@ class EditRecsupp extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء ايصالات موردين')),
         ];
     }
 }

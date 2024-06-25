@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class MasrofatResource extends Resource
@@ -28,6 +29,11 @@ class MasrofatResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralLabel='مصروفات';
     protected static ?string $navigationGroup='مصروفات';
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->hasRole('ادخال مصروفات');
+    }
 
     public static function form(Form $form): Form
     {
@@ -182,7 +188,7 @@ class MasrofatResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

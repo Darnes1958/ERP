@@ -36,7 +36,7 @@ class MoneyResource extends Resource
 
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->can('تحويل');
+    return Auth::user()->can('ادخال تحويل');
   }
     public static function form(Form $form): Form
     {
@@ -204,7 +204,7 @@ class MoneyResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                 ->iconButton(),
-              Tables\Actions\DeleteAction::make()
+              Tables\Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء تحويل'))
                 ->iconButton(),
             ])
             ->bulkActions([

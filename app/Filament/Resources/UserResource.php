@@ -19,17 +19,20 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 
 use Filament\Navigation\NavigationItem;
+use Illuminate\Support\Facades\Auth;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-  protected static ?string $navigationGroup='Setting';
+  protected static ?string $navigationGroup='اعدادات';
+  protected static ?string $navigationLabel='مستخدمين وصلاحيات';
+  protected static ?string $pluralLabel='مستخدم';
 
   public static function shouldRegisterNavigation(): bool
   {
-    return  auth()->user()->id==1;
+      return Auth::user()->hasRole('Admin');
   }
 
 
@@ -37,22 +40,25 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')->unique(ignoreRecord: true)->required(),
-                TextInput::make('email')->email()->unique(ignoreRecord: true)->required(),
-                Select::make('company')
-                    ->options(OurCompany::all()->pluck('CompanyName', 'Company'))
-                    ->preload()
-                    ->required(),
+                TextInput::make('name')->label('الاسم')->unique(ignoreRecord: true)->required(),
+                TextInput::make('email')->label('الايميل')->email()->unique(ignoreRecord: true)->required(),
                 TextInput::make('password')->required()->visibleOn('create'),
                 Select::make('roles')
+                    ->label('صلاحيات مجمعة')
                     ->searchable()
                     ->multiple()
-                    ->relationship('roles','name')
+                    ->relationship('roles', 'name', fn (Builder $query) => $query
+                        ->when(Auth::id()!=1,function ($q) {$q->where('name','!=','Admin');})
+                        ->where('for_who','sell')
+                    )
+
                     ->preload(),
               Select::make('permissions')
+                  ->label('صلاحيات مفردة')
                 ->searchable()
                 ->multiple()
-                ->relationship('permissions','name')
+                ->relationship('permissions','name', fn (Builder $query) => $query
+                    ->where('for_who','sell'))
                 ->preload(),
             ]);
     }
@@ -60,15 +66,21 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-
+            ->modifyQueryUsing(function (Builder $query) {
+                if (auth()->id() != 1) {
+                    return $query
+                        ->where('company', auth()->user()->company)
+                        ->where('id','!=',1)
+                        ;
+                }
+            })
             ->columns([
-                TextColumn::make('id'),
-                TextColumn::make('name'),
-                TextColumn::make('email'),
-                TextColumn::make('company'),
-                TextColumn::make('created_at'),
-                TextColumn::make('updated_at'),
-
+                TextColumn::make('id')->label('الرقم الألي'),
+                TextColumn::make('name')->label('الاسم'),
+                TextColumn::make('email')->label('الايميل'),
+                TextColumn::make('company')->visibleOn(Auth::id()==1),
+                TextColumn::make('created_at')->label('تاريخ الادخال'),
+                TextColumn::make('updated_at')->label('تاريخ التعديل'),
             ])
             ->filters([
                 //

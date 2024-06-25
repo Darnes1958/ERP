@@ -31,7 +31,7 @@ class SupplierResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مشتريات');
+        return Auth::user()->can('ادخال موردين');
     }
 
   public static function form(Form $form): Form
@@ -95,7 +95,8 @@ class SupplierResource extends Resource
           ->hidden(fn(Supplier $record)=>
             Buy::where('supplier_id',$record->id)->exists()
             || $record->id<3
-            || Recsupp::where('supplier_id',$record->id)->exists()),
+            || Recsupp::where('supplier_id',$record->id)->exists()
+            || Auth::user()->can('الغاء موردين')),
       ]);
   }
 

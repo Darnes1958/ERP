@@ -38,7 +38,7 @@ class SellWorkResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مبيعات');
+        return Auth::user()->can('ادخال مبيعات');
     }
 
     public static function form(Form $form): Form

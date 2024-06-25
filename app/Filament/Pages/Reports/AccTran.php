@@ -183,7 +183,7 @@ class AccTran extends Page  implements HasForms,HasTable
                     ->label('دائن'),
                 TextColumn::make('order_id')
                     ->searchable()
-                    ->label('رقم الفاتورة'),
+                    ->label('رقم المستند'),
                 TextColumn::make('notes')
                     ->searchable()
                     ->label('ملاحظات'),

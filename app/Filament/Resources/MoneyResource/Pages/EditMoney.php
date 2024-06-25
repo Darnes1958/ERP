@@ -5,6 +5,7 @@ namespace App\Filament\Resources\MoneyResource\Pages;
 use App\Filament\Resources\MoneyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
 class EditMoney extends EditRecord
 {
@@ -13,7 +14,7 @@ class EditMoney extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء تحويل')),
         ];
     }
 

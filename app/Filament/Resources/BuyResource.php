@@ -35,7 +35,7 @@ class BuyResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مشتريات');
+        return Auth::user()->can('ادخال مشتريات');
     }
 
     public static function form(Form $form): Form
@@ -93,8 +93,9 @@ class BuyResource extends Resource
                     ->iconButton()
                     ->modalHeading('حذف فاتورة شراء')
                     ->modalDescription('هل انت متأكد من الغاء هذه الفاتورة ؟')
-                    ->hidden(fn(Buy $record)=>
-                     Buy_tran::where('buy_id',$record->id)->whereColumn('q1','!=','q1')->whereColumn('q2','!=','q2')->exists())
+                    ->hidden(fn(Buy $record): bool =>
+                     Buy_tran::where('buy_id',$record->id)->whereColumn('qs1','!=','q1')->orWhereColumn('qs2','!=','q2')->exists()
+                     || !Auth::user()->can('الغاء مشتريات'))
                     ->before(function(Buy $record) {
                         $buytran=Buy_tran::where('buy_id',$record->id)->get();
                         foreach ($buytran as $tran) {

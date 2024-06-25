@@ -31,6 +31,12 @@ class PermissionResource extends Resource
     {
         return $form
             ->schema([
+                Select::make('for_who')
+                    ->default('sell')
+                    ->options([
+                        'sell'=>'sell',
+                        'ins'=>'ins'
+                    ]),
                 TextInput::make('name')->unique(ignoreRecord: true),
             ]);
     }
@@ -38,6 +44,7 @@ class PermissionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
             ->columns([
 
                 TextColumn::make('name')

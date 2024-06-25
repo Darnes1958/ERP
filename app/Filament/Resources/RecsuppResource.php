@@ -46,7 +46,7 @@ class RecsuppResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('موردين');
+        return Auth::user()->can('ادخال ايصالات موردين');
     }
 
   public static function form(Form $form): Form
@@ -352,7 +352,10 @@ class RecsuppResource extends Resource
       ])
       ->actions([
         Tables\Actions\EditAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<7),
-        Tables\Actions\DeleteAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<7)
+        Tables\Actions\DeleteAction::make()->iconButton() ->visible(fn(Recsupp $record): bool =>
+            $record->rec_who->value<7
+            || Auth::user()->can('الغاء ايصالات موردين')
+        )
           ->modalHeading('حذف الإيصال')
           ->after(function (Recsupp $record) {
               if ($record->rec_who->value==3 || $record->rec_who->value==4 || $record->rec_who->value==5 || $record->rec_who->value==6) {

@@ -28,7 +28,7 @@ class KazenaResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('Admin');
+        return Auth::user()->hasRole('ادخال خزينة');
     }
 
     public static function form(Form $form): Form
@@ -80,7 +80,8 @@ class KazenaResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->hidden(fn(Kazena $record)=>
                         Receipt::where('kazena_id',$record->id)->count()>0
-                        || Recsupp::where('kazena_id',$record->id)->count()>0)
+                        || Recsupp::where('kazena_id',$record->id)->count()>0
+                        || !Auth::user()->can('الغاء خزينة'))
                 ,
             ])
             ->bulkActions([

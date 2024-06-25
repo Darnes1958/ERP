@@ -25,11 +25,11 @@ class AccResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='حسابات مصرفية';
-  protected static ?string $navigationGroup='مصارف وخزائن';
+    protected static ?string $navigationGroup='مصارف وخزائن';
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('Admin');
+        return Auth::user()->can('ادخال مصارف');
     }
 
     public static function form(Form $form): Form
@@ -81,7 +81,8 @@ class AccResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                  ->hidden(fn(Acc $records): bool => Receipt::where('acc_id',$records->id)->count()>0
-                                                 || Recsupp::where('acc_id',$records->id)->count()>0),
+                                                 || Recsupp::where('acc_id',$records->id)->count()>0
+                                                 || !Auth::user()->can('الغاء مصارف')),
             ]);
 
     }

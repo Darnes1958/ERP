@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Auth;
 
 
 class RoleResource extends Resource
@@ -34,9 +35,17 @@ class RoleResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')->unique(ignoreRecord: true),
+                Select::make('for_who')
+                    ->default('sell')
+                 ->options([
+                     'sell'=>'sell',
+                     'ins'=>'ins'
+                 ]),
                 Select::make('permissions')
                   ->multiple()
-                  ->relationship('permissions','name')
+                  ->relationship('permissions','name', fn (Builder $query) =>
+                  $query->where('for_who','=','sell')
+                  )
                   ->preload(),
             ]);
     }
@@ -44,6 +53,12 @@ class RoleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query
+                    ->when('for_who'!=null,function ($q){$q->where('for_who','sell');})
+                    ;
+
+            })
             ->columns([
                 TextColumn::make('name'),
                 TextColumn::make('Permissions.name')
