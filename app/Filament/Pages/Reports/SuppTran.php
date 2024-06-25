@@ -27,6 +27,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class SuppTran extends Page implements HasForms,HasTable
 {
@@ -38,7 +39,13 @@ class SuppTran extends Page implements HasForms,HasTable
     protected ?string $heading="";
     protected static string $view = 'filament.pages.reports.supp-tran';
 
-    public $cust_id;
+  public static function shouldRegisterNavigation(): bool
+  {
+    return Auth::user()->hasRole('Admin');
+  }
+
+
+  public $cust_id;
     public $repDate;
     public $formData;
 

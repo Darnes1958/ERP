@@ -46,6 +46,12 @@ class CustTran extends Page implements HasForms,HasTable
   protected ?string $heading="";
   protected static string $view = 'filament.pages.reports.cust-tran';
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return Auth::user()->hasRole('Admin');
+  }
+
+
   public $cust_id;
   public $repDate;
   public $formData;

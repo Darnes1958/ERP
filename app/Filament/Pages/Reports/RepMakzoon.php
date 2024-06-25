@@ -25,6 +25,12 @@ class RepMakzoon extends Page implements HasTable
   protected static ?int $navigationSort=6;
     protected ?string $heading="";
 
+  public static function shouldRegisterNavigation(): bool
+  {
+    return Auth::user()->hasRole('Admin');
+  }
+
+
   public array $data_list= [
     'calc_columns' => [
       'buy_cost',

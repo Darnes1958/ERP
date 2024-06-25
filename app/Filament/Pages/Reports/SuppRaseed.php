@@ -14,6 +14,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class SuppRaseed extends Page implements HasForms,HasTable
 {
@@ -26,7 +27,13 @@ class SuppRaseed extends Page implements HasForms,HasTable
 
     protected static string $view = 'filament.pages.reports.supp-raseed';
 
-    public $repDate1;
+  public static function shouldRegisterNavigation(): bool
+  {
+    return Auth::user()->hasRole('Admin');
+  }
+
+
+  public $repDate1;
     public $repDate2;
     public function mount(){
         $this->repDate1=now();

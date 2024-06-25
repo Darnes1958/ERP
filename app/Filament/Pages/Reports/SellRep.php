@@ -39,7 +39,7 @@ class SellRep extends Page implements HasForms,HasTable
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مبيعات');
+        return Auth::user()->can('ادخال مبيعات');
     }
 
     public array $data_list= [

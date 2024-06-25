@@ -29,7 +29,7 @@ class CustomerResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('زبائن');
+        return Auth::user()->can('ادخال زبائن');
     }
 
     public static function form(Form $form): Form

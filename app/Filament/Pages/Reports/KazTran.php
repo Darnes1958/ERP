@@ -20,6 +20,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class KazTran extends Page implements HasForms,HasTable
 {
@@ -30,6 +31,12 @@ class KazTran extends Page implements HasForms,HasTable
   protected ?string $heading="";
 
   protected static string $view = 'filament.pages.reports.kaz-tran';
+
+  public static function shouldRegisterNavigation(): bool
+  {
+    return Auth::user()->hasRole('Admin');
+  }
+
 
   public $repDate1;
   public $repDate2;

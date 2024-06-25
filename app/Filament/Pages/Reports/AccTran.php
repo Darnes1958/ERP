@@ -21,6 +21,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class AccTran extends Page  implements HasForms,HasTable
 {
@@ -29,7 +30,10 @@ class AccTran extends Page  implements HasForms,HasTable
     protected static ?string $navigationLabel='حركة مصرف';
     protected static ?string $navigationGroup='مصارف وخزائن';
 
-
+  public static function shouldRegisterNavigation(): bool
+  {
+    return Auth::user()->can('ادخال خزائن') || Auth::user()->can('ادخال مصارف');
+  }
     protected ?string $heading="";
 
     protected static string $view = 'filament.pages.reports.acc-tran';
