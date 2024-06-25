@@ -44,7 +44,12 @@ class PermissionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query
+                    ->when('for_who'!=null,function ($q){$q->where('for_who','sell');})
+                    ;
 
+            })
             ->columns([
 
                 TextColumn::make('name')
