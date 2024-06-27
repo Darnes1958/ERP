@@ -146,7 +146,7 @@ class MasrofatResource extends Resource
                  ->numeric()
                  ->required()
                  ->label('المبلغ'),
-              TextInput::make('note')
+              TextInput::make('notes')
                 ->label('ملاحظات'),
             ]);
     }
@@ -154,6 +154,7 @@ class MasrofatResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('masr_date','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('masr_date')
                  ->label('التاريخ')
