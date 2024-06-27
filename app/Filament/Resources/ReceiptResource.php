@@ -350,7 +350,11 @@ class ReceiptResource extends Resource
                 })
             ])
             ->actions([
-              Tables\Actions\EditAction::make()->iconButton()->color('blue')->visible(fn(Receipt $record) =>$record->rec_who->value<7),
+              Tables\Actions\EditAction::make()->iconButton()
+                  ->color('blue')
+                  ->visible(fn(Receipt $record): bool =>
+                      $record->rec_who->value<7
+                      || !Auth::user()->can('االغاء ايصالات زبائن')),
               Tables\Actions\DeleteAction::make()->iconButton()
                   ->visible(fn(Receipt $record): bool =>
                       $record->rec_who->value<7
@@ -367,7 +371,6 @@ class ReceiptResource extends Resource
                     $sell->pay=$sum-$sub;
                     $sell->baky=$sell->total-$sum+$sub;
                     $sell->save();
-
                   }
 
                 }),

@@ -351,8 +351,13 @@ class RecsuppResource extends Resource
           })
       ])
       ->actions([
-        Tables\Actions\EditAction::make()->iconButton() ->visible(fn(Recsupp $record) =>$record->rec_who->value<7),
-        Tables\Actions\DeleteAction::make()->iconButton() ->visible(fn(Recsupp $record): bool =>
+        Tables\Actions\EditAction::make()->iconButton()
+            ->visible(fn(Recsupp $record): bool =>
+                $record->rec_who->value<7
+                || Auth::user()->can('الغاء ايصالات موردين')
+            ),
+        Tables\Actions\DeleteAction::make()->iconButton()
+            ->visible(fn(Recsupp $record): bool =>
             $record->rec_who->value<7
             || Auth::user()->can('الغاء ايصالات موردين')
         )

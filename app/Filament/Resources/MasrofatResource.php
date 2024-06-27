@@ -32,7 +32,7 @@ class MasrofatResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('ادخال مصروفات');
+        return Auth::user()->can('ادخال مصروفات');
     }
 
     public static function form(Form $form): Form
@@ -179,8 +179,6 @@ class MasrofatResource extends Resource
                     ->label('ملاحظات')
                     ->searchable()
                     ->sortable(),
-
-
 
             ])
             ->filters([
