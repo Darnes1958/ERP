@@ -488,8 +488,6 @@ class CreateSell extends Page
         if (!$this->chkRaseed($item_id,$place_id,$q1,$q2) ) return 'الرصيد لا يسمح !!';
         return 'ok';
     }
-
-
     public function add_rec(){
 
         $this->validate();
@@ -512,13 +510,13 @@ class CreateSell extends Page
         if ($this->selltran)
             $this->selltran->update($this->sellTranForm->getState());
         else
-            $this->selltran=Sell_tran_work::create(collect($this->selltranData)->except(['id','raseed_place','raseed_all'])->toArray());
+            $this->selltran=Sell_tran_work::
+            create(collect($this->selltranData)->except(['id','raseed_place','raseed_all'])->toArray());
         $this->sub_tot();
         $this->tot();
 
         $this->dispatch('gotoitem', test: 'barcode_id');
     }
-
     public function is_two(){
         if (isset($this->selltranData['item_id']) && $this->selltranData['item_id']!='') {
             return Setting::find(Auth::user()->company)->has_two && Item::find($this->selltranData['item_id'])->two_unit==1;}

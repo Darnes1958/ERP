@@ -7,6 +7,7 @@ use App\Filament\Resources\MasrofatResource\RelationManagers;
 use App\Models\Item;
 use App\Models\Masr_type;
 use App\Models\Masrofat;
+use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
@@ -14,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -183,8 +185,37 @@ class MasrofatResource extends Resource
 
             ])
             ->filters([
-                //
-            ])
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('Date1')
+                            ->label('من تاريخ'),
+                        Forms\Components\DatePicker::make('Date2')
+                            ->label('إلي تاريخ'),
+                    ])
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['Date1'] && ! $data['Date2']) { return null;   }
+                        if ( $data['Date1'] && !$data['Date2'])
+                            return 'ادخلت بتاريخ  ' . Carbon::parse($data['Date1'])->toFormattedDateString();
+                        if ( !$data['Date1'] && $data['Date2'])
+                            return 'حتي تاريخ  ' . Carbon::parse($data['Date2'])->toFormattedDateString();
+                        if ( $data['Date1'] && $data['Date2'])
+                            return 'ادخلت في الفترة من  ' . Carbon::parse($data['Date1'])->toFormattedDateString()
+                                .' إلي '. Carbon::parse($data['Date1'])->toFormattedDateString();
+
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['Date1'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('masr_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['Date2'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('masr_date', '<=', $date),
+                            );
+                    })
+            ], layout: Tables\Enums\FiltersLayout::Modal)
+            ->filtersFormWidth(MaxWidth::ExtraSmall)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),

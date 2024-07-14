@@ -11,10 +11,12 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class RentTranView extends Page implements HasTable, HasForms
@@ -63,6 +65,18 @@ class RentTranView extends Page implements HasTable, HasForms
                 TextColumn::make('tran_type')
                     ->sortable()
                     ->label('البيان'),
+                TextColumn::make('pay_type')
+                    ->state(function (Renttran $record){
+                        if ($record->kazena_id)  return $record->Kazena->name;
+                        if ($record->acc_id)  return $record->Acc->name;
+
+                    })
+                    ->color(function (Renttran $record){
+                        if ($record->kazena_id)  return 'success';
+                        if ($record->acc_id)  return 'info';
+
+                    })
+                    ->label('دفعت من '),
                 TextColumn::make('month')
                     ->sortable()
                     ->label('عن شهر'),
@@ -70,6 +84,16 @@ class RentTranView extends Page implements HasTable, HasForms
                     ->label('المبلغ'),
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
-            ]);
+            ])
+            ->actions([
+                Action::make('delete')
+                    ->requiresConfirmation()
+                    ->icon('heroicon-o-trash')
+                    ->iconButton()
+                    ->action(function (Model $record) {
+                        $record->delete();
+                    })
+
+                ]);
     }
 }

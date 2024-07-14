@@ -13,7 +13,13 @@ class Renttran extends Model
     public function Rent(){
         return $this->belongsTo(Rent::class);
     }
+    public function Acc(){
+        return $this->belongsTo(Acc::class);
+    }
 
+    public function Kazena(){
+        return $this->belongsTo(Kazena::class);
+    }
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

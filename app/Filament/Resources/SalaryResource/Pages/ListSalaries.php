@@ -116,7 +116,6 @@ class ListSalaries extends ListRecords
                  ->required()
                  ->live()
                  ->preload()
-                 //->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
                  ->default(function (){
                    $res=Kazena::where('user_id',Auth::id())->first();
                    if ($res) return $res->id;
@@ -136,7 +135,6 @@ class ListSalaries extends ListRecords
 
              ])
              ->action(function (array $data) {
-
                   $tran=new Salarytran;
                   $tran->salary_id=$data['salary_id'];
                   $tran->tran_date=$data['tran_date'];
@@ -161,14 +159,12 @@ class ListSalaries extends ListRecords
             ->color('success')
             ->icon('heroicon-o-plus-circle')
             ->form([
-
               Select::make('salary_id')
                 ->label('الاسم')
                 ->options(Salary::all()->pluck('name','id'))
                 ->searchable()
                 ->preload()
                 ->required(),
-
                 DatePicker::make('tran_date')
                     ->required()
                     ->default(now())
