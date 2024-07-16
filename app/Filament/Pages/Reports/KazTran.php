@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Reports;
 use App\Models\Acc;
 use App\Models\Acc_tran;
 use App\Models\Kazena;
+use App\Models\Masrofat;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Forms\Components\DatePicker;
@@ -34,7 +35,7 @@ class KazTran extends Page implements HasForms,HasTable
 
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->hasRole('Admin');
+      return Auth::user()->can('ادخال خزائن') || Auth::user()->can('ادخال مصارف');
   }
 
 
@@ -159,6 +160,8 @@ class KazTran extends Page implements HasForms,HasTable
               if ($record->mden==0) return 'الي '.Kazena::find($record->kazena2_id)->name;
               else return 'من '.Kazena::find($record->kazena2_id)->name;
             }
+           if ($record->rec_who->value ==13)  return Masrofat::find($record->id)->Masr_type->name;
+
           })
 
           ->searchable()
@@ -188,7 +191,7 @@ class KazTran extends Page implements HasForms,HasTable
           ->label('دائن'),
         TextColumn::make('order_id')
           ->searchable()
-          ->label('رقم الفاتورة'),
+          ->label('رقم المستند'),
         TextColumn::make('notes')
           ->searchable()
           ->label('ملاحظات'),
