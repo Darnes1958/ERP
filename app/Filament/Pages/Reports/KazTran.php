@@ -6,6 +6,7 @@ use App\Models\Acc;
 use App\Models\Acc_tran;
 use App\Models\Kazena;
 use App\Models\Masrofat;
+use App\Models\Salarytran;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Forms\Components\DatePicker;
@@ -161,6 +162,7 @@ class KazTran extends Page implements HasForms,HasTable
               else return 'من '.Kazena::find($record->kazena2_id)->name;
             }
            if ($record->rec_who->value ==13)  return Masrofat::find($record->id)->Masr_type->name;
+           if ($record->rec_who->value ==14)  return Salarytran::find($record->id)->Salary->name;
 
           })
 
