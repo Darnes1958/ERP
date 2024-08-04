@@ -28,7 +28,7 @@ class KazenaResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('ادخال خزينة');
+        return Auth::user()->can('ادخال خزينة');
     }
 
     public static function form(Form $form): Form
