@@ -31,7 +31,6 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarFullyCollapsibleOnDesktop()
             ->breadcrumbs(false)
             ->maxContentWidth('Full')
-
             ->default()
             ->id('admin')
             ->path('admin')

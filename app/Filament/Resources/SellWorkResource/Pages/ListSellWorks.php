@@ -20,7 +20,7 @@ class ListSellWorks extends ListRecords
 
         if (!Sell_work::find(Auth::id()))
             Sell_work::create([
-                'id'=>Auth::id(),'user_id'=>Auth::id(),'customer_id'=>2,
+                'id'=>Auth::id(),'user_id'=>Auth::id(),'customer_id'=>1,
             ]);
 
     }

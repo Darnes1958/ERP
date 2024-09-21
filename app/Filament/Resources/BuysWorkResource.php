@@ -130,7 +130,7 @@ protected static ?int $navigationSort=1;
                             ])
 
                             ->id('place_id')
-                            ->visible(Setting::find(Auth::user()->company)->many_place),
+                            ->visible(function (){return Setting::find(Auth::user()->company)->many_place;}),
                         Select::make('price_type_id')
                             ->label('طريقة الدفع')
                             ->columnSpan(2)
