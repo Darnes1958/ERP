@@ -7,6 +7,7 @@ use App\Models\Buy_tran;
 use App\Models\Cust_tran;
 use App\Models\Masr_view;
 use App\Models\OurCompany;
+use App\Models\Place_stock;
 use App\Models\Receipt;
 use App\Models\Recsupp;
 use App\Models\Sell;
@@ -17,9 +18,35 @@ use App\Models\Tar_sell;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PdfController extends Controller
 {
+    public function PdfRepMak(){
+
+        $RepDate=date('Y-m-d');
+        $cus=OurCompany::where('Company',Auth::user()->company)->first();
+        $res=Place_stock::
+        withSum('Item as buy_cost',DB::raw('stock1 * price_buy'))
+            ->withSum('Item as sell_cost',DB::raw('stock1 * price1'))->get();
+
+
+        $html = view('PDF.pdf-mak',
+            ['res'=>$res,'cus'=>$cus,'RepDate'=>$RepDate])->toArabicHTML();
+
+        $pdf = PDF::loadHTML($html)->output();
+        $headers = array(
+            "Content-type" => "application/pdf",
+        );
+        return response()->streamDownload(
+            fn () => print($pdf),
+            "invoice.pdf",
+            $headers
+        );
+
+
+    }
+
     public function PdfBuy($id){
 
         $RepDate=date('Y-m-d');

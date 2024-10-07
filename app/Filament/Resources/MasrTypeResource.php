@@ -24,9 +24,10 @@ class MasrTypeResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralLabel='انواع المصروفات';
     protected static ?string $navigationGroup='مصروفات';
+    protected static ?int $navigationSort=2;
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('ادخال مصروفات');
+        return Auth::user()->can('ادخال مصروفات');
     }
 
     public static function form(Form $form): Form

@@ -8,8 +8,10 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View;
@@ -31,7 +33,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
+
         Number::useLocale('nl');
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+            fn (): string => Blade::render('@livewire(\'top-bar\')'),
+        );
       FilamentView::registerRenderHook(
         'panels::page.end',
         fn (): View => view('analytics'),

@@ -4,11 +4,17 @@ namespace App\Filament\Pages\Reports;
 
 use App\Models\Place_stock;
 use App\Models\Setting;
+use Filament\Forms\Components\Checkbox;
 use Filament\Pages\Page;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +54,10 @@ class RepMakzoon extends Page implements HasTable
                 ->withSum('Item as sell_cost',DB::raw('stock1 * price1'));
                 return $place_stock;
             })
+            ->headerActions([
+                Action::make('طباعة')
+                ->url(route('pdfrepmak'))
+            ])
             ->columns([
                 TextColumn::make('Place.name')
                     ->sortable()
@@ -61,6 +71,10 @@ class RepMakzoon extends Page implements HasTable
                     ->sortable()
                     ->searchable()
                     ->label('اسم الصنف'),
+                TextColumn::make('Item.Unita.name')
+                    ->sortable()
+                    ->searchable()
+                    ->label('الوحدة'),
                 TextColumn::make('Item.stock1')
                  ->label('الرصيد الكلي'),
                 TextColumn::make('stock1')
@@ -73,7 +87,7 @@ class RepMakzoon extends Page implements HasTable
                     ->visible(Setting::find(Auth::user()->company)->has_two)
                     ->label('الكمية (ص)'),
               TextColumn::make('Item.price_buy')
-                ->visible(Auth::user()->can('مشتريات'))
+                ->visible(Auth::user()->can('ادخال مشتريات'))
                 ->numeric(
                   decimalPlaces: 2,
                   decimalSeparator: '.',
@@ -81,7 +95,7 @@ class RepMakzoon extends Page implements HasTable
                 )
                 ->label('سعر الشراء'),
               TextColumn::make('buy_cost')
-               ->visible(Auth::user()->can('مشتريات'))
+               ->visible(Auth::user()->can('ادخال مشتريات'))
                 ->numeric(
                   decimalPlaces: 2,
                   decimalSeparator: '.',
@@ -97,16 +111,31 @@ class RepMakzoon extends Page implements HasTable
                 )
                 ->label('سعر البيع'),
               TextColumn::make('sell_cost')
-                ->visible(Auth::user()->can('مشتريات'))
+                ->visible(Auth::user()->can('ادخال مشتريات'))
                 ->numeric(
                   decimalPlaces: 2,
                   decimalSeparator: '.',
                   thousandsSeparator: ',',
                 )
                 ->label('قيمة البيع'),
-
+            ])
+            ->filters([
+             Filter::make('anyfilter')
+            ->form([
+                Checkbox::make('showZero')
+                 ->label('اطهار الاصفار'),
 
             ])
+            ->query(function (Builder $query, array $data): Builder {
+                return $query
+                    ->when(
+                        ! $data['showZero'],
+                        fn (Builder $query, $date): Builder => $query->where('stock1','!=',0),
+                    );
+            }),
+
+
+            ], layout: FiltersLayout::AboveContent)
           ->contentFooter(view('table.footer', $this->data_list))
             ->striped();
     }
