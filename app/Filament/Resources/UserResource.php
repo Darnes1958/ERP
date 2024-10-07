@@ -43,6 +43,10 @@ class UserResource extends Resource
                 TextInput::make('name')->label('الاسم')->unique(ignoreRecord: true)->required(),
                 TextInput::make('email')->label('الايميل')->email()->unique(ignoreRecord: true)->required(),
                 TextInput::make('password')->required()->visibleOn('create'),
+                Select::make('company')
+                  ->label('Company')
+                  ->visible(Auth::id()==1)
+                  ->options(OurCompany::all()->pluck('Company', 'Company')->toArray()),
                 Select::make('roles')
                     ->label('صلاحيات مجمعة')
                     ->searchable()
