@@ -28,7 +28,8 @@ class PdfController extends Controller
         $cus=OurCompany::where('Company',Auth::user()->company)->first();
         $res=Place_stock::
         withSum('Item as buy_cost',DB::raw('stock1 * price_buy'))
-            ->withSum('Item as sell_cost',DB::raw('stock1 * price1'))->get();
+            ->withSum('Item as sell_cost',DB::raw('stock1 * price1'))
+            ->where('stock1','!=',0)->get();
 
 
         $html = view('PDF.pdf-mak',

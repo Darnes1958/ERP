@@ -8,6 +8,7 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Facades\FilamentView;
+use Filament\Tables\Table;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
     {
 
 
-        Number::useLocale('nl');
+        Table::$defaultNumberLocale = 'nl';
         FilamentView::registerRenderHook(
             PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
             fn (): string => Blade::render('@livewire(\'top-bar\')'),

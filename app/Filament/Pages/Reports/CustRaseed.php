@@ -10,6 +10,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Page;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -23,8 +24,9 @@ class CustRaseed extends Page implements HasForms,HasTable
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='أرصدة الزبائن';
     protected static ?string $navigationGroup='زبائن وموردين';
-  protected static ?int $navigationSort=6;
+    protected static ?int $navigationSort=6;
     protected ?string $heading="";
+
 
     protected static string $view = 'filament.pages.reports.cust-raseed';
 
@@ -69,9 +71,10 @@ class CustRaseed extends Page implements HasForms,HasTable
     public function table(Table $table): Table
     {
         return $table
+            ->pluralModelLabel('الزبائن')
             ->query(function (){
                 $report=Cust_tran::
-                    selectRaw('name,sum(mden) mden,sum(daen) daen,sum(daen-mden) raseed')
+                    selectRaw('name,sum(mden) mden,sum(daen) daen,sum(mden-daen) raseed')
                     ->when($this->repDate1,function ($q){
                     $q->where('repDate','>=',$this->repDate1);
                 })
@@ -89,6 +92,11 @@ class CustRaseed extends Page implements HasForms,HasTable
                     ->searchable()
                     ->label('اسم الزبون'),
                 TextColumn::make('mden')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->color('danger')
                     ->searchable()
                     ->numeric(
@@ -98,6 +106,11 @@ class CustRaseed extends Page implements HasForms,HasTable
                     )
                     ->label('مدين'),
                 TextColumn::make('daen')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->color('info')
                     ->searchable()
                     ->numeric(
@@ -107,6 +120,11 @@ class CustRaseed extends Page implements HasForms,HasTable
                     )
                     ->label('دائن'),
                 TextColumn::make('raseed')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->color(function($state){
                         if($state>=0) return 'green'; else return 'danger';
                     })
