@@ -2,14 +2,18 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Exports\CustRaseedExl;
 use App\Models\Cust_tran;
 use App\Models\Supp_tran;
+use Filament\Forms\Components\Actions;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Page;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -17,6 +21,8 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class CustRaseed extends Page implements HasForms,HasTable
 {
@@ -63,7 +69,25 @@ class CustRaseed extends Page implements HasForms,HasTable
                         $this->repDate2=$state;
 
                     })
-                    ->label('إلي تاريخ')
+                    ->label('إلي تاريخ'),
+                \Filament\Forms\Components\Actions::make([
+                    \Filament\Forms\Components\Actions\Action::make('excl')
+                        ->label('Excel')
+                        ->button()
+                        ->color('success')
+                        ->action(function (){
+                            $report=Cust_tran::
+                            selectRaw('sum(mden) mden,sum(daen) daen,sum(mden-daen) raseed')
+                                ->when($this->repDate1,function ($q){
+                                    $q->where('repDate','>=',$this->repDate1);
+                                })
+                                ->when($this->repDate2,function ($q){
+                                    $q->where('repDate','<=',$this->repDate2);
+                                })->first();
+                            return Excel::download(new CustRaseedExl('ارصدة الزبائن من تاريخ '.$this->repDate1.' إلي تاريخ '.$this->repDate2,
+                                $this->getTableQueryForExport()->get(),$report),'cust_tran.xlsx');
+                        })
+            ])->verticalAlignment(VerticalAlignment::End),
 
             ])->columns(6);
     }
