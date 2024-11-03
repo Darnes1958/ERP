@@ -12,7 +12,7 @@ class Place extends Model
   protected $connection = 'other';
 
   protected $casts =[
-    'inc_dec' => PlaceType::class,
+    'place_type' => PlaceType::class,
   ];
   public function Place_stock(){
     return $this->hasMany(Place_stock::class);
