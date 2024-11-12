@@ -23,6 +23,7 @@ class CreateItem extends CreateRecord
 
         if (!Setting::find(Auth::user()->company)->barcode)
         {
+
             $data['barcode']=Barcode::max('id')+1;
 
         }

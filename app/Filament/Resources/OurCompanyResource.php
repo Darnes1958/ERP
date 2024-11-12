@@ -30,10 +30,10 @@ class OurCompanyResource extends Resource
     {
         return $form
             ->schema([
-              TextInput::make('Company')->unique(),
-              TextInput::make('CompanyName')->unique(),
-              TextInput::make('CompanyNameSuffix')->unique(),
-              TextInput::make('CompCode')->unique(),
+              TextInput::make('Company')->unique()->required(),
+              TextInput::make('CompanyName')->unique()->required(),
+              TextInput::make('CompanyNameSuffix')->required(),
+              TextInput::make('CompCode')->unique()->required(),
             ]);
     }
 
