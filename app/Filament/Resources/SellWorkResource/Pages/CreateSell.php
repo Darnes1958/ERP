@@ -293,7 +293,6 @@ class CreateSell extends Page
                       ->columnSpan(2)
                       ->numeric()
                       ->minValue(0)
-
                       ->maxValue(100),
                     TextInput::make('differ')
                       ->hiddenLabel()
