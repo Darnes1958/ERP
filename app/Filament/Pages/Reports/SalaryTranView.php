@@ -2,9 +2,12 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Exports\SalaryTranExl;
+use App\Exports\SuppTranExl;
 use App\Livewire\Traits\AksatTrait;
 use App\Models\Salary;
 use App\Models\Salarytran;
+use App\Models\Supplier;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 
@@ -15,6 +18,7 @@ use Filament\Forms\Form;
 
 use Filament\Forms\Get;
 use Filament\Pages\Page;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -23,6 +27,7 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SalaryTranView extends Page implements HasTable, HasForms
 {
@@ -69,6 +74,19 @@ class SalaryTranView extends Page implements HasTable, HasForms
                     return 0 ;
 
                   }),
+                \Filament\Forms\Components\Actions::make([
+
+                    \Filament\Forms\Components\Actions\Action::make('excl')
+                        ->label('Excel')
+                        ->button()
+                        ->color('success')
+                        ->action(function (Get $get){
+                            $sal=Salary::find($this->salary_id);
+                            return Excel::download(new SalaryTranExl($sal->name,$sal->raseed,
+                                $this->getTableQueryForExport()->get(),'sal'),'cust_tran.xlsx');
+                        })
+                ])->verticalAlignment(VerticalAlignment::End),
+
             ])->columns(4);
     }
 

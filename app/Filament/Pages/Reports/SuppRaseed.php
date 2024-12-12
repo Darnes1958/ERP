@@ -68,7 +68,6 @@ class SuppRaseed extends Page implements HasForms,HasTable
                     ->label('إلي تاريخ'),
                 \Filament\Forms\Components\Actions::make([
                     \Filament\Forms\Components\Actions\Action::make('excl')
-
                         ->label('Excel')
                         ->button()
                         ->color('success')
