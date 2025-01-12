@@ -584,6 +584,7 @@ class SellEdit extends Page implements HasTable
                         ->live()
                         ->required()
                         ->id('price1')
+                        ->readOnly(fn():bool => ! Auth::user()->hasRole('admin'))
                         ->extraAttributes([
                             'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",
                         ]),

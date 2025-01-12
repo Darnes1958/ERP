@@ -30,6 +30,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 
@@ -41,6 +42,12 @@ class PerResource extends Resource
     protected static ?string $navigationLabel='نقل أصناف بين المخازن والمعارض';
     protected static ?string $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=2;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()->can('نقل أصناف');
+    }
+
 
     public static function form(Form $form): Form
     {

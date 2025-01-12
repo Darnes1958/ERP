@@ -13,6 +13,7 @@ use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View;
@@ -34,7 +35,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
-
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('admin') ? true : null;
+        });
         Table::$defaultNumberLocale = 'nl';
         FilamentView::registerRenderHook(
             PanelsRenderHook::GLOBAL_SEARCH_BEFORE,

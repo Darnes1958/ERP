@@ -3,11 +3,13 @@
 namespace App\Filament\Pages\Reports;
 
 use App\Livewire\widget\RebhMonth;
+use App\Models\Sell;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -32,27 +34,44 @@ class Arbah extends Page implements HasForms,HasActions
   }
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->hasRole('Admin');
+    return Auth::user()->hasRole('admin');
   }
 
     protected static string $view = 'filament.pages.reports.arbah';
 
   protected ?string $heading="";
 
-  public $repDate1;
-  public $repDate2;
+  public $year;
   public function mount(){
-    $this->repDate1=now();
-    $this->repDate2=now();
-    $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
+    $year=2024;
+   $this->form->fill([
+       'year' => $year,
+   ]);
   }
+public function form(Form $form): Form
+{
+    return $form
+        ->schema([
+           Select::make('year')
+            ->options(Sell::selectraw('distinct year(order_date) as year')->pluck('year','year'))
+            ->label('السنه')
+            ->preload()
+            ->searchable()
+            ->live()
+            ->afterStateUpdated(function ($state){
+                $this->year=$state;
+                $this->dispatch('updateyear',year: $this->year);
+            })
 
-  protected function getFooterWidgets(): array
+        ])->columns(4);
+}
+
+    protected function getFooterWidgets(): array
   {
     return [
 
       RebhMonth::make([
-        'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+        'year'=>$this->year,
       ]),
 
 

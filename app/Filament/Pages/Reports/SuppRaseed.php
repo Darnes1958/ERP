@@ -33,7 +33,7 @@ class SuppRaseed extends Page implements HasForms,HasTable
 
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->hasRole('Admin');
+    return Auth::user()->hasRole('admin');
   }
 
 

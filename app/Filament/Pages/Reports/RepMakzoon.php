@@ -33,7 +33,7 @@ class RepMakzoon extends Page implements HasTable
 
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->hasRole('Admin');
+    return Auth::user()->hasRole('admin');
   }
 
 

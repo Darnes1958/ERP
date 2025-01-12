@@ -29,7 +29,7 @@ class RepDaily extends Page implements HasForms
     protected static ?int $navigationSort=1;
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('Admin');
+        return Auth::user()->hasRole('admin');
     }
 
     protected static string $view = 'filament.pages.reports.rep-daily';
