@@ -38,6 +38,13 @@ class SellResource extends Resource
     {
         return Auth::user()->can('تعديل مبيعات');
     }
+    public static function getEloquentQuery(): Builder
+    {
+        if (Auth::user()->hasRole('admin'))
+         return Sell::query();
+        else
+         return parent::getEloquentQuery()->where('place_id', Auth::user()->place_id);
+    }
 
     public static function form(Form $form): Form
     {
@@ -107,6 +114,7 @@ class SellResource extends Resource
     {
         return $table
             ->defaultSort('id','desc')
+            ->emptyStateHeading('لا توجد فواتير')
             ->columns([
                 TextColumn::make('id')
                     ->searchable()

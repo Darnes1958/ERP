@@ -124,7 +124,7 @@ class SellRep extends Page implements HasForms,HasTable
            )
          ->label('الباقي'),
          TextColumn::make('sell_tran_sum_profit')
-             ->visible(Auth::user()->hasRole('Admin'))
+             ->visible(Auth::user()->hasRole('admin'))
              ->sum('Sell_tran','profit')
              ->label('الربح'),
        TextColumn::make('notes')

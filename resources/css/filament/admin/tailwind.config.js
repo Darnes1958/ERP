@@ -1,5 +1,6 @@
 import preset from '../../../../vendor/filament/filament/tailwind.config.preset'
 
+
 export default {
     presets: [preset],
     darkMode : 'class',
@@ -10,5 +11,6 @@ export default {
 
         './resources/views/components/**/*.blade.php',
         './vendor/filament/**/*.blade.php',
+        './vendor/awcodes/filament-table-repeater/resources/**/*.blade.php',
     ],
 }

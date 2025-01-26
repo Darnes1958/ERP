@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Exports\SalaryTranExl;
 use App\Models\Rent;
 use App\Models\Renttran;
 use App\Models\Salary;
@@ -10,7 +11,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Pages\Page;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -18,6 +21,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RentTranView extends Page implements HasTable, HasForms
 {
@@ -48,6 +52,18 @@ class RentTranView extends Page implements HasTable, HasForms
                     ->preload()
                     ->live()
                     ->Label('الاسم'),
+                \Filament\Forms\Components\Actions::make([
+
+                    \Filament\Forms\Components\Actions\Action::make('excl')
+                        ->label('Excel')
+                        ->button()
+                        ->color('success')
+                        ->action(function (Get $get){
+                            $rent=Rent::find($this->rent_id);
+                            return Excel::download(new SalaryTranExl($rent->name,'0',
+                                $this->getTableQueryForExport()->get(),'rent'),'cust_tran.xlsx');
+                        })
+                ])->verticalAlignment(VerticalAlignment::End),
             ])->columns(4);
     }
 

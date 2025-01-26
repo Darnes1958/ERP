@@ -1,5 +1,11 @@
 <x-filament-panels::page>
 
+
+    <div
+        x-data="{ mode: 'light' }"
+        x-on:dark-mode-toggled.window="mode = $event.detail"
+    >
+
     <x-table class="table-fixed font-medium">
         <x-slot name="head">
             <x-table.heading class="w-1/12 text-right" >رقم الصنف</x-table.heading>
@@ -19,15 +25,15 @@
             @foreach ($record->Buy_tran as $item)
 
                 <x-table.row  class=" text-xs " style="height: 10pt;">
-                    <x-table.cell > {{$item->item_id}} </x-table.cell>
-                    <x-table.cell > {{$item->Item->name}} </x-table.cell>
+                    <x-table.cell fcolor="text-indigo-700"> {{$item->item_id}} </x-table.cell>
+                    <x-table.cell fcolor="text-indigo-700"> {{$item->Item->name}} </x-table.cell>
 
-                    <x-table.cell > {{$item->q1}}  </x-table.cell>
-                    <x-table.cell>  {{$item->price_input}} </x-table.cell>
-                    <x-table.cell > {{$item->sub_input}}  </x-table.cell>
-                    <x-table.cell > {{$item->qs1}}  </x-table.cell>
+                    <x-table.cell fcolor="text-indigo-700"> {{$item->q1}}  </x-table.cell>
+                    <x-table.cell fcolor="text-indigo-700">  {{$item->price_input}} </x-table.cell>
+                    <x-table.cell fcolor="text-indigo-700"> {{$item->sub_input}}  </x-table.cell>
+                    <x-table.cell fcolor="text-indigo-700"> {{$item->qs1}}  </x-table.cell>
                     @if(\App\Models\Setting::find(\Illuminate\Support\Facades\Auth::user()->company)->has_two)
-                    <x-table.cell>  {{$item->qs2}} </x-table.cell>
+                    <x-table.cell fcolor="text-indigo-700">  {{$item->qs2}} </x-table.cell>
 
                     @endif
 

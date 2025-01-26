@@ -36,6 +36,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
 
@@ -60,11 +61,23 @@ class CreateSell extends Page
 
     public function mount()
     {
+
         $this->sell = Sell_work::find(auth()->id());
-        if (!$this->sell)
-            $this->sell=Sell_work::create([
-                'id'=>Auth::id(),'user_id'=>0,
-            ]);
+        if (!$this->sell) {
+            if (Auth::user()->hasRole('admin'))
+                $this->sell=Sell_work::create([
+                    'id'=>Auth::id(),'user_id'=>0,
+                ]);
+            else {
+
+                $this->sell=Sell_work::create([
+                    'id'=>Auth::id(),'user_id'=>0,'place_id'=>Auth::user()->place_id,
+                ]);
+
+            }
+
+
+        }
         $this->sellForm->fill($this->sell->toArray());
 
         $this->sellTranForm->fill([]);
@@ -267,7 +280,7 @@ class CreateSell extends Page
                                 ])->columns(2)
                         ])
                         ->id('place_id')
-                        ->visible(Setting::find(Auth::user()->company)->many_place),
+                        ->visible(Setting::find(Auth::user()->company)->many_place && Auth::user()->hasRole('admin')),
                     Select::make('price_type_id')
                         ->hiddenLabel()
                         ->prefix('طريقة الدفع')
@@ -544,7 +557,10 @@ class CreateSell extends Page
                         ->columnSpan(2)
                         ->searchable()
                         ->preload()
-                        ->relationship('Item','name')
+                        ->relationship('Item','name',
+                            modifyQueryUsing: fn (Builder $query) => $query->when( ! Auth::user()->hasRole('admin'),
+                            function($q){$q->whereIn('id',Place_stock::where('place_id',Auth::user()->place_id)->pluck('item_id'));})
+                               )
                         ->live(onBlur: true)
                         ->required()
                         ->afterStateUpdated(function ($state){$this->ChkItem($state);})
@@ -736,6 +752,7 @@ class CreateSell extends Page
                         ->required()
                         ->gt(0)
                         ->id('price1')
+                        ->readOnly(fn():bool => ! Auth::user()->hasRole('admin'))
                         ->extraAttributes([
                             'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",
                         ]),

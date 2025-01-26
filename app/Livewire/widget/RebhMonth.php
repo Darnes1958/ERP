@@ -15,26 +15,17 @@ use Livewire\Attributes\On;
 class RebhMonth extends BaseWidget
 {
     use AksatTrait;
-  public $repDate1;
-  public $repDate2;
-  public function mount(){
-    $this->repDate1=now();
-    $this->repDate2=now();
+  public $year;
 
-  }
 
-  #[On('updateDate1')]
-  public function updatedate1($repdate)
+
+  #[On('updateyear')]
+  public function updateyear($year)
   {
-    $this->repDate1=$repdate;
+    $this->year=$year;
 
   }
-  #[On('updateDate2')]
-  public function updatedate2($repdate)
-  {
-    $this->repDate2=$repdate;
 
-  }
     public array $data_list= [
         'calc_columns' => [
             'rebh',
@@ -53,8 +44,7 @@ class RebhMonth extends BaseWidget
     {
         return $table
             ->query(function (){
-                $date=Carbon::now();
-                $year=$date->year;
+
                 $res=Rebh_second::selectRaw('month(date) date
                 ,round(sum(rebh),0) rebh
                 ,round(sum(masr),0) masr
@@ -64,14 +54,14 @@ class RebhMonth extends BaseWidget
                  round(sum(masr),0)-
                  round(sum(rent),0)-
                  round(sum(sal),0) safi')
-                    ->WhereYear('date',$year)
+                    ->WhereYear('date',$this->year)
                     ->groupByRaw('month(date)');
 
               return $res;
             }
 
             )
-          ->heading(new HtmlString('<div class="text-primary-400 text-lg">'.'الارباح بالأشهر لسنه '.Carbon::now()->year.'</div>'))
+          ->heading(new HtmlString('<div class="text-primary-400 text-lg">'.'الارباح بالأشهر لسنه '.$this->year.'</div>'))
           ->contentFooter(view('table.footer', $this->data_list))
           ->defaultSort('date')
             ->columns([

@@ -9,5 +9,6 @@ export default {
         './resources/views/livewire/**/*.blade.php',
         './resources/views/components/**/*.blade.php',
         './vendor/filament/**/*.blade.php',
+        './vendor/awcodes/filament-table-repeater/resources/**/*.blade.php',
     ],
 }

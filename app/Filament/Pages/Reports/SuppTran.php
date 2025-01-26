@@ -2,7 +2,10 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Exports\CustRaseedExl;
+use App\Exports\SuppTranExl;
 use App\Models\Buy;
+use App\Models\Cust_tran;
 use App\Models\Cust_tran2;
 use App\Models\Sell;
 use App\Models\Supp_tran;
@@ -18,6 +21,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
@@ -28,6 +32,7 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SuppTran extends Page implements HasForms,HasTable
 {
@@ -41,7 +46,7 @@ class SuppTran extends Page implements HasForms,HasTable
 
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->hasRole('Admin');
+    return Auth::user()->hasRole('admin');
   }
 
 
@@ -170,8 +175,6 @@ class SuppTran extends Page implements HasForms,HasTable
                                 $set('mden',number_format($mden, 2, '.', ','));
                                 $set('daen',number_format($daen, 2, '.', ','));
                                 $set('raseed',number_format($mden-$daen, 2, '.', ','));
-
-
                             }
                         })
                         ->label('المورد'),
@@ -217,7 +220,15 @@ class SuppTran extends Page implements HasForms,HasTable
                       ->color('danger')
                       ->icon('heroicon-m-printer')
                       ->color('info')
-                      ->url(fn (): string => route('pdfsupptran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,]))
+                      ->url(fn (): string => route('pdfsupptran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,])),
+                      \Filament\Forms\Components\Actions\Action::make('excl')
+                          ->label('Excel')
+                          ->button()
+                          ->color('success')
+                          ->action(function (Get $get){
+                              return Excel::download(new SuppTranExl(Supplier::find($this->cust_id)->name,$this->repDate,
+                                  $this->getTableQueryForExport()->get(),$get('mden'),$get('daen'),$get('raseed')),'cust_tran.xlsx');
+                          })
                   ])->verticalAlignment(VerticalAlignment::End),
                 ])
                 ->columns(7)

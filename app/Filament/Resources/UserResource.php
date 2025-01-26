@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\OurCompany;
+use App\Models\Place;
 use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Forms;
@@ -32,7 +33,7 @@ class UserResource extends Resource
 
   public static function shouldRegisterNavigation(): bool
   {
-      return Auth::user()->hasRole('Admin');
+      return Auth::user()->hasRole('admin');
   }
 
 
@@ -43,6 +44,12 @@ class UserResource extends Resource
                 TextInput::make('name')->label('الاسم')->unique(ignoreRecord: true)->required(),
                 TextInput::make('email')->label('الايميل')->email()->unique(ignoreRecord: true)->required(),
                 TextInput::make('password')->required()->visibleOn('create'),
+                Select::make('place_id')
+                 ->options(Place::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->required()
+                ->label('مكان العمل (صالة او المعرض)'),
                 Select::make('company')
                   ->label('Company')
                   ->visible(Auth::id()==1)
