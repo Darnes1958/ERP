@@ -359,7 +359,7 @@ class CreateSell extends Page
 
                 ])
                 ->columns(10)
-                ->collapsible()
+
 
         ];
     }
@@ -811,7 +811,8 @@ class CreateSell extends Page
                             'wire:keydown.enter' => "add_rec",
                         ])
                         ->id('q2'),
-                ])->columns(2),
+                ])
+                ->columns(2),
 
         ];
     }
@@ -1005,9 +1006,7 @@ class CreateSell extends Page
                 TextColumn::make('item_id')
                     ->label('رقم الصنف')
                     ->sortable(),
-                TextColumn::make('barcode_id')
-                    ->label('الباركود')
-                    ->sortable(),
+
                 TextColumn::make('Item.name')
                     ->label('اسم الصنف')
                     ->color('info')

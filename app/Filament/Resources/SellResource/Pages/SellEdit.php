@@ -8,6 +8,7 @@ use App\Models\Acc;
 use App\Models\Barcode;
 use App\Models\Item;
 use App\Models\Kazena;
+use App\Models\Main;
 use App\Models\Place_stock;
 use App\Models\Price_type;
 use App\Models\Receipt;
@@ -217,6 +218,17 @@ class SellEdit extends Page implements HasTable
         $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
+
+        if (Setting::find(Auth::user()->company)->is_together) {
+            $main=Main::where('sell_id',$this->sell_id)->first();
+            if ($main){
+                $main->sul=$this->sell->baky;
+                $main->raseed=$this->sell->baky-$main->pay;
+                $main->save();
+            }
+        }
+
+
         $this->sellForm->fill($this->sell->toArray());
       if ($this->sell->pay!=0){
         $receipt=Receipt::where('sell_id',$this->sell->id)->first();
@@ -527,11 +539,9 @@ class SellEdit extends Page implements HasTable
 
                 ])
                 ->columns(8)
-                ->collapsible()
+
                 ->reactive()
-                ->hidden(function (){
-                    return $this->sell_id==null;
-                })
+
         ];
     }
 
@@ -632,9 +642,7 @@ class SellEdit extends Page implements HasTable
 
                 ])
                 ->columns(2)
-                ->hidden(function (){
-                    return $this->sell_id==null;
-                }),
+                ,
 
         ];
     }
@@ -650,9 +658,6 @@ class SellEdit extends Page implements HasTable
             ->columns([
                 TextColumn::make('item_id')
                     ->label('رقم الصنف')
-                    ->sortable(),
-                TextColumn::make('barcode_id')
-                    ->label('الباركود')
                     ->sortable(),
                 TextColumn::make('Item.name')
                     ->label('اسم الصنف')
@@ -688,6 +693,21 @@ class SellEdit extends Page implements HasTable
             ->actions([
                 \Filament\Tables\Actions\Action::make('delete')
                     ->action(function (Sell_tran $record){
+
+
+                        if (Setting::find(Auth::user()->company)->is_together) {
+                            $main=Main::where('sell_id',$this->sell_id)->first();
+                            if ($main){
+                                if ( ($this->sell->baky-$record->sub_tot) < $main->pay) {
+                                    Notification::make()
+                                        ->title('لا يجوز هذا التعديل .. سيجعل قيمة العقد بالسالب')
+                                        ->danger()
+                                        ->send();
+                                    return;
+                                }
+                            }
+                        }
+
                         $this->incAll($this->sell_id,$record->item_id,$this->sell->place_id,$record->q1,$record->q2);
                         $this->selltran= $record->delete();
 
@@ -696,6 +716,15 @@ class SellEdit extends Page implements HasTable
                         $this->sell->tot=$tot;
                         $this->sell->baky=$baky;
                         $this->sell->save();
+                        if (Setting::find(Auth::user()->company)->is_together) {
+                            $main=Main::where('sell_id',$this->sell_id)->first();
+                            if ($main){
+                                $main->sul=$this->sell->baky;
+                                $main->raseed=$this->sell->baky-$main->pay;
+                                $main->save();
+                            }
+                        }
+
                         $this->sellForm->fill($this->sell->toArray());
                         $this->sellTranForm->fill([]);
 

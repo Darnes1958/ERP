@@ -4,10 +4,10 @@
             {{$this->sellForm}}
         </div>
         <div class="flex w-full gap-2 pt-2">
-            <div class="w-4/12  ">
+            <div class="w-6/12  ">
                 {{$this->sellTranForm}}
             </div>
-            <div class="w-8/12">
+            <div class="w-6/12">
                 {{$this->table}}
             </div>
         </div>
