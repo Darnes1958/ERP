@@ -587,6 +587,7 @@ class BuyEdit extends Page implements HasTable
 
                     TextInput::make('price_input')
                       ->hiddenLabel()
+                        ->columnSpan(2)
                       ->prefix('السعر')
                       ->prefixIcon('heroicon-m-currency-dollar')
                       ->prefixIconColor('info')
@@ -605,6 +606,7 @@ class BuyEdit extends Page implements HasTable
 
                     TextInput::make('q1')
                       ->hiddenLabel()
+                        ->columnSpan(2)
                       ->prefix('الكمية')
                       ->prefixIcon('heroicon-m-shopping-cart')
                       ->prefixIconColor('warning')
