@@ -6,6 +6,7 @@ use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Item;
 use App\Models\Item_tran;
+use App\Models\Place;
 use App\Models\Recsupp;
 use App\Models\Sell_tran;
 use Filament\Actions\Action;
@@ -42,8 +43,10 @@ class ItemTran extends Page implements HasForms,HasTable
 
    public $item_id;
    public $repDate;
+   public $place_id;
 
    public function mount(){
+       $this->place_id=null;
        $this->repDate = now()->copy()->startOfYear();
        $this->form->fill(['repdate'=>$this->repDate]);
    }
@@ -66,12 +69,24 @@ class ItemTran extends Page implements HasForms,HasTable
           })
           ->label('الصنف')
           ->columnSpan(2),
+          Select::make('place_id')
+              ->options(Place::all()->pluck('name','id'))
+              ->live()
+              ->searchable()
+              ->preload()
+              ->afterStateUpdated(function ($state){
+
+                  $this->place_id=$state;
+
+              })
+              ->label('المكان')
+              ->columnSpan(2),
 
        DatePicker::make('repDate')
            ->live(onBlur: true)
            ->afterStateUpdated(function ($state){
                 $this->SetDate($state);
-           })
+           })->columnSpan(2)
 
            ->label('من تاريخ'),
 
@@ -85,6 +100,7 @@ class ItemTran extends Page implements HasForms,HasTable
       ->color('danger')
       ->icon('heroicon-m-printer')
       ->color('info')
+
       ->url(fn (): string => route('itemtranexl', ['item_id'=>$this->item_id,'repDate'=>$this->repDate,]));
   }
 
@@ -98,6 +114,9 @@ class ItemTran extends Page implements HasForms,HasTable
       ->query(function(Item_tran $rec){
 
        $rec=Item_tran::where('item_id',$this->item_id)
+           ->when($this->place_id,function ($q){
+               $q->where('place_id',$this->place_id);
+           })
           ->where('order_date','>=',$this->repDate)
            ;
 
@@ -108,8 +127,8 @@ class ItemTran extends Page implements HasForms,HasTable
       ->defaultSort('created_at')
 
       ->columns([
-        TextColumn::make('created_at')
-              ->label('تاريخ الإدخال'),
+       // TextColumn::make('created_at')
+         //     ->label('تاريخ الإدخال'),
         TextColumn::make('type')
           ->color(function ($state){
               if ($state=='مشتريات') return 'info';
@@ -125,6 +144,9 @@ class ItemTran extends Page implements HasForms,HasTable
           ->label('العميل'),
         TextColumn::make('price_type')
           ->label('طريقة الدفع'),
+          TextColumn::make('place_name')
+              ->label(' المكان '),
+
         TextColumn::make('notes')
           ->label('ملاحظات'),
 
