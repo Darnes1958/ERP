@@ -928,7 +928,10 @@ class CreateSell extends Page
                                     $tran_id=Sell_tran::create($tran->toArray());
 
                                     $this->decAll($tran_id->id,$id->id,$tran->item_id,$id->place_id,$tran->q1,$tran->q2);
-                                    $this->setPriceSell($tran->item_id,$this->sell->price_type_id,$this->sell->single,$tran->price1,$tran->price2);
+                               if (! Price_sell::where('item_id',$tran->item_id)->where('price_type_id',$this->sell->price_type_id)->first())
+                                    Price_sell::create(['item_id'=>$tran->item_id,'price_type_id'=>$this->sell->price_type_id
+                                        ,'price1'=>$tran->price1,'price2'=>$tran->price2,'pricej1'=>$tran->price1,'pricej2'=>$tran->price2,]);
+                                  // $this->setPriceSell($tran->item_id,$this->sell->price_type_id,$this->sell->single,$tran->price1,$tran->price2);
                                 }
                                 if ($this->sell->pay>0)
 

@@ -116,11 +116,7 @@ class CustRaseed extends Page implements HasForms,HasTable
                     ->searchable()
                     ->label('اسم الزبون'),
                 TextColumn::make('mden')
-                    ->summarize(Sum::make()->label('')->numeric(
-                        decimalPlaces: 2,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    ))
+
                     ->color('danger')
                     ->searchable()
                     ->numeric(
@@ -130,11 +126,7 @@ class CustRaseed extends Page implements HasForms,HasTable
                     )
                     ->label('مدين'),
                 TextColumn::make('daen')
-                    ->summarize(Sum::make()->label('')->numeric(
-                        decimalPlaces: 2,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    ))
+
                     ->color('info')
                     ->searchable()
                     ->numeric(
@@ -144,11 +136,7 @@ class CustRaseed extends Page implements HasForms,HasTable
                     )
                     ->label('دائن'),
                 TextColumn::make('raseed')
-                    ->summarize(Sum::make()->label('')->numeric(
-                        decimalPlaces: 2,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    ))
+
                     ->color(function($state){
                         if($state>=0) return 'green'; else return 'danger';
                     })
