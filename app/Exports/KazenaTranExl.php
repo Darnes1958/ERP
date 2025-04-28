@@ -51,11 +51,13 @@ class KazenaTranExl implements  FromCollection,WithMapping,
 
         return [
             $rec->rec_who->name,
+            $rec->name,
             $rec->receipt_date,
             $rec->mden,
             $rec->daen,
             $rec->order_id,
             $rec->notes,
+
         ];
     }
     public function headings(): array
@@ -69,7 +71,7 @@ class KazenaTranExl implements  FromCollection,WithMapping,
             [' '],
             [''],
             [''],
-            ['البيان','التاريخ','مدين','دائن','رقم الفاتورة','ملاحظات',]
+            ['البيان','التفاصيل','التاريخ','مدين','دائن','رقم الفاتورة','ملاحظات',]
         ];
     }
     public function registerEvents(): array
@@ -78,7 +80,7 @@ class KazenaTranExl implements  FromCollection,WithMapping,
 
             AfterSheet::class => function(AfterSheet $event)  {
                 $event->sheet
-                    ->getStyle('A8:F8')
+                    ->getStyle('A8:G8')
                     ->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()
@@ -87,19 +89,19 @@ class KazenaTranExl implements  FromCollection,WithMapping,
                 $event->sheet->getDelegate()->getStyle('A')
                     ->getAlignment()
                     ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                $event->sheet->getDelegate()->getStyle('B')
+                $event->sheet->getDelegate()->getStyle('C')
                     ->getAlignment()
                     ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-                $event->sheet->setCellValue('C5', 'كشف حساب الخزينة :  '.$this->kazena_name.'      من تاريخ  '.$this->repDate1.'     إلي تاريخ '.$this->repDate2);
+                $event->sheet->setCellValue('B5', 'كشف حساب الخزينة :  '.$this->kazena_name.'      من تاريخ  '.$this->repDate1.'     إلي تاريخ '.$this->repDate2);
 
                 $event->sheet->getDelegate()->setRightToLeft(true);
 
                 $event->sheet->setCellValue('A'.$this->rowcount+9, 'الإجمالـــــــــي');
-                $event->sheet->setCellValue('C'.$this->rowcount+9, $this->sum_mden);
-                $event->sheet->setCellValue('D'.$this->rowcount+9, $this->sum_daen);
+                $event->sheet->setCellValue('D'.$this->rowcount+9, $this->sum_mden);
+                $event->sheet->setCellValue('E'.$this->rowcount+9, $this->sum_daen);
                 $event->sheet
-                    ->getStyle('A'.($this->rowcount+9).':F'.$this->rowcount+9)
+                    ->getStyle('A'.($this->rowcount+9).':G'.$this->rowcount+9)
                     ->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()
@@ -138,12 +140,13 @@ class KazenaTranExl implements  FromCollection,WithMapping,
     public function columnWidths(): array
     {
         return [
-            'A' => 14,
-            'B' => 14,
+            'A' => 20,
+            'B' => 30,
             'C' => 14,
             'D' => 14,
             'E' => 14,
-            'F' => 40,
+            'F' => 14,
+            'G' => 40,
         ];
     }
     public function collection()

@@ -154,14 +154,7 @@ class AccTran extends Page  implements HasForms,HasTable
                 TextColumn::make('rec_who')
                     ->sortable()
                     ->description(function (Acc_tran $record) {
-                        if ($record->rec_who->value ==10) return 'من '.Kazena::find($record->kazena2_id)->name;
-                        if ($record->rec_who->value ==11 ) return 'إلي '.Kazena::find($record->kazena2_id)->name;
-                        if ($record->rec_who->value ==12){
-                         if ($record->mden==0) return 'الي '.Acc::find($record->acc2_id)->name;
-                         else return 'من '.Acc::find($record->acc2_id)->name;
-                        }
-                        if ($record->rec_who->value ==13)  return Masrofat::find($record->id)->Masr_type->name;
-                        if ($record->rec_who->value ==14)  return Salarytran::find($record->id)->Salary->name;
+                        return $record->name;
                     })
                     ->searchable()
                     ->label('البيان'),
