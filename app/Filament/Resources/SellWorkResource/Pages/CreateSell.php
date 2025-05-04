@@ -80,6 +80,7 @@ class CreateSell extends Page
 
         }
 
+
         $this->sellForm->fill($this->sell->toArray());
 
         $this->sellTranForm->fill([]);
@@ -208,6 +209,7 @@ class CreateSell extends Page
                         ->required(),
                     Select::make('customer_id')
                         ->searchable()
+                        ->preload()
                         ->hiddenLabel()
                         ->prefix('الزبون')
                         ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
@@ -889,6 +891,25 @@ class CreateSell extends Page
                             ->color('success')
                             ->requiresConfirmation()
                             ->action(function () {
+                                if ($this->sell->customer_id==null)
+                                {
+                                    Notification::make()
+                                        ->title('يجب ادخال الزبون')
+                                        ->icon('heroicon-o-exclamation-triangle')
+                                        ->iconColor('warning')
+                                        ->send();
+                                    return false;
+
+                                }
+                                if ($this->sell->order_date==null)
+                                {
+                                    Notification::make()
+                                        ->title('يجب ادخال التاريخ')
+                                        ->icon('heroicon-o-exclamation-triangle')
+                                        ->iconColor('warning')
+                                        ->send();
+                                    return false;
+                                }
                               $selltran=Sell_tran_work::with('Item')->where('sell_id',Auth::id())->get();
                               $minus=false;
                               foreach ($selltran as $tran) {
@@ -957,6 +978,8 @@ class CreateSell extends Page
                                 $this->sell=Sell_work::find(Auth::id());
                                 $this->sell->tot=0;  $this->sell->pay=0; $this->sell->baky=0;$this->sell->total=0;
                                 $this->sell->differ=0;$this->sell->cost=0;
+                                $this->sell->customer_id=null;
+                                $this->sell->order_date=null;
                                 $this->sell->save();
                                 $this->sellForm->fill($this->sell->toArray());
                                 $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
@@ -978,6 +1001,8 @@ class CreateSell extends Page
                                 $this->sell->tot = 0;
                                 $this->sell->pay = 0;
                                 $this->sell->baky = 0;
+                                $this->sell->customer_id=null;
+                                $this->sell->order_date=null;
                                 $this->sell->save();
                                 $this->sellForm->fill($this->sell->toArray());
                                 $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
