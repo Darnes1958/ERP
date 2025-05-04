@@ -59,6 +59,7 @@ class CreateSell extends Page
 
     public $id_to_print='';
 
+
     public function mount()
     {
 
@@ -78,6 +79,7 @@ class CreateSell extends Page
 
 
         }
+
         $this->sellForm->fill($this->sell->toArray());
 
         $this->sellTranForm->fill([]);
@@ -149,6 +151,7 @@ class CreateSell extends Page
         $this->sell->update($this->sellForm->getState());
         if ($this->sell->price_type_id==2) $this->updateDiffer();
         else $this->updateNonDiffer();
+
       Notification::make()
         ->title('تم تحزين البيانات بنجاح')
         ->success()
@@ -249,8 +252,11 @@ class CreateSell extends Page
                         ->id('customer_id'),
                     Select::make('place_id')
                         ->hiddenLabel()
-                        ->prefix('مكان التخزين')
+                        ->prefix('نقطة البيع')
                         ->relationship('Place','name')
+                        ->disabled(function (){
+                            return Sell_tran_work::where('sell_id',$this->sell->id)->exists();
+                        })
                         ->live()
                         ->required()
                         ->columnSpan(4)
@@ -474,8 +480,6 @@ class CreateSell extends Page
         }
     }
     public function ChkItem($state){
-
-
         if ($state==null) return;
         $res=Item::find($state);
         if (!$res) return;
@@ -558,8 +562,9 @@ class CreateSell extends Page
                         ->searchable()
                         ->preload()
                         ->relationship('Item','name',
-                            modifyQueryUsing: fn (Builder $query) => $query->when( ! Auth::user()->hasRole('admin'),
-                            function($q){$q->whereIn('id',Place_stock::where('place_id',Auth::user()->place_id)->pluck('item_id'));})
+                            modifyQueryUsing: fn (Builder $query) =>
+                            $query->whereIn('id',Place_stock::where('place_id',$this->sellData['place_id'])
+                                ->where('stock1','>',0)->pluck('item_id'))
                                )
                         ->live(onBlur: true)
                         ->required()
