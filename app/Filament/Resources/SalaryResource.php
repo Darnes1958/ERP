@@ -6,6 +6,7 @@ use App\Filament\Resources\SalaryResource\Pages;
 use App\Filament\Resources\SalaryResource\RelationManagers;
 use App\Models\Salary;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -24,6 +25,7 @@ class SalaryResource extends Resource
     protected static ?int $navigationSort=1;
 
     protected static ?string $model = Salary::class;
+    protected static ?string $pluralLabel='مرتب';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -44,6 +46,12 @@ class SalaryResource extends Resource
                     ->required()
                     ->numeric()
                     ->label('المرتب'),
+                Select::make('place_id')
+                 ->relationship('Place', 'name')
+                    ->searchable()
+                    ->placeholder('قم باختيار مكان العمل .. او اتركه كما هو اذا كان العمل بالادارة')
+                    ->live()
+                    ->preload(),
             ]);
     }
     public static function table(Table $table): Table

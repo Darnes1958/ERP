@@ -113,6 +113,13 @@ class SellResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(function (Sell $sell)  {
+                if (Auth::user()->hasRole('admin'))
+                 $sell=Sell::query() ;
+                else
+                  $sell=Sell::where('place_id',Auth::user()->place_id);
+                return  $sell;
+            })
             ->defaultSort('id','desc')
             ->emptyStateHeading('لا توجد فواتير')
             ->columns([

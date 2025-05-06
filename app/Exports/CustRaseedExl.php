@@ -45,6 +45,7 @@ class CustRaseedExl implements FromCollection,WithMapping,
     public function map($rec): array
     {
         return [
+            $rec->customer_id,
             $rec->name,
             $rec->mden,
             $rec->daen,
@@ -62,7 +63,7 @@ class CustRaseedExl implements FromCollection,WithMapping,
             [' '],
             [''],
             [''],
-            ['الاسم','مدين','دائن','الرصيد',]
+            ['الرقم الألي','الاسم','مدين','دائن','الرصيد',]
         ];
     }
     public function registerEvents(): array
@@ -70,7 +71,7 @@ class CustRaseedExl implements FromCollection,WithMapping,
         return [
             AfterSheet::class => function(AfterSheet $event)  {
                 $event->sheet
-                    ->getStyle('A8:D8')
+                    ->getStyle('A8:E8')
                     ->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()
@@ -79,12 +80,12 @@ class CustRaseedExl implements FromCollection,WithMapping,
                 $event->sheet->setCellValue('A5', $this->title);
                 $event->sheet->getDelegate()->setRightToLeft(true);
 
-                $event->sheet->setCellValue('A'.$this->rowcount+9, 'الإجمالـــــــــي');
-                $event->sheet->setCellValue('B'.$this->rowcount+9, $this->sum->mden);
-                $event->sheet->setCellValue('C'.$this->rowcount+9, $this->sum->daen);
-                $event->sheet->setCellValue('D'.$this->rowcount+9, $this->sum->raseed);
+                $event->sheet->setCellValue('B'.$this->rowcount+9, 'الإجمالـــــــــي');
+                $event->sheet->setCellValue('C'.$this->rowcount+9, $this->sum->mden);
+                $event->sheet->setCellValue('D'.$this->rowcount+9, $this->sum->daen);
+                $event->sheet->setCellValue('E'.$this->rowcount+9, $this->sum->raseed);
                 $event->sheet
-                    ->getStyle('A'.($this->rowcount+9).':D'.$this->rowcount+9)
+                    ->getStyle('A'.($this->rowcount+9).':E'.$this->rowcount+9)
                     ->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()
@@ -104,28 +105,30 @@ class CustRaseedExl implements FromCollection,WithMapping,
             'A4'  => ['font' => ['bold' => true]],
             'B4'  => ['font' => ['bold' => true]],
             'A6'  => ['font' => ['bold' => true]],
-            'B'.$this->rowcount+9 => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
+
             'C'.$this->rowcount+9 => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
             'D'.$this->rowcount+9 => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
+            'E'.$this->rowcount+9 => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
         ];
     }
     public function columnFormats(): array
     {
         return [
-            'B' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
+
             'C' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'D' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-
+            'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
         ];
     }
 
     public function columnWidths(): array
     {
         return [
-            'A' => 50,
-            'B' => 14,
+            'A' => 14,
+            'B' => 50,
             'C' => 14,
             'D' => 14,
+            'E' => 14,
         ];
     }
     public function collection()

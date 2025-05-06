@@ -15,6 +15,10 @@ class Salary extends Model
     public function Salarytran(){
         return $this->hasMany(Salarytran::class);
     }
+    public function Place()
+    {
+        return $this->belongsTo(Place::class);
+    }
 
     public function __construct(array $attributes = [])
     {

@@ -63,10 +63,11 @@ trait AksatTrait {
     foreach ($res as $item)
       Salary::find($item->id)->update([
         'raseed'=>
-          Salarytran::where('salary_id',$item->id)->where('tran_type','مرتب')->sum('val')+
-          Salarytran::where('salary_id',$item->id)->where('tran_type','اضافة')->sum('val')-
-          Salarytran::where('salary_id',$item->id)->where('tran_type','سحب')->sum('val')-
-          Salarytran::where('salary_id',$item->id)->where('tran_type','خصم')->sum('val')
+            Salarytran::where('salary_id',$item->id)->where('tran_type','سحب')->sum('val')+
+            Salarytran::where('salary_id',$item->id)->where('tran_type','خصم')->sum('val')-
+            Salarytran::where('salary_id',$item->id)->where('tran_type','مرتب')->sum('val')-
+            Salarytran::where('salary_id',$item->id)->where('tran_type','اضافة')->sum('val')
+
         ]);
   }
     public function TarseedRents(){
@@ -74,8 +75,9 @@ trait AksatTrait {
         foreach ($res as $item)
             Rent::find($item->id)->update([
                 'raseed'=>
-                    Renttran::where('rent_id',$item->id)->where('tran_type','إيجار')->sum('val')-
-                    Renttran::where('rent_id',$item->id)->where('tran_type','سحب')->sum('val'),
+                    Renttran::where('rent_id',$item->id)->where('tran_type','سحب')->sum('val')-
+                    Renttran::where('rent_id',$item->id)->where('tran_type','إيجار')->sum('val')
+                    ,
             ]);
     }
 

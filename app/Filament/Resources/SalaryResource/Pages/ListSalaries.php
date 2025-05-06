@@ -7,6 +7,7 @@ use App\Livewire\Traits\AksatTrait;
 use App\Models\Acc;
 use App\Models\Kazena;
 use App\Models\Main;
+use App\Models\Place;
 use App\Models\Salary;
 use App\Models\Salarytran;
 use Filament\Actions;
@@ -16,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
@@ -26,6 +28,33 @@ class ListSalaries extends ListRecords
   use AksatTrait;
     protected static string $resource = SalaryResource::class;
 
+    public function getTabs(): array
+    {
+        $tabs = ['all' => Tab::make('الكل')->badge($this->getModel()::count()),
+                 'amma'=> Tab::make('إدارةال')
+                     ->modifyQueryUsing(function ($query)  {
+                         return $query->where('place_id', null);
+                     })
+                     ->badge(Salary::where('place_id',null)->count())->label('الإدارة')];
+
+        $places = Place::orderBy('id', 'asc')
+            ->withCount('Salary')
+            ->get();
+
+        foreach ($places as $place) {
+            $name = $place->name;
+            $slug = $name;
+
+            $tabs[$slug] = Tab::make($name)
+                ->badge($place->salary_count)
+                ->label($name)
+                ->modifyQueryUsing(function ($query) use ($place) {
+                    return $query->where('place_id', $place->id);
+                });
+        }
+
+        return $tabs;
+    }
     protected function getHeaderActions(): array
     {
         return [
@@ -97,13 +126,18 @@ class ListSalaries extends ListRecords
 
               Select::make('salary_id')
               ->label('الاسم')
-              ->options(Salary::all()->pluck('name','id'))
+
+                  ->options( function ($livewire){
+                          return $this->getTableQueryForExport()->pluck('name','id');
+                  }
+                  )
               ->searchable()
               ->preload()
                ->required(),
                Select::make('acc_id')
                  ->label('المصرف')
-                 ->options(Acc::all()->pluck('name','id'))
+                 ->options(
+                     Acc::all()->pluck('name','id'))
                  ->searchable()
                  ->required()
                  ->live()
@@ -161,7 +195,9 @@ class ListSalaries extends ListRecords
             ->form([
               Select::make('salary_id')
                 ->label('الاسم')
-                ->options(Salary::all()->pluck('name','id'))
+                  ->options( function ($livewire){
+                      return $this->getTableQueryForExport()->pluck('name','id');
+                  })
                 ->searchable()
                 ->preload()
                 ->required(),
@@ -201,7 +237,9 @@ class ListSalaries extends ListRecords
 
               Select::make('salary_id')
                 ->label('الاسم')
-                ->options(Salary::all()->pluck('name','id'))
+                  ->options( function ($livewire){
+                      return $this->getTableQueryForExport()->pluck('name','id');
+                  })
                 ->searchable()
                 ->preload()
                 ->required(),
@@ -238,7 +276,9 @@ class ListSalaries extends ListRecords
             ->form([
               Select::make('id')
                 ->label('الاسم')
-                ->options(Salary::all()->pluck('name','id'))
+                  ->options( function ($livewire){
+                      return $this->getTableQueryForExport()->pluck('name','id');
+                  })
                 ->searchable()
                 ->preload()
                 ->required()

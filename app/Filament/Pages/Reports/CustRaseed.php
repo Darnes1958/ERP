@@ -98,19 +98,23 @@ class CustRaseed extends Page implements HasForms,HasTable
             ->pluralModelLabel('الزبائن')
             ->query(function (){
                 $report=Cust_tran::
-                    selectRaw('name,sum(mden) mden,sum(daen) daen,sum(mden-daen) raseed')
+                    selectRaw('customer_id,name,sum(mden) mden,sum(daen) daen,sum(mden-daen) raseed')
                     ->when($this->repDate1,function ($q){
                     $q->where('repDate','>=',$this->repDate1);
                 })
                     ->when($this->repDate2,function ($q){
                         $q->where('repDate','<=',$this->repDate2);
                     })
-                    ->groupBy('name')
+                    ->groupBy('customer_id','name')
                 ;
                 return $report;
             })
             ->emptyStateHeading('لا توجد بيانات')
             ->columns([
+                TextColumn::make('customer_id')
+                    ->sortable()
+                    ->searchable()
+                    ->label('الرقم الألي'),
                 TextColumn::make('name')
                     ->sortable()
                     ->searchable()
