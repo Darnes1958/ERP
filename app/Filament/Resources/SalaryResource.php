@@ -47,7 +47,8 @@ class SalaryResource extends Resource
                     ->numeric()
                     ->label('المرتب'),
                 Select::make('place_id')
-                 ->relationship('Place', 'name')
+                    ->label('مكان العمل')
+                    ->relationship('Place', 'name')
                     ->searchable()
                     ->placeholder('قم باختيار مكان العمل .. او اتركه كما هو اذا كان العمل بالادارة')
                     ->live()
