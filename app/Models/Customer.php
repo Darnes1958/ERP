@@ -10,6 +10,10 @@ class Customer extends Model
 {
   protected $connection = 'other';
 
+  public function Customer_type()
+  {
+      return $this->belongsTo(Customer_type::class);
+  }
   public function Sell(){
     return $this->hasMany(Sell::class);
   }

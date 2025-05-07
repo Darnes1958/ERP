@@ -9,9 +9,12 @@ use App\Models\Receipt;
 use App\Models\Sell;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -39,6 +42,30 @@ class CustomerResource extends Resource
               TextInput::make('name')
                 ->required()
                 ->label('الاسم'),
+             Select::make('customer_type_id')
+                    ->label('التصنيف')
+                    ->relationship('Customer_type','name')
+                    ->required()
+
+                    ->createOptionForm([
+                        Section::make('ادخال تصنيف للزبائن')
+
+                            ->schema([
+                                TextInput::make('name')
+                                    ->required()
+                                    ->unique()
+                                    ->label('الاسم'),
+                            ])
+                    ])
+                    ->editOptionForm([
+                        Section::make('تعديل تصنيف')
+                            ->schema([
+                                TextInput::make('name')
+                                    ->required()
+                                    ->unique()
+                                    ->label('الاسم'),
+                            ])->columns(2)
+                    ]),
               TextInput::make('address')
                 ->label('العنوان'),
               TextInput::make('mdar')
@@ -55,10 +82,9 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-              TextColumn::make('id')
+              TextColumn::make('Customer_type.name')
                 ->sortable()
-                ->searchable()
-                ->label('الرقم الألي'),
+                ->label('التصنيف'),
               TextColumn::make('name')
                 ->sortable()
                 ->searchable()
@@ -80,7 +106,9 @@ class CustomerResource extends Resource
             ])
             ->striped()
             ->filters([
-                //
+                SelectFilter::make('Customer_type')
+                    ->relationship('Customer_type', 'name')
+                    ->label('التصنيف')
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
@@ -113,4 +141,5 @@ class CustomerResource extends Resource
             'edit' => Pages\EditCustomer::route('/{record}/edit'),
         ];
     }
+
 }

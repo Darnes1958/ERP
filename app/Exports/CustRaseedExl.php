@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Cust_tran;
 use App\Models\Customer;
+use App\Models\Customer_type;
 use App\Models\OurCompany;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -44,8 +45,9 @@ class CustRaseedExl implements FromCollection,WithMapping,
      */
     public function map($rec): array
     {
+
         return [
-            $rec->customer_id,
+            Customer_type::find(Customer::find($rec->customer_id)->customer_type_id)->name,
             $rec->name,
             $rec->mden,
             $rec->daen,
@@ -63,7 +65,7 @@ class CustRaseedExl implements FromCollection,WithMapping,
             [' '],
             [''],
             [''],
-            ['الرقم الألي','الاسم','مدين','دائن','الرصيد',]
+            ['التصنيف','الاسم','مدين','دائن','الرصيد',]
         ];
     }
     public function registerEvents(): array
