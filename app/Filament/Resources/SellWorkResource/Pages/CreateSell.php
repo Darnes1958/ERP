@@ -294,7 +294,7 @@ class CreateSell extends Page
                         ->prefix('طريقة الدفع')
                         ->columnSpan(2)
                         ->live()
-                        ->default(1)
+
                         ->relationship('Price_type','name')
                         ->required()
                         ->extraAttributes(['x-on:change' => "\$wire.updatePriceType"])
@@ -910,6 +910,15 @@ class CreateSell extends Page
                                         ->send();
                                     return false;
                                 }
+                                if ($this->sell->price_type_id==null)
+                                {
+                                    Notification::make()
+                                        ->title('يجب ادخال طريقة الدفع')
+                                        ->icon('heroicon-o-exclamation-triangle')
+                                        ->iconColor('warning')
+                                        ->send();
+                                    return false;
+                                }
                               $selltran=Sell_tran_work::with('Item')->where('sell_id',Auth::id())->get();
                               $minus=false;
                               foreach ($selltran as $tran) {
@@ -980,6 +989,8 @@ class CreateSell extends Page
                                 $this->sell->differ=0;$this->sell->cost=0;
                                 $this->sell->customer_id=null;
                                 $this->sell->order_date=null;
+                                $this->sell->price_type_id=null;
+                                $this->sell->notes=null;
                                 $this->sell->save();
                                 $this->sellForm->fill($this->sell->toArray());
                                 $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
