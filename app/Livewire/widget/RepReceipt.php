@@ -65,14 +65,12 @@ class RepReceipt extends BaseWidget
             )
             ->heading(new HtmlString('<div class="text-danger-600 text-lg">إيصالات الزبائن</div>'))
             ->defaultPaginationPageOption(5)
-
-
             ->striped()
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('الرقم الألي'),
                 Tables\Columns\TextColumn::make('Customer.name')
-                    ->label('المورد'),
+                    ->label('الزبون'),
                 Tables\Columns\TextColumn::make('val')
                     ->label('المبلغ'),
                 Tables\Columns\TextColumn::make('Kazena.name')
