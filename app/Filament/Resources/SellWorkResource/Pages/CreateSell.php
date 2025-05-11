@@ -224,6 +224,10 @@ class CreateSell extends Page
                                         ->required()
                                         ->unique()
                                         ->label('الاسم'),
+                                    Select::make('customer_type_id')
+                                        ->label('التصنيف')
+                                        ->relationship('Customer_type','name')
+                                        ->required(),
                                     TextInput::make('address')
                                         ->label('العنوان'),
                                     TextInput::make('mdar')
