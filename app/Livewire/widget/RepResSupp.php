@@ -69,11 +69,12 @@ class RepResSupp extends BaseWidget
                     ->label('الرقم الألي'),
                 Tables\Columns\TextColumn::make('Supplier.name')
                     ->label('المورد'),
-                Tables\Columns\TextColumn::make('val')
-                    ->label('المبلغ'),
                 Tables\Columns\TextColumn::make('rec_who')
                     ->label('البيان')
                     ->badge(),
+                Tables\Columns\TextColumn::make('val')
+                    ->label('المبلغ'),
+
                 Tables\Columns\TextColumn::make('notes')
                     ->label('ملاحظات'),
 
