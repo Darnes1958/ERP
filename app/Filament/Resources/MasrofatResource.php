@@ -17,6 +17,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -213,7 +214,12 @@ class MasrofatResource extends Resource
                                 $data['Date2'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('masr_date', '<=', $date),
                             );
-                    })
+                    }),
+                SelectFilter::make('Masr_type')
+                 ->relationship('Masr_type','name')
+                 ->searchable()
+                 ->preload()
+                ->label('نوع المصروفات')
             ], layout: Tables\Enums\FiltersLayout::Modal)
             ->filtersFormWidth(MaxWidth::ExtraSmall)
             ->actions([

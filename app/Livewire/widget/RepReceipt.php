@@ -16,6 +16,8 @@ class RepReceipt extends BaseWidget
   public $repDate1;
   public $repDate2;
   public $raseed;
+  public $mden;
+  public $daen;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -26,17 +28,35 @@ class RepReceipt extends BaseWidget
   public function updatedate1($repdate)
   {
     $this->repDate1=$repdate;
+      $this->raseed=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+              ->where('imp_exp',0)->sum('val') -
+          Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+              ->where('imp_exp',1)->sum('val') ;
+      $this->daen=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+          ->where('imp_exp',0)->sum('val') ;
+      $this->mden=   Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+          ->where('imp_exp',1)->sum('val') ;
+
 
   }
   #[On('updateDate2')]
   public function updatedate2($repdate)
   {
     $this->repDate2=$repdate;
+      $this->raseed=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+              ->where('imp_exp',0)->sum('val') -
+          Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+              ->where('imp_exp',1)->sum('val') ;
+      $this->daen=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+          ->where('imp_exp',0)->sum('val') ;
+      $this->mden=   Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+          ->where('imp_exp',1)->sum('val') ;
+
 
   }
     public array $data_list= [
-        'calc_columns' => [
-            'val',
+            'calc_columns' => [
+            'val','Customer.name','rec_who'
         ],
     ];
 
@@ -54,10 +74,8 @@ class RepReceipt extends BaseWidget
               if ($this->repDate1 && $this->repDate2)
                 $buy=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2]);
 
-              $this->raseed=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-                                         ->where('imp_exp',0)->sum('val') -
-                                     Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-                                       ->where('imp_exp',1)->sum('val') ;
+
+
 
                 return $buy;
             }
@@ -84,7 +102,12 @@ class RepReceipt extends BaseWidget
 
             ])
             ->emptyStateHeading('لا توجد بيانات')
-            ->contentFooter(function (){return view('table.Recfooter', $this->data_list,['raseed'=>$this->raseed,]);} )
+            ->contentFooter(function (){return view('table.Recfooter',
+                $this->data_list,[
+                    'raseed'=>$this->raseed,
+                    'mden'=>$this->mden,
+                    'daen'=>$this->daen,
+                    ]);} )
 
             ;
     }

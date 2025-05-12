@@ -71,6 +71,17 @@ class UserResource extends Resource
                 ->relationship('permissions','name', fn (Builder $query) => $query
                     ->where('for_who','sell'))
                 ->preload(),
+                Forms\Components\Radio::make('status')
+                 ->options([
+                     1=>'نشط',
+                     0=>'غير نشط',
+
+                 ])
+                    ->inline()
+                    ->inlineLabel(false)
+                    ->visibleOn('edit')
+                ->label('الحالة')
+
             ]);
     }
 
@@ -89,6 +100,9 @@ class UserResource extends Resource
                 TextColumn::make('id')->label('الرقم الألي'),
                 TextColumn::make('name')->label('الاسم'),
                 TextColumn::make('email')->label('الايميل'),
+                Tables\Columns\IconColumn::make('status')
+
+                   ->label('الحالة'),
                 TextColumn::make('company')->visibleOn(Auth::id()==1),
                 TextColumn::make('created_at')->label('تاريخ الادخال'),
                 TextColumn::make('updated_at')->label('تاريخ التعديل'),
