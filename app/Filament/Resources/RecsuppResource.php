@@ -258,6 +258,18 @@ class RecsuppResource extends Resource
 
                       ])->columns(2)
               ]),
+          Select::make('place_id')
+              ->label('المكان')
+              ->relationship('Place','name')
+              ->searchable()
+
+              ->live()
+              ->preload()
+              ->Visible(function () {return !Auth::user()->place_id;})
+              ->default(function (){
+                  if (Auth::user()->place_id) return Auth::user()->place_id;
+                  else return null;
+              }),
         TextInput::make('notes')
           ->columnSpan(3)
           ->label('ملاحظات'),
