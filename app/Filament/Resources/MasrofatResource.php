@@ -7,6 +7,7 @@ use App\Filament\Resources\MasrofatResource\RelationManagers;
 use App\Models\Item;
 use App\Models\Masr_type;
 use App\Models\Masrofat;
+use App\Models\Place;
 use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
@@ -184,6 +185,10 @@ class MasrofatResource extends Resource
                     ->label('الخزينة')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('Place.name')
+                    ->label('المكان')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('val')
                     ->label('المبلغ')
                     ->searchable()
@@ -196,6 +201,10 @@ class MasrofatResource extends Resource
 
             ])
             ->filters([
+                SelectFilter::make('place_id')
+                    ->options(Place::all()->pluck('name', 'id'))
+                    ->searchable()
+                    ->label('مكان معين'),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('Date1')

@@ -8,6 +8,7 @@ use App\Filament\Resources\ReceiptResource\Pages;
 use App\Models\Acc;
 use App\Models\Customer;
 use App\Models\Kazena;
+use App\Models\Place;
 use App\Models\Receipt;
 use App\Models\Sell;
 use App\Models\User;
@@ -321,6 +322,10 @@ class ReceiptResource extends Resource
                     ->label('البيان')
 
                     ->badge(),
+                Tables\Columns\TextColumn::make('Place.name')
+                    ->label('المكان')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('val')
                   ->searchable()
                     ->label('المبلغ'),
@@ -332,6 +337,10 @@ class ReceiptResource extends Resource
                 ->options(Customer::all()->pluck('name', 'id'))
                 ->searchable()
                 ->label('زبون معين'),
+                SelectFilter::make('place_id')
+                    ->options(Place::all()->pluck('name', 'id'))
+                    ->searchable()
+                    ->label('مكان معين'),
               Tables\Filters\Filter::make('is_sell')
                 ->label('ايصالات فاتورة')
                 ->query(fn (Builder $query): Builder => $query->whereIn('rec_who', [3,4])),

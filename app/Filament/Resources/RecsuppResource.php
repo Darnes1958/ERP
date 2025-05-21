@@ -8,6 +8,7 @@ use App\Filament\Resources\RecsuppResource\RelationManagers;
 use App\Models\Acc;
 use App\Models\Buy;
 use App\Models\Kazena;
+use App\Models\Place;
 use App\Models\Recsupp;
 
 use App\Models\Supplier;
@@ -311,6 +312,10 @@ class RecsuppResource extends Resource
         TextColumn::make('rec_who')
           ->label('البيان')
           ->badge(),
+          Tables\Columns\TextColumn::make('Place.name')
+              ->label('المكان')
+              ->searchable()
+              ->sortable(),
         TextColumn::make('val')
           ->searchable()
           ->label('المبلغ'),
@@ -323,6 +328,10 @@ class RecsuppResource extends Resource
           ->options(Supplier::all()->pluck('name', 'id'))
           ->searchable()
           ->label('مورد معين'),
+          SelectFilter::make('place_id')
+              ->options(Place::all()->pluck('name', 'id'))
+              ->searchable()
+              ->label('مكان معين'),
         Tables\Filters\Filter::make('is_order')
           ->label('ايصالات فاتورة')
           ->query(fn (Builder $query): Builder => $query->whereIn('rec_who', [3,4])),
