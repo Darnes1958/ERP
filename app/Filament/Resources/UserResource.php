@@ -48,7 +48,7 @@ class UserResource extends Resource
                  ->options(Place::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
-                ->required()
+
                 ->label('مكان العمل (صالة او المعرض)'),
                 Select::make('company')
                   ->label('Company')
