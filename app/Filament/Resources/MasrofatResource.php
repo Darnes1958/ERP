@@ -141,6 +141,14 @@ class MasrofatResource extends Resource
                     ->visible(function (Forms\Get $get){
                         return $get('pay_type')==1;
                     }),
+                Select::make('place_id')
+                    ->relationship('Place','name')
+                    ->label('المكان')
+                    ->placeholder('غير محدد')
+                    ->preload()
+                    ->visible(function (){
+                        return !Auth::user()->place_id;
+                    }),
                 Forms\Components\DatePicker::make('masr_date')
                  ->required()
                  ->default(now())
@@ -151,6 +159,7 @@ class MasrofatResource extends Resource
                  ->label('المبلغ'),
               TextInput::make('notes')
                 ->label('ملاحظات'),
+                Forms\Components\Hidden::make('user_id')->default(Auth::id())
             ]);
     }
 
@@ -183,6 +192,7 @@ class MasrofatResource extends Resource
                     ->label('ملاحظات')
                     ->searchable()
                     ->sortable(),
+
 
             ])
             ->filters([

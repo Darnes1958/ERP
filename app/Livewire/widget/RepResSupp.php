@@ -15,6 +15,7 @@ class RepResSupp extends BaseWidget
 
   public $repDate1;
   public $repDate2;
+    public $place_id;
   public $raseed;
   public function mount(){
     $this->repDate1=now();
@@ -34,6 +35,12 @@ class RepResSupp extends BaseWidget
     $this->repDate2=$repdate;
 
   }
+    #[On('updatePlace')]
+    public function updateplace($place)
+    {
+        $this->place_id=$place;
+
+    }
     public array $data_list= [
         'calc_columns' => [
             'val',
@@ -46,12 +53,20 @@ class RepResSupp extends BaseWidget
         return $table
             ->query(function (Recsupp $buy){
               if ($this->repDate1 && !$this->repDate2)
-                $buy=Recsupp::where('receipt_date','>=',$this->repDate1);
+                $buy=Recsupp::where('receipt_date','>=',$this->repDate1)->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
               if ($this->repDate2 && !$this->repDate1)
-                $buy=Recsupp::where('receipt_date','<=',$this->repDate1);
+                $buy=Recsupp::where('receipt_date','<=',$this->repDate1)->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
               if ($this->repDate1 && $this->repDate2)
-                $buy=Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2]);
-              $this->raseed=Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
+                $buy=Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
+              $this->raseed=Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->when($this->place_id,function ($q){
+                  return $q->where('place_id',$this->place_id);
+              })
                   ->where('imp_exp',0)->sum('val') -
                 Recsupp::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
                   ->where('imp_exp',1)->sum('val') ;

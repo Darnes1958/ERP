@@ -7,6 +7,7 @@ use App\Models\Buy_tran;
 use App\Models\Cust_tran;
 use App\Models\Masr_view;
 use App\Models\OurCompany;
+use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Receipt;
 use App\Models\Recsupp;
@@ -262,37 +263,63 @@ class PdfController extends Controller
 
         $cus=OurCompany::where('Company',Auth::user()->company)->first();
         if ($request->repDate1 && !$request->repDate2)
-            $buy=Buy::where('order_date','>=',$request->repDate1)->get();
+            $buy=Buy::where('order_date','>=',$request->repDate1)->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
         if ($request->repDate2 && !$request->repDate1)
-            $buy=Buy::where('order_date','=<',$request->repDate1)->get();
+            $buy=Buy::where('order_date','=<',$request->repDate1)->get()->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            });
         if ($request->repDate1 && $request->repDate2)
-            $buy=Buy::whereBetween('order_date',[$request->repDate1,$request->repDate2])->get();
+            $buy=Buy::whereBetween('order_date',[$request->repDate1,$request->repDate2])->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
 
 
         if ($request->repDate1 && !$request->repDate2)
-            $sell=Sell::where('order_date','>=',$request->repDate1)->get();
+            $sell=Sell::where('order_date','>=',$request->repDate1)->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
         if ($request->repDate2 && !$request->repDate1)
-            $sell=Sell::where('order_date','<=',$request->repDate1)->get();
+            $sell=Sell::where('order_date','<=',$request->repDate1)->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
         if ($request->repDate1 && $request->repDate2)
-            $sell=Sell::whereBetween('order_date',[$request->repDate1,$request->repDate2])->get();
+            $sell=Sell::whereBetween('order_date',[$request->repDate1,$request->repDate2])->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
 
         if ($request->repDate1 && !$request->repDate2)
-            $supp=Recsupp::where('receipt_date','>=',$request->repDate1)->get();
+            $supp=Recsupp::where('receipt_date','>=',$request->repDate1)->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
         if ($request->repDate2 && !$request->repDate1)
-            $supp=Recsupp::where('receipt_date','<=',$request->repDate1)->get();
+            $supp=Recsupp::where('receipt_date','<=',$request->repDate1)->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
         if ($request->repDate1 && $request->repDate2)
-            $supp=Recsupp::whereBetween('receipt_date',[$request->repDate1,$request->repDate2])->get();
+            $supp=Recsupp::whereBetween('receipt_date',[$request->repDate1,$request->repDate2])->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
 
         if ($request->repDate1 && !$request->repDate2)
-            $cust=Receipt::where('receipt_date','>=',$request->repDate1)->get();
+            $cust=Receipt::where('receipt_date','>=',$request->repDate1)->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
         if ($request->repDate2 && !$request->repDate1)
-            $cust=Receipt::where('receipt_date','<=',$request->repDate1)->get();
+            $cust=Receipt::where('receipt_date','<=',$request->repDate1)->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
         if ($request->repDate1 && $request->repDate2)
-            $cust=Receipt::whereBetween('receipt_date',[$request->repDate1,$request->repDate2])->get();
+            $cust=Receipt::whereBetween('receipt_date',[$request->repDate1,$request->repDate2])->when($request->place_id,function ($q) use($request){
+                return $q->where('place_id',$request->place_id);
+            })->get();
+
 
         $html = view('PDF.pdf-daily',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
-                'cus'=>$cus,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2])->toArabicHTML();
+                'cus'=>$cus,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2,
+                'place_name'=>Place::find(request()->place_id)->name])->toArabicHTML();
 
 
 

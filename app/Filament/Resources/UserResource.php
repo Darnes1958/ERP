@@ -103,6 +103,7 @@ class UserResource extends Resource
                 Tables\Columns\IconColumn::make('status')
 
                    ->label('الحالة'),
+                TextColumn::make('Place.name')->label('المكان'),
                 TextColumn::make('company')->visibleOn(Auth::id()==1),
                 TextColumn::make('created_at')->label('تاريخ الادخال'),
                 TextColumn::make('updated_at')->label('تاريخ التعديل'),

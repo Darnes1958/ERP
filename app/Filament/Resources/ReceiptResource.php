@@ -260,6 +260,72 @@ class ReceiptResource extends Resource
 
                             ])->columns(2)
                     ]),
+                Select::make('place_id')
+                    ->label('المكان')
+                    ->relationship('Place','name')
+                    ->searchable()
+                    ->required()
+                    ->live()
+                    ->preload()
+                    ->Visible(function () {return !Auth::user()->place_id;})
+                    ->default(function (){
+                        if (Auth::user()->place_id) return Auth::user()->place_id;
+                        else return null;
+                    })
+                    ->visible(fn(Get $get): bool =>($get('price_type_id')==1 ))
+                    ->createOptionForm([
+                        Section::make('ادخال حساب خزينة جديد')
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('اسم الخزينة')
+                                    ->required()
+                                    ->autofocus()
+                                    ->columnSpan(2)
+                                    ->unique(ignoreRecord: true)
+                                    ->validationMessages([
+                                        'unique' => ' :attribute مخزون مسبقا ',
+                                    ])        ,
+                                Forms\Components\Select::make('user_id')
+                                    ->label('المستخدم')
+                                    ->searchable()
+                                    ->preload()
+                                    ->options(User::
+                                    where('company',Auth::user()->company)
+                                        ->where('id','!=',1)
+                                        ->pluck('name','id')),
+                                TextInput::make('balance')
+                                    ->label('رصيد بداية المدة')
+                                    ->numeric()
+                                    ->required()                          ,
+                            ])
+                    ])
+                    ->editOptionForm([
+                        Section::make('تعديل بيانات خزينة')
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('اسم الخزينة')
+                                    ->required()
+                                    ->autofocus()
+                                    ->columnSpan(2)
+                                    ->unique(ignoreRecord: true)
+                                    ->validationMessages([
+                                        'unique' => ' :attribute مخزون مسبقا ',
+                                    ])        ,
+                                Forms\Components\Select::make('user_id')
+                                    ->label('المستخدم')
+                                    ->searchable()
+                                    ->preload()
+                                    ->options(User::
+                                    where('company',Auth::user()->company)
+                                        ->where('id','!=',1)
+                                        ->pluck('name','id')),
+                                TextInput::make('raseed')
+                                    ->label('رصيد بداية المدة')
+                                    ->numeric()
+                                    ->required()
+
+                            ])->columns(2)
+                    ]),
                 TextInput::make('notes')
                  ->columnSpan(3)
                  ->label('ملاحظات'),

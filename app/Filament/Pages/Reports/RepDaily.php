@@ -9,11 +9,13 @@ use App\Livewire\widget\RepResSupp;
 use App\Livewire\widget\RepSell;
 use App\Livewire\widget\RepTarBuy;
 use App\Livewire\widget\RepTarSell;
+use App\Models\Place;
 use App\Models\Recsupp;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -37,10 +39,11 @@ class RepDaily extends Page implements HasForms
 
     public $repDate1;
     public $repDate2;
+    public $place_id;
     public function mount(){
         $this->repDate1=now();
         $this->repDate2=now();
-        $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
+        $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id]);
     }
     public static function getWidgets(): array
     {
@@ -58,25 +61,25 @@ class RepDaily extends Page implements HasForms
     {
         return [
             RepBuy::make([
-                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
             RepSell::make([
-              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
             RepResSupp::make([
-              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
             RepReceipt::make([
-              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
           RepTarSell::make([
-            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
           RepTarBuy::make([
-            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
           RepMasr::make([
-            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
 
 
@@ -109,7 +112,18 @@ class RepDaily extends Page implements HasForms
                     $this->dispatch('updateDate2', repdate: $state);
                   })
                   ->columnSpan(2)
-                  ->label('إلي تاريخ')
+                  ->label('إلي تاريخ'),
+                Select::make('place_id')
+                    ->placeholder('الكل')
+                    ->columnSpan(2)
+                    ->live()
+                 ->options(Place::all()->pluck('name', 'id'))
+                 ->afterStateUpdated(function ($state){
+                     $this->place_id=$state;
+                     $this->dispatch('updatePlace', place: $state);
+                 })
+                 ->label('المكان')
+
 
             ])->columns(6);
     }
@@ -125,6 +139,6 @@ class RepDaily extends Page implements HasForms
             ->color('danger')
             ->icon('heroicon-m-printer')
             ->color('info')
-            ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,]));
+            ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id]));
     }
 }

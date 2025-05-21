@@ -3,6 +3,7 @@
 namespace App\Livewire\widget;
 
 use App\Models\Buy;
+use App\Models\Sell;
 use App\Models\Tar_sell;
 use Filament\Actions\StaticAction;
 use Filament\Tables;
@@ -17,6 +18,7 @@ class RepTarSell extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
+    public $place_id;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -35,6 +37,12 @@ class RepTarSell extends BaseWidget
     $this->repDate2=$repdate;
 
   }
+    #[On('updatePlace')]
+    public function updateplace($place)
+    {
+        $this->place_id=$place;
+
+    }
   public array $data_list= [
     'calc_columns' => [
       'sub_tot',
@@ -45,7 +53,10 @@ class RepTarSell extends BaseWidget
     {
         return $table
           ->query(function (Tar_sell $tar_sell){
-            return Tar_sell::whereBetween('tar_date',[$this->repDate1,$this->repDate2]);
+            return Tar_sell::whereBetween('tar_date',[$this->repDate1,$this->repDate2])
+                ->when($this->place_id,function ($q){
+                    return $q->whereIn('sell_id',Sell::where('place_id', $this->place_id)->pluck('id'));
+                });
           }
 
           )

@@ -15,6 +15,7 @@ class RepMasr extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
+    public $place_id;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -33,6 +34,12 @@ class RepMasr extends BaseWidget
     $this->repDate2=$repdate;
 
   }
+    #[On('updatePlace')]
+    public function updateplace($place)
+    {
+        $this->place_id=$place;
+
+    }
   public array $data_list= [
     'calc_columns' => [
       'val',
@@ -43,7 +50,9 @@ class RepMasr extends BaseWidget
     {
         return $table
           ->query(function (Masrofat $tar_sell){
-            return Masrofat::whereBetween('masr_date',[$this->repDate1,$this->repDate2]);
+            return Masrofat::whereBetween('masr_date',[$this->repDate1,$this->repDate2])->when($this->place_id,function ($q){
+                return $q->where('place_id',$this->place_id);
+            });
           }
 
           )

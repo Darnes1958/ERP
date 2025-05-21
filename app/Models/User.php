@@ -20,6 +20,11 @@ class User extends Authenticatable implements FilamentUser
 
  use HasRoles;
 
+    public function Place()
+    {
+        return $this->belongsTo(Place::class);
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
 

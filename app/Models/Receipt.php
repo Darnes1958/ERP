@@ -14,7 +14,9 @@ class Receipt extends Model
 {
     protected $connection = 'other';
 
-
+    public function Place(){
+        return $this->belongsTo(Place::class);
+    }
     public function Sell(){
         return $this->belongsTo(Sell::class);
     }

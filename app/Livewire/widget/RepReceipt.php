@@ -15,6 +15,7 @@ class RepReceipt extends BaseWidget
 
   public $repDate1;
   public $repDate2;
+  public $place_id;
   public $raseed;
   public $mden;
   public $daen;
@@ -48,12 +49,22 @@ class RepReceipt extends BaseWidget
           Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
               ->where('imp_exp',1)->sum('val') ;
       $this->daen=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-          ->where('imp_exp',0)->sum('val') ;
+          ->where('imp_exp',0)->sum('val') ->when($this->place_id,function ($q){
+              return $q->where('place_id',$this->place_id);
+          });
       $this->mden=   Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-          ->where('imp_exp',1)->sum('val') ;
+          ->where('imp_exp',1)->sum('val')->when($this->place_id,function ($q){
+              return $q->where('place_id',$this->place_id);
+          }) ;
 
 
   }
+    #[On('updatePlace')]
+    public function updateplace($place)
+    {
+        $this->place_id=$place;
+
+    }
     public array $data_list= [
             'calc_columns' => [
             'val','Customer.name','rec_who'
@@ -68,11 +79,17 @@ class RepReceipt extends BaseWidget
 
 
               if ($this->repDate1 && !$this->repDate2)
-                $buy=Receipt::where('receipt_date','>=',$this->repDate1);
+                $buy=Receipt::where('receipt_date','>=',$this->repDate1)->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
               if ($this->repDate2 && !$this->repDate1)
-                $buy=Receipt::where('receipt_date','<=',$this->repDate1);
+                $buy=Receipt::where('receipt_date','<=',$this->repDate1)->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
               if ($this->repDate1 && $this->repDate2)
-                $buy=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2]);
+                $buy=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
 
 
 

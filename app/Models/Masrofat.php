@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Auth;
 class Masrofat extends Model
 {
     protected $connection = 'other';
-
+    public function Place(){
+        return $this->belongsTo(Place::class);
+    }
     public function Masr_type(){
         return $this->belongsTo(Masr_type::class);
     }

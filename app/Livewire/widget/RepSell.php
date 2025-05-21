@@ -16,6 +16,7 @@ class RepSell extends BaseWidget
 
   public $repDate1;
   public $repDate2;
+  public $place_id;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -34,6 +35,12 @@ class RepSell extends BaseWidget
     $this->repDate2=$repdate;
 
   }
+    #[On('updatePlace')]
+  public function updateplace($place)
+    {
+        $this->place_id=$place;
+
+    }
     public array $data_list= [
         'calc_columns' => [
             'total',
@@ -50,11 +57,18 @@ class RepSell extends BaseWidget
 
 
               if ($this->repDate1 && !$this->repDate2)
-                $sell=Sell::where('order_date','>=',$this->repDate1);
+                $sell=Sell::where('order_date','>=',$this->repDate1)
+                    ->when($this->place_id,function ($q){
+                        return $q->where('place_id',$this->place_id);
+                    });
               if ($this->repDate2 && !$this->repDate1)
-                $sell=Sell::where('order_date','<=',$this->repDate1);
+                $sell=Sell::where('order_date','<=',$this->repDate1)->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
               if ($this->repDate1 && $this->repDate2)
-                $sell=Sell::whereBetween('order_date',[$this->repDate1,$this->repDate2]);
+                $sell=Sell::whereBetween('order_date',[$this->repDate1,$this->repDate2])->when($this->place_id,function ($q){
+                    return $q->where('place_id',$this->place_id);
+                });
 
 
                 return $sell;
