@@ -197,6 +197,7 @@ return [
             'prefix_indexes' => true,
             'trust_server_certificate' => true,
         ],
+
         'Lamsa' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL_OTHER'),
