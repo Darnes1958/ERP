@@ -11,10 +11,15 @@ class EditMasrofat extends EditRecord
 {
     protected static string $resource = MasrofatResource::class;
 
+    protected ?string $heading='تعديل مصروفات';
     protected function getHeaderActions(): array
     {
         return [
             Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
         ];
+    }
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }
