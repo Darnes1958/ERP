@@ -45,17 +45,29 @@ class RepReceipt extends BaseWidget
   {
     $this->repDate2=$repdate;
       $this->raseed=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-              ->where('imp_exp',0)->sum('val') -
+              ->where('imp_exp',0)
+              ->when($this->place_id,function ($q){
+                  return $q->where('place_id',$this->place_id);
+              })
+              ->sum('val') -
           Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-              ->where('imp_exp',1)->sum('val') ;
+              ->where('imp_exp',1)
+              ->when($this->place_id,function ($q){
+                  return $q->where('place_id',$this->place_id);
+              })
+              ->sum('val') ;
       $this->daen=Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-          ->where('imp_exp',0)->sum('val') ->when($this->place_id,function ($q){
+          ->where('imp_exp',0)
+          ->when($this->place_id,function ($q){
               return $q->where('place_id',$this->place_id);
-          });
+          })
+          ->sum('val') ;
       $this->mden=   Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])
-          ->where('imp_exp',1)->sum('val')->when($this->place_id,function ($q){
+          ->where('imp_exp',1)
+          ->when($this->place_id,function ($q){
               return $q->where('place_id',$this->place_id);
-          }) ;
+          })
+          ->sum('val');
 
 
   }
