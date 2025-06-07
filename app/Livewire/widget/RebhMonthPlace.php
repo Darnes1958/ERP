@@ -21,12 +21,15 @@ class RebhMonthPlace extends BaseWidget
   public $place;
 
 
+  public function mount()
+  {
+
+  }
   #[On('updateyearplace')]
   public function updateyearplace($year,$place)
   {
     $this->year=$year;
     $this->place=$place;
-
   }
 
     public array $data_list= [
@@ -62,29 +65,47 @@ class RebhMonthPlace extends BaseWidget
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'sal\'),0) safi
                 ')
                     ->Where('wyear',$this->year)
-->groupBy('wyear','wmonth')
+                ->groupBy('wyear','wmonth')
                     ;
 
               return $res;
             }
 
             )
-          ->heading(new HtmlString('<div class="text-primary-400 text-lg">'.'الارباح بالأشهر لسنه '.$this->year.'</div>'))
-          ->contentFooter(view('table.footer', $this->data_list))
+            ->emptyStateHeading('لا توجد بيانات')
+          ->heading(new HtmlString(
+              '<div class="text-primary-400 text-lg">'.'الارباح بالأشهر لسنه '.$this->year.'</div>'
+
+                    ))
+          ->contentFooter(view('table.footerNoDecimal', $this->data_list))
           ->defaultSort('wmonth')
             ->columns([
                 Tables\Columns\TextColumn::make('wmonth')
-
                  ->label('الشهر'),
                 Tables\Columns\TextColumn::make('rebh')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
                  ->label('هامش الربح'),
               Tables\Columns\TextColumn::make('masr')
+                  ->numeric(decimalPlaces: 0,
+                      decimalSeparator: '',
+                      thousandsSeparator: ',')
                 ->label('مصروفات'),
               Tables\Columns\TextColumn::make('sal')
+                  ->numeric(decimalPlaces: 0,
+                      decimalSeparator: '',
+                      thousandsSeparator: ',')
                 ->label('مرتبات'),
               Tables\Columns\TextColumn::make('rent')
+                  ->numeric(decimalPlaces: 0,
+                      decimalSeparator: '',
+                      thousandsSeparator: ',')
                 ->label('ايجارات'),
               Tables\Columns\TextColumn::make('safi')
+                  ->numeric(decimalPlaces: 0,
+                      decimalSeparator: '',
+                      thousandsSeparator: ',')
                     ->label('صافي الأرباح'),
 
 

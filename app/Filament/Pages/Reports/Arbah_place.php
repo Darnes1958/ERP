@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Livewire\widget\ChartArbah;
 use App\Livewire\widget\RebhMonth;
 use App\Livewire\widget\RebhMonthPlace;
 use App\Models\Place;
@@ -13,9 +14,11 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
@@ -46,11 +49,14 @@ class Arbah_place extends Page implements HasForms,HasActions
 
   public $year;
   public $place;
+    public $amma;
   public function mount(){
-    $year=2024;
+    $year=Rebh_first_place::first()->year;
     $this->place=Place::first()->id;
+      $this->amma=Rebh_first_place::where('wyear',$this->year)->where('place_id',null)->sum('profit');
+      if (!$this->amma) $this->amma=0;
    $this->form->fill([
-       'year' => $year,'place' => $this->place,
+       'year' => $year,'place' => $this->place,'amma' => $this->amma,
    ]);
   }
 public function form(Form $form): Form
@@ -63,9 +69,11 @@ public function form(Form $form): Form
             ->preload()
             ->searchable()
             ->live()
-            ->afterStateUpdated(function ($state){
+            ->afterStateUpdated(function ($state,Set $set){
                 $this->year=$state;
                 $this->dispatch('updateyearplace',year: $this->year,place: $this->place);
+                $this->amma=Rebh_first_place::where('wyear',$this->year)->where('place_id',null)->sum('profit');
+                $set('amma',$this->amma);
             }),
             Select::make('place')
                 ->options(Place::all()->pluck('name','id'))
@@ -77,6 +85,10 @@ public function form(Form $form): Form
                     $this->place=$state;
                     $this->dispatch('updateyearplace',year: $this->year,place: $this->place);
                 }),
+            TextInput::make('amma')
+             ->label('ارباح الإدارة العامة')
+                ->default(0)
+            ->readOnly(),
 
         ])->columns(4);
 }
@@ -88,6 +100,7 @@ public function form(Form $form): Form
       RebhMonthPlace::make([
         'year'=>$this->year,'place' => $this->place,
       ]),
+        ChartArbah::make(['year'=>$this->year,'place' => $this->place,])
 
 
 
