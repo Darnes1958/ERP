@@ -29,6 +29,10 @@ class Place extends Model
     {
         return $this->hasMany(Salary::class);
     }
+    public function Rent()
+    {
+        return $this->hasMany(Rent::class);
+    }
   public function __construct(array $attributes = [])
   {
     parent::__construct($attributes);

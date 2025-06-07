@@ -7,6 +7,7 @@ use App\Filament\Resources\RentResource\RelationManagers;
 use App\Models\Rent;
 use App\Models\Renttran;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -37,9 +38,18 @@ class RentResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')
+                    ->required()
                     ->label('الاسم'),
                 TextInput::make('amount')
+                    ->required()
                     ->label('الإيجار'),
+                Select::make('place_id')
+                    ->label('الصالة أو المحزن')
+                    ->relationship('Place', 'name')
+                    ->searchable()
+                    ->required()
+                    ->live()
+                    ->preload(),
             ]);
     }
 

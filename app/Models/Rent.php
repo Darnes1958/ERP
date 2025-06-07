@@ -13,6 +13,10 @@ class Rent extends Model
     public function Renttran(){
         return $this->hasMany(Rent::class);
     }
+    public function Place()
+    {
+        return $this->belongsTo(Place::class);
+    }
 
     public function __construct(array $attributes = [])
     {
