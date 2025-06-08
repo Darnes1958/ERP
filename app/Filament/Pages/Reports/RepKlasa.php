@@ -17,11 +17,13 @@ use App\Livewire\widget\RepReceipt;
 use App\Livewire\widget\RepResSupp;
 use App\Livewire\widget\RepSell;
 use App\Livewire\widget\StatsKlasa;
+use App\Models\Place;
 use App\Models\Recsupp;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -57,6 +59,7 @@ class RepKlasa extends Page implements HasForms,HasActions
 
   public $repDate1;
   public $repDate2;
+    public $place_id;
     public function mount(){
       $this->repDate1=now();
       $this->repDate2=now();
@@ -88,33 +91,33 @@ class RepKlasa extends Page implements HasForms,HasActions
         return [
 
           StatsKlasa::make([
-            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
 
             KlasaBuy::make([
-              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
               ]),
             KlasaSell::make([
-              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
             KlasaSupp::make([
-              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
             KlasaCust::make([
-              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+              'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
           KlasaMasr::make([
-            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
           klasakzaen::make([
-            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
 
-            KlasaTar::make([
-                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+          KlasaTar::make([
+                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
             ]),
           KlasaTarBuy::make([
-            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+            'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
 
 
@@ -141,7 +144,18 @@ class RepKlasa extends Page implements HasForms,HasActions
                     $this->dispatch('updateDate2', repdate: $state);
                   })
                   ->prefix('حتي تاريخ')
-                  ->hiddenLabel()
+                  ->hiddenLabel(),
+                Select::make('place_id')
+                    ->placeholder('الكل')
+                    ->columnSpan(2)
+                    ->live()
+                    ->options(Place::all()->pluck('name', 'id'))
+                    ->afterStateUpdated(function ($state){
+                        $this->place_id=$state;
+                        $this->dispatch('updateklasaplace', place: $state);
+                    })
+                    ->label('المكان')
+
 
             ])->columns(2);
     }
@@ -157,6 +171,6 @@ class RepKlasa extends Page implements HasForms,HasActions
             ->color('danger')
             ->icon('heroicon-m-printer')
             ->color('info')
-            ->url(fn (): string => route('pdfklasa', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,]));
+            ->url(fn (): string => route('pdfklasa', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id]));
     }
 }

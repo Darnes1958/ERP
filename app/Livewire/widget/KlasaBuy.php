@@ -14,6 +14,7 @@ class KlasaBuy extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
+  public $place_id;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
@@ -29,6 +30,12 @@ class KlasaBuy extends BaseWidget
     $this->repDate2=$repdate;
 
   }
+    #[On('updateklasaplace')]
+    public function updatklasaplace($place)
+    {
+        $this->place_id=$place;
+    }
+
     public array $data_list= [
         'calc_columns' => [
             'tot',
@@ -50,6 +57,9 @@ class KlasaBuy extends BaseWidget
                  ->when($this->repDate2,function ($q){
                    $q->where('order_date','<=',$this->repDate2);
                  })
+                   ->when($this->place_id,function ($q){
+                       return $q->where('place_id',$this->place_id);
+                   })
                    ->join('places','place_id','places.id')
                    ->selectRaw('places.name, sum(tot) as tot,sum(pay) as pay,sum(baky) as baky')
                    ->groupBy('places.name');

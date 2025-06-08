@@ -15,11 +15,17 @@ class KlasaSupp extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
+    public $place_id;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 
   }
+    #[On('updateklasaplace')]
+    public function updatklasaplace($place)
+    {
+        $this->place_id=$place;
+    }
 
   #[On('updateDate1')]
   public function updatedate1($repdate)
@@ -53,7 +59,11 @@ class KlasaSupp extends BaseWidget
                     $q->where('receipt_date','>=',$this->repDate1); })
                   ->when($this->repDate2,function ($q){
                     $q->where('receipt_date','<=',$this->repDate2); })
-                  ->join('price_types','price_type_id','price_types.id')
+                    ->when($this->place_id,function ($q){
+                        return $q->where('place_id',$this->place_id);
+                    })
+
+                    ->join('price_types','price_type_id','price_types.id')
                   ->leftjoin('accs','acc_id','accs.id')
                   ->where('imp_exp',0)
                   ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(recsupps.val) as val')
@@ -64,7 +74,11 @@ class KlasaSupp extends BaseWidget
                     $q->where('receipt_date','>=',$this->repDate1); })
                   ->when($this->repDate2,function ($q){
                     $q->where('receipt_date','<=',$this->repDate2); })
-                  ->join('price_types','price_type_id','price_types.id')
+                    ->when($this->place_id,function ($q){
+                        return $q->where('place_id',$this->place_id);
+                    })
+
+                    ->join('price_types','price_type_id','price_types.id')
                   ->leftjoin('accs','acc_id','accs.id')
                   ->where('imp_exp',1)
                   ->selectRaw('rec_who,price_types.name,accs.name accName,sum(recsupps.val) as exp,0 as val')

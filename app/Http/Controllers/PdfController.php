@@ -147,7 +147,7 @@ class PdfController extends Controller
 
 
   }
-    public function PdfKlasa($repDate1,$repDate2){
+    public function PdfKlasa($repDate1,$repDate2,$place_id){
 
         $cus=OurCompany::where('Company',Auth::user()->company)->first();
         $buy=Buy::when($repDate1,function ($q) use($repDate1){
@@ -156,6 +156,9 @@ class PdfController extends Controller
           ->when($repDate2,function ($q) use($repDate2){
             $q->where('order_date','<=',$repDate2);
           })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
             ->join('places','place_id','places.id')
 
             ->selectRaw('places.name, sum(tot) as tot,sum(pay) as pay,sum(baky) as baky')
@@ -166,6 +169,9 @@ class PdfController extends Controller
           ->when($repDate2,function ($q) use($repDate2){
             $q->where('order_date','<=',$repDate2);
           })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
             ->join('places','place_id','places.id')
 
             ->selectRaw('places.name, sum(total) as total,sum(pay) as pay,sum(baky) as baky')
@@ -177,6 +183,10 @@ class PdfController extends Controller
           ->when($repDate2,function ($q) use($repDate2){
             $q->where('receipt_date','<=',$repDate2);
           })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
+
             ->join('price_types','price_type_id','price_types.id')
             ->leftjoin('accs','acc_id','accs.id')
             ->leftjoin('kazenas','kazena_id','kazenas.id')
@@ -190,6 +200,10 @@ class PdfController extends Controller
           ->when($repDate2,function ($q) use($repDate2){
             $q->where('receipt_date','<=',$repDate2);
           })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
+
             ->join('price_types','price_type_id','price_types.id')
           ->leftjoin('accs','acc_id','accs.id')
           ->leftjoin('kazenas','kazena_id','kazenas.id')
@@ -204,6 +218,10 @@ class PdfController extends Controller
           ->when($repDate2,function ($q) use($repDate2){
             $q->where('receipt_date','<=',$repDate2);
           })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
+
             ->join('price_types','price_type_id','price_types.id')
             ->leftjoin('accs','acc_id','accs.id')
             ->leftjoin('kazenas','kazena_id','kazenas.id')
@@ -217,6 +235,10 @@ class PdfController extends Controller
           ->when($repDate2,function ($q) use($repDate2){
             $q->where('receipt_date','<=',$repDate2);
           })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
+
             ->join('price_types','price_type_id','price_types.id')
             ->leftjoin('accs','acc_id','accs.id')
             ->leftjoin('kazenas','kazena_id','kazenas.id')
@@ -231,6 +253,10 @@ class PdfController extends Controller
             ->when($repDate2,function ($q)  use($repDate2){
                 $q->where('masr_date','<=',$repDate2);
             })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
+
             ->selectRaw('name, acc_name,sum(val) as val')
             ->groupBy('name','acc_name')->get();
 
@@ -240,11 +266,14 @@ class PdfController extends Controller
       $tar_buy=Tar_buy::whereBetween('tar_date',[$repDate1,$repDate2])
         ->selectRaw('tar_date,sum(sub_tot) as sub_tot')
         ->groupBy('tar_date')->get();
+        if ($place_id) $place_name=Place::find($place_id)->name;
+        else $place_name=' ';
 
       $html = view('PDF.pdf-klasa',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
               'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr,
-              'tar_buy'=>$tar_buy,'tar_sell'=>$tar_sell])->toArabicHTML();
+              'tar_buy'=>$tar_buy,'tar_sell'=>$tar_sell,
+                'place_name'=>$place_name])->toArabicHTML();
 
         $pdf = PDF::loadHTML($html)->output();
         $headers = array(
@@ -315,11 +344,13 @@ class PdfController extends Controller
                 return $q->where('place_id',$request->place_id);
             })->get();
 
-
+        if ($request->place_id) $place_name=Place::find($request->place_id)->name;
+        else $place_name=' ';
+         if ($place_name=null) $place_name=' ';
         $html = view('PDF.pdf-daily',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
                 'cus'=>$cus,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2,
-                'place_name'=>Place::find(request()->place_id)->name])->toArabicHTML();
+                'place_name'=>$place_name])->toArabicHTML();
 
 
 

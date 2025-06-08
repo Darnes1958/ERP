@@ -15,11 +15,17 @@ class KlasaSell extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
+  public $place_id;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 
   }
+    #[On('updateklasaplace')]
+    public function updatklasaplace($place)
+    {
+        $this->place_id=$place;
+    }
 
   #[On('updateDate1')]
   public function updatedate1($repdate)
@@ -55,6 +61,11 @@ class KlasaSell extends BaseWidget
                   ->when($this->repDate2,function ($q){
                     $q->where('order_date','<=',$this->repDate2);
                   })
+                    ->when($this->place_id,function ($q){
+                        return $q->where('place_id',$this->place_id);
+                    })
+
+
                     ->join('places','place_id','places.id')
 
                     ->selectRaw('places.name, sum(total) as total,sum(pay) as pay,sum(baky) as baky')

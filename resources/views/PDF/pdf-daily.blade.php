@@ -21,17 +21,14 @@
 
     </div>
 
-      <div style="text-align: center">
-          @if($place_name )
+
+          @if($place_name !=' ')
+          <div style="text-align: center">
               <label style="font-size: 10pt;">{{$place_name}}</label>
               <label style="font-size: 14pt;margin-right: 12px;" > المكان : </label>
-          @else
-              <label style="font-size: 10pt;">الكل</label>
-              <label style="font-size: 14pt;margin-right: 12px;" > المكان : </label>
+          </div>
           @endif
 
-
-      </div>
 
     <label style="font-size: 14pt;margin-right: 12px;" >مشتريات </label>
     <table  width="100%"   align="right" >

@@ -15,11 +15,17 @@ class KlasaMasr extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
+    public $place_id;
   public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 
   }
+    #[On('updateklasaplace')]
+    public function updatklasaplace($place)
+    {
+        $this->place_id=$place;
+    }
 
   #[On('updateDate1')]
   public function updatedate1($repdate)
@@ -55,7 +61,11 @@ class KlasaMasr extends BaseWidget
           ->when($this->repDate2,function ($q){
             $q->where('masr_date','<=',$this->repDate2);
           })
-          ->selectRaw('name, acc_name,sum(val) as val')
+            ->when($this->place_id,function ($q){
+                return $q->where('place_id',$this->place_id);
+            })
+
+            ->selectRaw('name, acc_name,sum(val) as val')
           ->groupBy('name','acc_name');
         return $masr;
       }
