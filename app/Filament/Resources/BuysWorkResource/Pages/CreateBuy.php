@@ -170,6 +170,7 @@ class CreateBuy extends Page implements HasTable
                     'rec_who'=>5,
                     'imp_exp'=>1,
                     'val'=>$this->buy->pay,
+                    'place_id'=>$this->buy->place_id,
                     'kazena_id'=>$kaz,
                     'acc_id'=>$acc,
                     'notes'=>'فاتورة مشتريات رقم '.strval($id->id),

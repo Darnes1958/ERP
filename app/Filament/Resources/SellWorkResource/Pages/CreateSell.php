@@ -988,6 +988,7 @@ class CreateSell extends Page
                                         'val'=>$this->sell->pay,
                                         'kazena_id'=>$kaz,
                                         'acc_id'=>$acc,
+                                        'place_id'=>$this->sell->place_id,
                                         'notes'=>'فاتورة مبيعات رقم '.strval($id->id),
                                         'user_id'=>Auth::id()
                                     ]);

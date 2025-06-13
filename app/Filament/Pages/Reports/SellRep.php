@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Place;
 use Filament\Tables\Enums\FiltersLayout;
 use App\Models\Buy;
 use App\Models\Customer;
@@ -156,6 +157,10 @@ class SellRep extends Page implements HasForms,HasTable
          ->options(Customer::all()->pluck('name', 'id'))
          ->searchable()
          ->label('زبون معين'),
+         SelectFilter::make('place_id')
+             ->options(Place::all()->pluck('name', 'id'))
+             ->searchable()
+             ->label('نقطة بيع معينة'),
        Filter::make('created_at')
          ->form([
            DatePicker::make('Date1')
@@ -186,7 +191,7 @@ class SellRep extends Page implements HasForms,HasTable
                fn (Builder $query, $date): Builder => $query->whereDate('order_date', '<=', $date),
              );
          })
-     ], layout: FiltersLayout::Modal);
+     ]);
  }
 
 }

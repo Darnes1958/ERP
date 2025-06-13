@@ -54,8 +54,9 @@ class RepTarSell extends BaseWidget
         return $table
           ->query(function (Tar_sell $tar_sell){
             return Tar_sell::whereBetween('tar_date',[$this->repDate1,$this->repDate2])
+                ->join('sells','sells.id','=','tar_sells.sell_id')
                 ->when($this->place_id,function ($q){
-                    return $q->whereIn('sell_id',Sell::where('place_id', $this->place_id)->pluck('id'));
+                    return $q->where('place_id', $this->place_id);
                 });
           }
 

@@ -491,6 +491,7 @@ class SellEdit extends Page implements HasTable
                                         'price_type_id'=>$this->sell->price_type_id,
                                         'acc_id'=>$this->sellData['acc_id'],
                                         'kazena_id'=>$this->sellData['kazena_id'],
+                                        'place_id'=>$this->sell->place_id,
                                         'rec_who'=>6,
                                         'imp_exp'=>0,
                                         'val'=>$this->sell->pay,

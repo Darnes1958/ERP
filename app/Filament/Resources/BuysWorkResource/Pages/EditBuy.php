@@ -186,6 +186,7 @@ class EditBuy extends Page implements HasTable
                                         'price_type_id'=>$this->buy->price_type_id,
                                         'rec_who'=>5,
                                         'imp_exp'=>1,
+                                        'place_id'=>$this->buy->place_id,
                                         'val'=>$this->buy->pay,
                                         'notes'=>'فاتورة مشتريات رقم '.strval($this->buy->id),
                                         'user_id'=>Auth::id()

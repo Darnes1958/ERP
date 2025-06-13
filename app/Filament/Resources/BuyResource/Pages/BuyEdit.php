@@ -247,13 +247,14 @@ class BuyEdit extends Page implements HasTable
                                 if ($receipt)
                                     $receipt->update(['val'=>$this->buy->pay]);
                                 else {
-                                    Receipt::create([
+                                    Recsupp::create([
                                         'receipt_date'=>$this->buy->order_date,
                                         'supplier_id'=>$this->buy->supplier_id,
                                         'buy_id'=>$this->buy->id,
                                         'price_type_id'=>$this->buy->price_type_id,
                                         'rec_who'=>5,
                                         'imp_exp'=>1,
+                                        'place_id'=>$this->buy->place_id,
                                         'val'=>$this->buy->pay,
                                         'notes'=>'فاتورة مشتريات رقم '.strval($this->buy->id),
                                         'user_id'=>Auth::id()

@@ -265,7 +265,7 @@ class ReceiptResource extends Resource
                     ->label('المكان')
                     ->relationship('Place','name')
                     ->searchable()
-
+                    ->requiredIf('rec_who',3)
                     ->live()
                     ->preload()
                     ->Visible(function () {return !Auth::user()->place_id;})
