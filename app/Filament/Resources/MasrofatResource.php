@@ -9,6 +9,7 @@ use App\Models\Masr_type;
 use App\Models\Masrofat;
 use App\Models\Place;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
@@ -18,6 +19,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -25,11 +27,13 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class MasrofatResource extends Resource
 {
+    protected static $place_id;
     protected static ?string $model = Masrofat::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -253,9 +257,25 @@ class MasrofatResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
             ])
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    BulkAction::make('editPlace')
+                        ->deselectRecordsAfterCompletion()
+                        ->label('تعديل المكان')
+                        ->form([
+                            Select::make('place_id')
+                                ->label('قم باختيار المكان')
+                                ->options(Place::query()->pluck('name', 'id'))
+                                ->preload()
+                                ->searchable(),
+                        ])
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records,array $data) : void {
+                            if ($data['place_id']!=null)
+                                $records->each->update(['place_id'=>$data['place_id']]);
+                        }),
+
 
                 ]),
             ]);
