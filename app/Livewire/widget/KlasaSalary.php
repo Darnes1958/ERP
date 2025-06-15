@@ -4,6 +4,7 @@ namespace App\Livewire\widget;
 
 
 use App\Models\Masr_view;
+use App\Models\Salarytran;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Livewire\Attributes\On;
 
-class KlasaMasr extends BaseWidget
+class KlasaSalary extends BaseWidget
 {
   public $repDate1;
   public $repDate2;
@@ -52,35 +53,34 @@ class KlasaMasr extends BaseWidget
   public function table(Table $table): Table
   {
     return $table
-      ->query(function(Masr_view $masr){
-        $masr=Masr_view::when($this->repDate1,function ($q){
-          $q->where('masr_date','>=',$this->repDate1);
+      ->query(function(){
+        $masr=Salarytran::join('salaries','salarytrans.salary_id','=','salaries.id')
+        ->when($this->repDate1,function ($q){
+          $q->where('tran_date','>=',$this->repDate1);
         })
           ->when($this->repDate2,function ($q){
-            $q->where('masr_date','<=',$this->repDate2);
+            $q->where('tran_date','<=',$this->repDate2);
           })
           ->when($this->place_id,function ($q){
                 return $q->where('place_id',$this->place_id);
             })
 
-          ->selectRaw('name, acc_name,sum(val) as val')
-          ->groupBy('name','acc_name');
+          ->selectRaw('tran_type,sum(val) as val')
+          ->groupBy('tran_type');
         return $masr;
       }
 
       )
       ->emptyStateHeading('لا توجد بيانات')
-      ->heading(new HtmlString('<div class="text-primary-400 text-lg">المصروفات</div>'))
+      ->heading(new HtmlString('<div class="text-primary-400 text-lg">المرتبات</div>'))
       ->contentFooter(view('table.footer', $this->data_list))
       ->defaultPaginationPageOption(5)
       ->defaultSort('val')
       ->columns([
-        TextColumn::make('name')
+        TextColumn::make('tran_type')
           ->color('info')
           ->label('البيان'),
-        TextColumn::make('acc_name')
-          ->color('primary')
-          ->label('دفعت من'),
+
 
         TextColumn::make('val')
           ->numeric(decimalPlaces: 2,

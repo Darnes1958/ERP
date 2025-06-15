@@ -320,5 +320,39 @@
               </tbody>
           </table>
       @endif
+      @if($salary)
+          <label style="font-size: 14pt;margin-right: 12px;" >المرتبات</label>
+          <table style=" width:80%"   align="right" >
+              <thead style="  margin-top: 8px;">
+              <tr style="background:lightgray">
+                  <th style="width: 14%;">المبلغ</th>
+                  <th style="width: 20%;">البيان</th>
+              </tr>
+              </thead>
+              <tbody >
+              @php $sumval=0; @endphp
+              @foreach($salary as $key=>$item)
+                  <tr class="font-size-12">
+                      <td> {{number_format($item->val, 2, '.', ',')}} </td>
+                      <td> {{$item->tran_type}}  </td>
+                  </tr>
+                  <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
+                              display: flex;  justify-content: center;">
+                      <label class="page"></label>
+                      <label> صفحة رقم </label>
+                  </div>
+                  @php $sumval+=$item->val; @endphp
+              @endforeach
+              <tr class="font-size-12 " style="font-weight: bold">
+                  <td> {{number_format($sumval, 2, '.', ',')}} </td>
+
+                  <td style="font-weight:normal;">الإجمــــــــالي  </td>
+              </tr>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+              <td style="border-bottom: none;border-left: none;border-right: none;"> </td>
+
+              </tbody>
+          </table>
+      @endif
   </div>
 @endsection

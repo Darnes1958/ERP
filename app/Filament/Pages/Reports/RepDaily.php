@@ -40,6 +40,7 @@ class RepDaily extends Page implements HasForms
     public $repDate1;
     public $repDate2;
     public $place_id;
+    public $place_name=' ';
     public function mount(){
         $this->repDate1=now();
         $this->repDate2=now();
@@ -120,6 +121,7 @@ class RepDaily extends Page implements HasForms
                  ->options(Place::all()->pluck('name', 'id'))
                  ->afterStateUpdated(function ($state){
                      $this->place_id=$state;
+
                      $this->dispatch('updatePlace', place: $state);
                  })
                  ->label('المكان')
@@ -138,7 +140,9 @@ class RepDaily extends Page implements HasForms
             ->button()
             ->color('danger')
             ->icon('heroicon-m-printer')
+
             ->color('info')
-            ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id]));
+            ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+                'place_id'=>$this->place_id ]));
     }
 }

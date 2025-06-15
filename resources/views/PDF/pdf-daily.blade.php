@@ -202,14 +202,14 @@
           <thead style="  margin-top: 8px;">
           <tr style="background:lightgray">
 
-              <th style="width: 10%;">المبلغ</th>
-              <th style="width: 20%;">الخزينة</th>
-              <th style="width: 26%;">الحساب المصرفي</th>
+              <th style="width: 8%;">المبلغ</th>
+              <th style="width: 16%;">الخزينة</th>
+              <th style="width: 22%;">الحساب المصرفي</th>
 
               <th >الزبون</th>
               <th style="width: 10%;text-align: center;">البيان</th>
-              <th style="width: 11%;text-align: center;">التاريخ</th>
-
+              <th style="width: 10%;text-align: center;">التاريخ</th>
+              <th style="width: 8%;">الرقم الألي</th>
           </tr>
           </thead>
           <tbody >
@@ -232,6 +232,7 @@
                   <td > {{$item->Customer->name}}  </td>
                   <td style="text-align: center;">{{$item->rec_who->name}}  </td>
                   <td style="text-align: center;">{{$item->receipt_date}}  </td>
+                  <td style="text-align: center;">{{$item->id}}  </td>
               </tr>
               <div id="footer" style=" width: 100%; margin-bottom: 0px; margin-top: 10px;
                               display: flex;  justify-content: center;">

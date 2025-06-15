@@ -11,6 +11,7 @@ use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Receipt;
 use App\Models\Recsupp;
+use App\Models\Salarytran;
 use App\Models\Sell;
 use App\Models\Sell_tran;
 use App\Models\Supp_tran;
@@ -149,6 +150,7 @@ class PdfController extends Controller
   }
     public function PdfKlasa($repDate1,$repDate2,$place_id){
 
+        if ($place_id==0) $place_id=null;
         $cus=OurCompany::where('Company',Auth::user()->company)->first();
         $buy=Buy::when($repDate1,function ($q) use($repDate1){
           $q->where('order_date','>=',$repDate1);
@@ -259,6 +261,20 @@ class PdfController extends Controller
 
             ->selectRaw('name, acc_name,sum(val) as val')
             ->groupBy('name','acc_name')->get();
+        $salary=Salarytran::join('salaries','salarytrans.salary_id','salaries.id')
+        ->when($repDate1,function ($q) use($repDate1){
+            $q->where('tran_date','>=',$repDate1);
+        })
+            ->when($repDate2,function ($q)  use($repDate2){
+                $q->where('tran_date','<=',$repDate2);
+            })
+            ->when($place_id,function ($q) use($place_id){
+                return $q->where('place_id',$place_id);
+            })
+
+            ->selectRaw('tran_type,sum(val) as val')
+            ->groupBy('tran_type')->get();
+
 
       $tar_sell=Tar_sell::whereBetween('tar_date',[$repDate1,$repDate2])
         ->selectRaw('tar_date,sum(sub_tot) as sub_tot')
@@ -271,7 +287,7 @@ class PdfController extends Controller
 
       $html = view('PDF.pdf-klasa',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
-              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr,
+              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr,'salary'=>$salary,
               'tar_buy'=>$tar_buy,'tar_sell'=>$tar_sell,
                 'place_name'=>$place_name])->toArabicHTML();
 
@@ -344,9 +360,9 @@ class PdfController extends Controller
                 return $q->where('place_id',$request->place_id);
             })->get();
 
-        if ($request->place_id) $place_name=Place::find($request->place_id)->name;
+        if ($request->place_id!=null) $place_name=Place::find($request->place_id)->name;
         else $place_name=' ';
-         if ($place_name=null) $place_name=' ';
+
         $html = view('PDF.pdf-daily',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
                 'cus'=>$cus,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2,

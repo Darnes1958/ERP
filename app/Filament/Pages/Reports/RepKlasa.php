@@ -8,6 +8,7 @@ use App\Livewire\widget\KlasaBuy;
 use App\Livewire\widget\KlasaCust;
 use App\Livewire\widget\klasakzaen;
 use App\Livewire\widget\KlasaMasr;
+use App\Livewire\widget\KlasaSalary;
 use App\Livewire\widget\KlasaSell;
 use App\Livewire\widget\KlasaSupp;
 use App\Livewire\widget\KlasaTar;
@@ -59,7 +60,7 @@ class RepKlasa extends Page implements HasForms,HasActions
 
   public $repDate1;
   public $repDate2;
-    public $place_id;
+    public $place_id=0;
     public function mount(){
       $this->repDate1=now();
       $this->repDate2=now();
@@ -75,6 +76,7 @@ class RepKlasa extends Page implements HasForms,HasActions
             KlasaSupp::class,
             KlasaCust::class,
             KlasaMasr::class,
+            KlasaSalary::class,
             StatsKlasa::class,
             RepBuy::class,
             RepSell::class,
@@ -109,6 +111,9 @@ class RepKlasa extends Page implements HasForms,HasActions
           KlasaMasr::make([
             'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
+            KlasaSalary::make([
+                'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
+            ]),
           klasakzaen::make([
             'repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id,
           ]),
@@ -151,7 +156,7 @@ class RepKlasa extends Page implements HasForms,HasActions
                     ->live()
                     ->options(Place::all()->pluck('name', 'id'))
                     ->afterStateUpdated(function ($state){
-                        $this->place_id=$state;
+                        if ($state!=null) $this->place_id=$state;else $this->place_id=0;
                         $this->dispatch('updateklasaplace', place: $state);
                     })
                     ->label('المكان')
@@ -171,6 +176,7 @@ class RepKlasa extends Page implements HasForms,HasActions
             ->color('danger')
             ->icon('heroicon-m-printer')
             ->color('info')
+
             ->url(fn (): string => route('pdfklasa', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id]));
     }
 }

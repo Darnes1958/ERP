@@ -18,6 +18,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -193,6 +194,11 @@ class MasrofatResource extends Resource
                 Tables\Columns\TextColumn::make('val')
                     ->label('المبلغ')
                     ->searchable()
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('notes')
                     ->label('ملاحظات')
