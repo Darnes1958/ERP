@@ -152,10 +152,7 @@ class MasrofatResource extends Resource
                     ->relationship('Place','name')
                     ->label('المكان')
                     ->placeholder('غير محدد')
-                    ->preload()
-                    ->visible(function (){
-                        return !Auth::user()->place_id;
-                    }),
+                    ->preload(),
                 Forms\Components\DatePicker::make('masr_date')
                  ->required()
                  ->default(now())
