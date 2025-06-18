@@ -268,9 +268,9 @@ class ReceiptResource extends Resource
                     ->requiredIf('rec_who',3)
                     ->live()
                     ->preload()
-                    ->Visible(function () {return !Auth::user()->place_id;})
+                    ->disabled(function () {return Auth::user()->place_id!=null;})
                     ->default(function (){
-                        if (Auth::user()->place_id) return Auth::user()->place_id;
+                        if (Auth::user()->place_id!=null) return Auth::user()->place_id;
                         else return null;
                     }),
 
