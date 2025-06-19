@@ -4,6 +4,7 @@ namespace App\Filament\Pages\Reports;
 
 use App\Exports\CustRaseedExl;
 
+use App\Exports\SuppRaseedExl;
 use App\Models\Supp_tran;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -80,8 +81,8 @@ class SuppRaseed extends Page implements HasForms,HasTable
                                 ->when($this->repDate2,function ($q){
                                     $q->where('repDate','<=',$this->repDate2);
                                 })->first();
-                            return Excel::download(new CustRaseedExl('ارصدة الموردين من تاريخ '.$this->repDate1.' إلي تاريخ '.$this->repDate2,
-                                $this->getTableQueryForExport()->get(),$report),'cust_tran.xlsx');
+                            return Excel::download(new SuppRaseedExl('ارصدة الموردين من تاريخ '.$this->repDate1.' إلي تاريخ '.$this->repDate2,
+                                $this->getTableQueryForExport()->get(),$report),'supp_tran.xlsx');
                         })
                 ])->verticalAlignment(VerticalAlignment::End),
 
