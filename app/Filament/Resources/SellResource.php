@@ -174,7 +174,9 @@ class SellResource extends Resource
                     ->url(fn(Model $record) => self::getUrl('tarsell', ['record' => $record])),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton()
-                    ->visible(Auth::user()->can('الغاء مبيعات'))
+                    ->visible( function (Sell $record) {
+                        return Auth::user()->can('الغاء مبيعات') && !$record->Tar_sell()->exists();
+                    })
                     ->modalHeading('حذف فاتورة مبيعات')
                     ->modalDescription('هل انت متأكد من الغاء هذه الفاتورة ؟')
                     ->before(function(Sell $record) {
