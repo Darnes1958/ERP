@@ -201,7 +201,8 @@ class ReceiptResource extends Resource
                     ->required()
                     ->live()
                     ->preload()
-                    ->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+
+                    ->disabled(function ($state) {return $res=Kazena::where('user_id',Auth::id())->first();})
                     ->default(function (){
                         $res=Kazena::where('user_id',Auth::id())->first();
                         if ($res) return $res->id;

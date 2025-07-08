@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RecsuppResource\Pages;
 
 use App\Filament\Resources\RecsuppResource;
 use App\Models\Buy;
+use App\Models\Kazena;
 use App\Models\Receipt;
 use App\Models\Recsupp;
 use Filament\Actions;
@@ -18,6 +19,17 @@ class EditRecsupp extends EditRecord
 
  public $buy_to_save;
  public $rec_who;
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        if ($data['price_type_id']==1) {
+            $res=Kazena::where('user_id',Auth::id())->first();
+            if ($res) $data['kazena_id']=$res->id;
+        }
+        if (Auth::user()->place_id!=null) $data['place_id']= Auth::user()->place_id;
+
+
+        return $data;
+    }
 
     protected function mutateFormDataBeforeSave(array $data): array
   {

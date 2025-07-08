@@ -72,7 +72,6 @@ class Tar_sell_Page extends Page implements HasTable
                         return $record->Sell()->exists();
                     })
                     ->action(function (Tar_sell $record){
-
                         $selltran=Sell_tran::where('sell_id',$record->sell_id)->where('item_id',$record->item_id)->first()  ;
                         $tarsell=$record;
                         $sell=Sell::find($record->sell_id);

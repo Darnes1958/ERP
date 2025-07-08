@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\ReceiptResource\Pages;
 
 use App\Filament\Resources\ReceiptResource;
+use App\Models\Kazena;
 use App\Models\Receipt;
 use App\Models\Sell;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateReceipt extends CreateRecord
 {
@@ -26,6 +28,12 @@ class CreateReceipt extends CreateRecord
             case 3: $data['imp_exp']=0;break;
             case 4: $data['imp_exp']=1;break;
         }
+        if ($data['price_type_id']==1) {
+            $res=Kazena::where('user_id',Auth::id())->first();
+            if ($res) $data['kazena_id']=$res->id;
+        }
+        if (Auth::user()->place_id!=null) $data['place_id']= Auth::user()->place_id;
+
         if ($data['rec_who'] == 3 || $data['rec_who'] == 4)
         {   $val=$data['val'];
             $imp=Receipt::where('sell_id',$data['sell_id'])->whereIn('rec_who',[3,6])->sum('val');

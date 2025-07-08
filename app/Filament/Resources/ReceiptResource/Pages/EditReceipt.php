@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ReceiptResource\Pages;
 
 use App\Filament\Resources\ReceiptResource;
+use App\Models\Kazena;
 use App\Models\Receipt;
 use App\Models\Sell;
 use Filament\Actions;
@@ -16,8 +17,20 @@ class EditReceipt extends EditRecord
 
     public $sell_to_save;
     public $rec_who;
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        if ($data['price_type_id']==1) {
+            $res=Kazena::where('user_id',Auth::id())->first();
+            if ($res) $data['kazena_id']=$res->id;
+        }
+        if (Auth::user()->place_id!=null) $data['place_id']= Auth::user()->place_id;
+
+
+        return $data;
+    }
     protected function afterSave(): void
     {
+
         if ($this->rec_who == 3 || $this->rec_who == 4 || $this->rec_who == 5 || $this->rec_who == 6)
         {
             $imp=Receipt::where('sell_id',$this->sell_to_save)->wherein('rec_who',[3,6])
@@ -33,6 +46,11 @@ class EditReceipt extends EditRecord
     }
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        if ($data['price_type_id']==1) {
+            $res=Kazena::where('user_id',Auth::id())->first();
+            if ($res) $data['kazena_id']=$res->id;
+        }
+        if (Auth::user()->place_id!=null) $data['place_id']= Auth::user()->place_id;
         $this->sell_to_save=$data['sell_id'];
         $this->rec_who=$data['rec_who'];
 

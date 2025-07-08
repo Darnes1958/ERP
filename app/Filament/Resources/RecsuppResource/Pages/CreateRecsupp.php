@@ -4,10 +4,12 @@ namespace App\Filament\Resources\RecsuppResource\Pages;
 
 use App\Filament\Resources\RecsuppResource;
 use App\Models\Buy;
+use App\Models\Kazena;
 use App\Models\Receipt;
 use App\Models\Recsupp;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateRecsupp extends CreateRecord
 {
@@ -21,6 +23,12 @@ class CreateRecsupp extends CreateRecord
 
   protected function mutateFormDataBeforeCreate(array $data): array
   {
+      if ($data['price_type_id']==1) {
+          $res=Kazena::where('user_id',Auth::id())->first();
+          if ($res) $data['kazena_id']=$res->id;
+      }
+      if (Auth::user()->place_id!=null) $data['place_id']= Auth::user()->place_id;
+
       switch ($data['rec_who']) {
           case 1: $data['imp_exp']=0;break;
           case 2: $data['imp_exp']=1;break;

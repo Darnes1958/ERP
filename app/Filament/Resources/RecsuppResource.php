@@ -199,7 +199,8 @@ class RecsuppResource extends Resource
               ->required()
               ->live()
               ->preload()
-              ->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+
+              ->disabled(function () {return Kazena::where('user_id',Auth::id())->first();})
               ->default(function (){
                   $res=Kazena::where('user_id',Auth::id())->first();
                   if ($res) return $res->id;
