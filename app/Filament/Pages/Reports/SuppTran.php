@@ -46,7 +46,7 @@ class SuppTran extends Page implements HasForms,HasTable
 
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->hasRole('admin');
+    return Auth::user()->hasRole('admin')  || Auth::user()->can('تقارير موردين');
   }
 
 

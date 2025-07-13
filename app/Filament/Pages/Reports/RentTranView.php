@@ -35,7 +35,7 @@ class RentTranView extends Page implements HasTable, HasForms
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('إيجارات');
+        return Auth::user()->can('إيجارات') || Auth::user()->can('تقارير ايجارات');
     }
 
     public $rent_id;

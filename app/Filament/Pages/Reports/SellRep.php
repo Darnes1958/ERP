@@ -2,7 +2,12 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Main;
+use App\Models\Main_arc;
 use App\Models\Place;
+use Filament\Resources\Components\Tab;
+use Filament\Resources\Concerns\HasTabs;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Enums\FiltersLayout;
 use App\Models\Buy;
 use App\Models\Customer;
@@ -30,6 +35,7 @@ use Illuminate\Support\Facades\Auth;
 class SellRep extends Page implements HasForms,HasTable
 {
   use InteractsWithForms, InteractsWithTable;
+  use HasTabs;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.reports.sell-rep';
@@ -38,20 +44,16 @@ class SellRep extends Page implements HasForms,HasTable
     protected static ?int $navigationSort=3;
     protected ?string $heading = "";
 
+    public function mount(): void
+    {
+        $this->loadDefaultActiveTab();
+    }
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('ادخال مبيعات');
+        return Auth::user()->can('ادخال مبيعات') || Auth::user()->can('تقارير مبيعات');
     }
 
-    public array $data_list= [
-        'calc_columns' => [
-            'total',
-            'tot',
-            'pay',
-            'baky',
-          'sell_tran_sum_profit',
-        ],
-    ];
+
  public function table(Table $table): Table
  {
    return $table
@@ -59,8 +61,12 @@ class SellRep extends Page implements HasForms,HasTable
       $sell->all();
       return $sell;
     })
+     ->pluralModelLabel('الصفحات')
+     ->striped()
      ->defaultSort('id','desc')
      ->columns([
+         TextColumn::make('ت')
+       ->rowIndex(),
        TextColumn::make('id')
          ->searchable()
          ->sortable()
@@ -81,6 +87,11 @@ class SellRep extends Page implements HasForms,HasTable
                decimalSeparator: '.',
                thousandsSeparator: ',',
            )
+           ->summarize(Sum::make()->label('')->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           ))
          ->label('اجمالي الفاتورة'),
        TextColumn::make('cost')
          ->searchable()
@@ -90,6 +101,11 @@ class SellRep extends Page implements HasForms,HasTable
            decimalSeparator: '.',
            thousandsSeparator: ',',
          )
+           ->summarize(Sum::make()->label('')->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           ))
          ->label('تكاليف إضافية'),
        TextColumn::make('differ')
          ->searchable()
@@ -98,6 +114,11 @@ class SellRep extends Page implements HasForms,HasTable
            decimalSeparator: '.',
            thousandsSeparator: ',',
          )
+           ->summarize(Sum::make()->label('')->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           ))
          ->sortable()
          ->label('فرق عملة'),
        TextColumn::make('total')
@@ -107,6 +128,11 @@ class SellRep extends Page implements HasForms,HasTable
            decimalSeparator: '.',
            thousandsSeparator: ',',
          )
+           ->summarize(Sum::make()->label('')->label('')->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           ))
          ->sortable()
          ->label('الإجمالي النهائي'),
 
@@ -116,6 +142,11 @@ class SellRep extends Page implements HasForms,HasTable
                decimalSeparator: '.',
                thousandsSeparator: ',',
            )
+           ->summarize(Sum::make()->label('')->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           ))
          ->label('المدفوع'),
        TextColumn::make('baky')
            ->numeric(
@@ -123,16 +154,26 @@ class SellRep extends Page implements HasForms,HasTable
                decimalSeparator: '.',
                thousandsSeparator: ',',
            )
+           ->summarize(Sum::make()->label('')->numeric(
+               decimalPlaces: 2,
+               decimalSeparator: '.',
+               thousandsSeparator: ',',
+           ))
          ->label('الباقي'),
          TextColumn::make('sell_tran_sum_profit')
              ->visible(Auth::user()->hasRole('admin'))
              ->sum('Sell_tran','profit')
+             ->summarize(Sum::make()->label('')->numeric(
+                 decimalPlaces: 2,
+                 decimalSeparator: '.',
+                 thousandsSeparator: ',',
+             ))
              ->label('الربح'),
        TextColumn::make('notes')
          ->label('ملاحظات'),
 
      ])
-       ->contentFooter(view('table.footer', $this->data_list))
+
      ->actions([
        Action::make('عرض ')
          ->modalHeading(false)
@@ -150,6 +191,7 @@ class SellRep extends Page implements HasForms,HasTable
              ->color('blue')
              ->url(fn (Sell $record): string => route('pdfsell', ['id' => $record->id]))
      ])
+     ->modifyQueryUsing($this->modifyQueryWithActiveTab(...))
      ->filtersFormWidth(MaxWidth::Small)
 
      ->filters([
@@ -191,7 +233,49 @@ class SellRep extends Page implements HasForms,HasTable
                fn (Builder $query, $date): Builder => $query->whereDate('order_date', '<=', $date),
              );
          })
+
      ]);
  }
+    public function getTabs(): array
+    {
+        return [
+            'الكل' => Tab::make()->badge(fn () => Sell::query()->count()),
+            'تقسيط' => Tab::make()
+                ->badge(fn () => Sell::where('price_type_id', 3)->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('price_type_id', 3)),
+            'تقسيط قائم' => Tab::make()
+                ->badge(fn () => Sell::where('price_type_id', 3)->whereIn('id', Main::query()->pluck('sell_id'))->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('price_type_id', 3)
+                ->whereIn('id', Main::query()->pluck('sell_id'))),
+            'تقسيط أرشيف' => Tab::make()
+                ->badge(fn () => Sell::where('price_type_id', 3)->whereIn('id', Main_arc::query()->pluck('sell_id'))->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('price_type_id', 3)
+                    ->whereIn('id', Main_arc::query()->pluck('sell_id'))),
+            'تقسيط بدون عقد' => Tab::make()
+                ->badge(fn () => Sell::where('price_type_id', 3)->whereNotIn('id', Main::query()->pluck('sell_id'))
+                    ->whereNotIn('id', Main_arc::query()->pluck('sell_id'))->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('price_type_id', 3)
+                    ->whereNotIn('id', Main::query()->pluck('sell_id'))
+                    ->whereNotIn('id', Main_arc::query()->pluck('sell_id'))),
+
+            'نقداً' => Tab::make()
+                ->badge(fn () => Sell::where('price_type_id', '!=',3)->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('price_type_id', '!=',3)),
+            'نقداً آجلة' => Tab::make()
+                ->badge(fn () => Sell::where('price_type_id', '!=',3)
+                    ->where('baky','!=',0)->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('price_type_id', '!=',3)
+                    ->where('baky','!=',0)),
+            'نقداً مدفوعة' => Tab::make()
+                ->badge(fn () => Sell::where('price_type_id', '!=',3)
+                    ->where('baky',0)->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('price_type_id', '!=',3)
+                    ->where('baky',0)),
+        ];
+    }
+    public function getDefaultActiveTab(): string | int | null
+    {
+        return 'الكل';
+    }
 
 }

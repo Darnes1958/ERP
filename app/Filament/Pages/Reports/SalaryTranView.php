@@ -42,7 +42,7 @@ class SalaryTranView extends Page implements HasTable, HasForms
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('مرتبات');
+        return Auth::user()->can('مرتبات') || Auth::user()->can('تقارير مرتبات') ;
     }
 
     public $salary_id;

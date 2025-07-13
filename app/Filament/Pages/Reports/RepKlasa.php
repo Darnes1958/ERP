@@ -52,7 +52,7 @@ class RepKlasa extends Page implements HasForms,HasActions
     }
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('admin');
+        return Auth::user()->hasRole('admin')  || Auth::user()->hasRole('تقارير');
     }
 
     protected static string $view = 'filament.pages.reports.rep-klasa';

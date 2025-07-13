@@ -34,7 +34,7 @@ class AccTran extends Page  implements HasForms,HasTable
 
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->can('ادخال خزائن') || Auth::user()->can('ادخال مصارف');
+    return Auth::user()->can('ادخال خزائن') || Auth::user()->can('ادخال مصارف') || Auth::user()->can('تقارير مصارف');
   }
     protected ?string $heading="";
 

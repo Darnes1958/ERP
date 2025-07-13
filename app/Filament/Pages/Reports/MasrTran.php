@@ -32,7 +32,7 @@ class MasrTran extends Page  implements HasForms,HasTable
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->hasRole('مصروفات');
+        return Auth::user()->hasRole('مصروفات') ||  Auth::user()->can('تقارير مصروفات');
     }
 
 

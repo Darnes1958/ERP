@@ -38,7 +38,7 @@ class ItemTran extends Page implements HasForms,HasTable
     protected ?string $heading='';
     public static function shouldRegisterNavigation(): bool
     {
-      return Auth::user()->hasRole('admin');
+      return Auth::user()->hasRole('admin') || Auth::user()->can('تقارير مخازن');
     }
 
    public $item_id;

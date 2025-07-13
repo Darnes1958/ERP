@@ -38,7 +38,7 @@ class BuyRep extends Page implements HasForms,HasTable
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('ادخال مشتريات');
+        return Auth::user()->can('ادخال مشتريات') || Auth::user()->can('تقارير مشتريات');
     }
 
     public array $data_list= [
