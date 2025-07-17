@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Main;
 use App\Models\Main_arc;
 use App\Models\Place;
@@ -30,12 +31,14 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 
 class SellRep extends Page implements HasForms,HasTable
 {
   use InteractsWithForms, InteractsWithTable;
   use HasTabs;
+  use PublicTrait;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.reports.sell-rep';
@@ -61,6 +64,21 @@ class SellRep extends Page implements HasForms,HasTable
       $sell->all();
       return $sell;
     })
+       ->headerActions([
+           Action::make('print1')
+               ->label('طباعة')
+               ->action(function (){
+                   $filters=$this->table->getFilters();
+                   info($filters['place_id']->getState());
+                   $res=$this->getTableQueryForExport()->get();
+                   if ($res->count()==0) return ;
+                   return Response::download(self::ret_spatie($res,
+                       'PDF.pdf-rep-sell',
+                       ), 'filename.pdf', self::ret_spatie_header());
+
+               })
+
+       ])
      ->pluralModelLabel('الصفحات')
      ->striped()
      ->defaultSort('id','desc')
@@ -277,5 +295,6 @@ class SellRep extends Page implements HasForms,HasTable
     {
         return 'الكل';
     }
+
 
 }

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\GlobalSetting;
+use App\Models\Setting;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Facades\Filament;
 use Filament\Support\Colors\Color;
@@ -17,6 +19,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View;
+use Spatie\Browsershot\Browsershot;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -35,6 +39,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
+        Pdf::default()
+            ->footerView('PDF.footer')
+            ->withBrowsershot(function (Browsershot $shot) {
+                $shot->noSandbox()
+                    ->setChromePath(GlobalSetting::first()->exePath);
+            })
+            ->margins(10, 10, 20, 10, );
         Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;
         });
