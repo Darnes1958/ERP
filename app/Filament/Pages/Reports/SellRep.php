@@ -69,11 +69,31 @@ class SellRep extends Page implements HasForms,HasTable
                ->label('طباعة')
                ->action(function (){
                    $filters=$this->table->getFilters();
-                   info($filters['place_id']->getState());
+
                    $res=$this->getTableQueryForExport()->get();
                    if ($res->count()==0) return ;
+
+                   if ($filters['place_id']->getState()['value'])
+                    $place=Place::find($filters['place_id']->getState()['value'])->name;
+                   else $place=null;
+                   if ($filters['customer_id']->getState()['value'])
+                       $customer=Customer::find($filters['customer_id']->getState()['value'])->name;
+                   else $customer=null;
+
+                   $any=$filters['created_at']->getState();
+                   $RepDate1=$any['Date1'] ; $RepDate2=$any['Date2'];
+
+                   $active=$this->activeTab;
+
+
                    return Response::download(self::ret_spatie($res,
-                       'PDF.pdf-rep-sell',
+                       'PDF.pdf-rep-sell',[
+                           'RepDate1'=>$RepDate1,
+                           'RepDate2'=>$RepDate2,
+                           'place'=>$place,
+                           'customer'=>$customer,
+                           'active'=>$active,
+                           ]
                        ), 'filename.pdf', self::ret_spatie_header());
 
                })
@@ -217,7 +237,7 @@ class SellRep extends Page implements HasForms,HasTable
          ->options(Customer::all()->pluck('name', 'id'))
          ->searchable()
          ->label('زبون معين'),
-         SelectFilter::make('place_id')
+       SelectFilter::make('place_id')
              ->options(Place::all()->pluck('name', 'id'))
              ->searchable()
              ->label('نقطة بيع معينة'),

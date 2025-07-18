@@ -1,9 +1,49 @@
 @extends('PDF.PrnMasterSpatie')
 
 @section('mainrep')
-  <div  >
 
 
+
+        <div style="text-align: center">
+            <label style="font-size: 14pt;margin-right: 12px;" > فواتير المبيعات </label>
+            @if($arr['RepDate1'] && !$arr['RepDate2'])
+                <label style="font-size: 14pt;margin-right: 12px;" >    من تاريخ : </label>
+                <label style="font-size: 10pt;">{{$arr['RepDate1']}}</label>
+            @endif
+            @if($arr['RepDate2'] && !$arr['RepDate1'])
+                <label style="font-size: 14pt;margin-right: 12px;" >    حتي تاريخ : </label>
+                <label style="font-size: 10pt;">{{$arr['RepDate2']}}</label>
+            @endif
+            @if($arr['RepDate1'] && $arr['RepDate2'])
+                <label style="font-size: 14pt;margin-right: 12px;" >    من تاريخ : </label>
+                <label style="font-size: 10pt;">{{$arr['RepDate1']}}</label>
+                <label style="font-size: 14pt;margin-right: 12px;" > حتي تاريخ : </label>
+                <label style="font-size: 10pt;">{{$arr['RepDate2']}}</label>
+            @endif
+
+        </div>
+
+            @if($arr['place'])
+                <div >
+                 <label style="font-size: 14pt;margin-right: 12px;" >    نقطة البيع :  </label>
+                 <label style="font-size: 10pt;">{{$arr['place']}}</label>
+                </div>
+            @endif
+        @if($arr['customer'])
+            <div >
+                <label style="font-size: 14pt;margin-right: 12px;" >    للزبون :  </label>
+                <label style="font-size: 10pt;">{{$arr['customer']}}</label>
+            </div>
+        @endif
+        @if($arr['active']!='الكل')
+            <div >
+                <label style="font-size: 14pt;margin-right: 12px;" >    نوع الفواتير :  </label>
+                <label style="font-size: 10pt;">{{$arr['active']}}</label>
+            </div>
+        @endif
+
+
+    <div  >
     <table  width="100%"   align="right" >
       <thead style="  margin-top: 8px;">
       <tr style="background:lightgray">

@@ -19,6 +19,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 
 trait PublicTrait {
 
@@ -33,6 +34,9 @@ trait PublicTrait {
   }
   public static function ret_spatie($res,$blade,$arr=[])
   {
+      if(!File::exists(Auth::user()->company)) {
+          File::makeDirectory(Auth::user()->company);
+      }
       $cus=OurCompany::where('Company',Auth::user()->company)->first();
       \Spatie\LaravelPdf\Facades\Pdf::view($blade,
           ['res'=>$res,'arr'=>$arr,'cus'=>$cus])
