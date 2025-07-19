@@ -123,15 +123,18 @@ class RepMakzoon extends Page implements HasTable
                   thousandsSeparator: ',',
                 )
                 ->label('سعر البيع'),
-              TextColumn::make('sell_cost')
+              TextColumn::make('place_sell_cost')
+                  ->summarize(Summarizer::make()
+                      ->using(fn ($query): string =>
+                      $query->join('items','item_id','items.id')->sum(DB::Raw('items.price1*place_stocks.stock1')))
+                      ->numeric(decimalPlaces: 2,thousandsSeparator: ',',decimalSeparator: '.'))
+
                 ->visible(Auth::user()->can('ادخال مشتريات'))
                 ->numeric(
                   decimalPlaces: 2,
                   decimalSeparator: '.',
                   thousandsSeparator: ',',
                 )
-                  ->summarize(Sum::make()->label('')
-                      ->numeric(decimalPlaces: 2,thousandsSeparator: ',',decimalSeparator: '.'))
                 ->label('قيمة البيع'),
             ])
             ->filters([
