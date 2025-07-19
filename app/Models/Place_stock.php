@@ -10,7 +10,14 @@ class Place_stock extends Model
 {
   protected $connection = 'other';
 
-  public function Place(){
+protected $appends =['place_buy_cost'];
+
+    public function getPlaceBuyCostAttribute(){
+        return $this->stock1 * $this->Item->price_buy;
+    }
+
+
+    public function Place(){
     return $this->belongsTo(Place::class);
   }
   public function Item(){

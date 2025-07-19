@@ -90,7 +90,9 @@
 </head>
 <body  >
 <div class="header">
- <div>
+
+
+    <div>
   <label style="font-size: 20pt; margin-right: 12px;margin-bottom: 0;margin-top: 0;padding: 0;" >{{$cus->CompanyName}}</label>
  </div>
  <div >
