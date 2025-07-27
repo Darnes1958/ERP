@@ -2,9 +2,14 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 
+
+use App\Models\Buy_tran;
 use App\Models\Customer;
+use App\Models\Item;
+
 use App\Models\Supplier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -14,6 +19,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Support\Enums\IconSize;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
@@ -27,10 +33,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Response;
 
 class BuyRep extends Page implements HasForms,HasTable
 {
   use InteractsWithForms, InteractsWithTable;
+  use PublicTrait;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
@@ -127,8 +135,23 @@ class BuyRep extends Page implements HasForms,HasTable
       ->icon('heroicon-o-printer')
       ->iconButton()
       ->color('blue')
-      ->url(fn (Buy $record): string => route('pdfbuy', ['id' => $record->id]))
+      ->url(fn (Buy $record): string => route('pdfbuy', ['id' => $record->id])),
+      Action::make('print2')
+          ->tooltip('طباعة اسعار الأصناف')
+          ->icon('heroicon-s-printer')
+          ->iconButton()
+          ->iconSize(IconSize::Small)
+          ->color('primary')
+          ->action(function (Buy $record){
+               $items=Item::whereIn('id',Buy_tran::where('buy_id',$record->id)->pluck('item_id'))->get();
+              return Response::download(self::ret_spatie($items,
+                  'PDF.PrnBuyPrices',
+              ), 'filename.pdf', self::ret_spatie_header());
+
+          })
+
       ])
+
       ->filters([
         SelectFilter::make('supplier_id')
           ->options(Supplier::all()->pluck('name', 'id'))

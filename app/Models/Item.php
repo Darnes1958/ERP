@@ -21,6 +21,21 @@ class Item extends Model
     public function Price_sell(){
         return $this->hasMany(Price_sell::class);
     }
+    public function getNakdyAttribute(){
+        $ret=0;
+        foreach ($this->Price_sell as $item)
+            if ($item->price_type_id==1)
+        $ret=$item->price1;
+        return $ret;
+    }
+    public function getTakseetAttribute(){
+        $ret=0;
+        foreach ($this->Price_sell as $item)
+            if ($item->price_type_id==3)
+                $ret=$item->price1;
+        return $ret;
+    }
+
     public function Company(){
         return $this->belongsTo(Company::class);
     }

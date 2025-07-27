@@ -13,6 +13,7 @@ use App\Models\Buy_tran_work;
 use App\Models\Buys_work;
 use App\Models\Item;
 use App\Models\Price_buy;
+use App\Models\Price_sell;
 use App\Models\Recsupp;
 use App\Models\Sell_tran;
 use App\Models\Setting;
@@ -24,12 +25,14 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -48,7 +51,7 @@ class CreateBuy extends Page implements HasTable
   public $buytranData;
   public $buyStoreData;
 
-  public $collapse=false;
+
   public function mount()
   {
     $this->buy = Buys_work::find(auth()->id());
@@ -185,7 +188,7 @@ class CreateBuy extends Page implements HasTable
                 $this->buyForm->fill($this->buy->toArray());
                 $this->buytran= Buy_tran_work::where('buy_id', Auth::id())->delete();
                 $this->buyTranForm->fill([]);
-                $this->collapse=false;
+
               }),
             Action::make('مسح')
               ->icon('heroicon-m-trash')
@@ -347,7 +350,7 @@ class CreateBuy extends Page implements HasTable
         ])
         ->columns(8)
         ->collapsible()
-        ->collapsed(fn() :bool=>$this->collapse)
+
     ];
   }
 
@@ -373,16 +376,29 @@ class CreateBuy extends Page implements HasTable
     $this->buytran=Buy_tran_work::where('buy_id',Auth::id())
       ->where('item_id',$item)->first();
 
+    $items=Item::find($item);
+    $nakdy=$items->nakdy;
+    $takseet=$items->takseet;
+
     if ($this->buytran)
-      $this->buyTranForm->fill($this->buytran->toArray());
+    {
+        $buytran2=Arr::add($this->buytran->toArray(),'price_nakdy',$nakdy);
+        $buytran2=Arr::add($buytran2,'price_takseet',$takseet);
+        $this->buyTranForm->fill($buytran2);
+
+    }
+
     else $this->buyTranForm->fill([
       'barcode_id'=>$barcode,'item_id'=>$item,'price_input'=>$price_input,'q1'=>'',
-      'buy_id'=>Auth::id(),'user_id'=>Auth::id()]);
+      'buy_id'=>Auth::id(),'user_id'=>Auth::id(),'price_nakdy'=>$nakdy,'price_takseet'=>$takseet]);
+
+
+
     if ($price_input==0)  $this->dispatch('gotoitem',  test: 'price_input' );
     else $this->dispatch('gotoitem',  test: 'q1' );
   }
   public function ChkBarcode($state){
-      $this->collapse=true;
+
     if ($state==null) return;
     $res=Barcode::find($state);
     if (! $res)
@@ -398,7 +414,7 @@ class CreateBuy extends Page implements HasTable
     }
   }
   public function ChkItem($state){
-    $this->collapse=true;
+
 
     if ($state==null) return;
     $res=Item::find($state);
@@ -406,12 +422,31 @@ class CreateBuy extends Page implements HasTable
     $this->fill_item($state,$res->barcode);
   }
   public function add_rec(){
+
     $this->validate();
+
+
+      if ($this->buytranData['price_nakdy']!=null) {
+          $priceSell=Price_sell::where('price_type_id',1)->where('item_id',$this->buytranData['item_id'])->first();
+          if ($priceSell) $priceSell->update(['price1'=>$this->buytranData['price_nakdy']]);
+          else Price_sell::create(['price_type_id'=>1,'price1'=>$this->buytranData['price_nakdy'],'price2'=>0,
+              'pricej1'=>$this->buytranData['price_nakdy'],'pricej2'=>0,'item_id'=>$this->buytranData['item_id']]);
+          Item::find($this->buytranData['item_id'])->update(['price1'=>$this->buytranData['price_nakdy']]);
+      }
+      if ($this->buytranData['price_takseet']!=null) {
+
+          $priceSell=Price_sell::where('price_type_id',3)->where('item_id',$this->buytranData['item_id'])->first();
+          if ($priceSell) $priceSell->update(['price1'=>$this->buytranData['price_takseet']]);
+          else Price_sell::create(['price_type_id'=>3,'price1'=>$this->buytranData['price_takseet'],'price2'=>0,
+              'pricej1'=>$this->buytranData['price_takseet'],'pricej2'=>0,'item_id'=>$this->buytranData['item_id']]);
+      }
+
+
     $this->buytran=Buy_tran_work::where('item_id',$this->buytranData['item_id'])->first();
     if ($this->buytran)
-      $this->buytran->update($this->buyTranForm->getState());
+      $this->buytran->update(collect($this->buytranData)->except('id','price_nakdy','price_takseet')->toArray());
     else
-    $this->buytran=Buy_tran_work::create(collect($this->buytranData)->except('id')->toArray());
+    $this->buytran=Buy_tran_work::create(collect($this->buytranData)->except('id','price_nakdy','price_takseet')->toArray());
     $this->sub_tot();
     $this->tot();
 
@@ -443,7 +478,10 @@ class CreateBuy extends Page implements HasTable
             ->live(onBlur: true)
             ->reactive()
             ->required()
-            ->afterStateUpdated(function ($state){$this->ChkItem($state);})
+            ->afterStateUpdated(function ($state,Set $set){
+
+                $this->ChkItem($state);
+            })
             ->createOptionForm([
               Section::make('ادخال صنف')
                 ->schema([
@@ -648,6 +686,33 @@ class CreateBuy extends Page implements HasTable
             //  'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'barcode_id' })",
             ])
             ->id('q1'),
+            TextInput::make('price_nakdy')
+                ->hiddenLabel()
+                ->prefix('تعديل سعر البيع نقداً')
+                ->prefixIcon('heroicon-m-pencil')
+                ->prefixIconColor('info')
+                ->numeric()
+
+
+                ->extraAttributes( [
+                    'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'price_takseet' })",
+
+                ])
+                ->id('price_nakdy'),
+            TextInput::make('price_takseet')
+                ->hiddenLabel()
+                ->prefix('تعديل سعر البيع تقسيطً')
+                ->prefixIcon('heroicon-m-pencil')
+                ->prefixIconColor('info')
+                ->numeric()
+
+
+                ->extraAttributes( [
+                    'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'price_nakdy' })",
+
+                ])
+                ->id('price_takseet'),
+
         ]),
 
     ];

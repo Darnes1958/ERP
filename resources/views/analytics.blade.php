@@ -73,6 +73,14 @@
                 $("#notes").focus();
                 $("#notes").select();
             }
+            if (postid == 'price_nakdy') {
+                $("#price_nakdy").focus();
+                $("#price_nakdy").select();
+            }
+            if (postid == 'price_takseet') {
+                $("#price_takseet").focus();
+                $("#price_takseet").select();
+            }
 
         });
         });
