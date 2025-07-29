@@ -33,7 +33,14 @@ class Sell extends Model
   public function Tar_sell(){
     return $this->hasMany(Tar_sell::class);
   }
-  public function Receipt(){
+  public function Main(){
+      return $this->hasone(Main::class);
+  }
+    public function Main_arc(){
+        return $this->hasone(Main_arc::class);
+    }
+
+    public function Receipt(){
         return $this->hasMany(Receipt::class);
     }
 

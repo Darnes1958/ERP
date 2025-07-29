@@ -175,7 +175,11 @@ class SellResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->iconButton()
                     ->visible( function (Sell $record) {
-                        return Auth::user()->can('الغاء مبيعات') && !$record->Tar_sell()->exists();
+                        return
+                            Auth::user()->can('الغاء مبيعات')
+                            && !$record->Tar_sell()->exists()
+                            && !$record->Main()->exists()
+                        && !$record->Main_arc()->exists();
                     })
                     ->modalHeading('حذف فاتورة مبيعات')
                     ->modalDescription('هل انت متأكد من الغاء هذه الفاتورة ؟')
