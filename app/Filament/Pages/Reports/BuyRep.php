@@ -10,6 +10,7 @@ use App\Models\Buy_tran;
 use App\Models\Customer;
 use App\Models\Item;
 
+use App\Models\OurCompany;
 use App\Models\Supplier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -135,7 +136,16 @@ class BuyRep extends Page implements HasForms,HasTable
       ->icon('heroicon-o-printer')
       ->iconButton()
       ->color('blue')
-      ->url(fn (Buy $record): string => route('pdfbuy', ['id' => $record->id])),
+          ->action(function (Buy $record){
+
+              $cus=OurCompany::where('Company',Auth::user()->company)->first();
+              $orderdetail=Buy_tran::where('buy_id',$record->id)->get();
+              return Response::download(self::ret_spatie($record,
+                  'PDF.rep-order-buy',['orderdetail'=>$orderdetail],
+              ), 'filename.pdf', self::ret_spatie_header());
+
+          })
+    ,
       Action::make('print2')
           ->tooltip('طباعة اسعار الأصناف')
           ->icon('heroicon-s-printer')
