@@ -4,6 +4,7 @@ namespace App\Livewire\widget;
 
 use App\Models\Recsupp;
 
+use App\Models\RecSuppUnion;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -52,9 +53,10 @@ class KlasaSupp extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(Recsupp $rec){
+            ->query(function(RecSuppUnion $rec){
 
-                $first=Recsupp::
+
+                $rec=RecSuppUnion::
                   when($this->repDate1,function ($q){
                     $q->where('receipt_date','>=',$this->repDate1); })
                   ->when($this->repDate2,function ($q){
@@ -63,27 +65,13 @@ class KlasaSupp extends BaseWidget
                         return $q->where('place_id',$this->place_id);
                     })
 
-                    ->join('price_types','price_type_id','price_types.id')
+                  ->join('price_types','price_type_id','price_types.id')
                   ->leftjoin('accs','acc_id','accs.id')
-                  ->where('imp_exp',0)
-                  ->selectRaw('rec_who,price_types.name,accs.name accName,0 as exp,sum(recsupps.val) as val')
-                  ->groupby('rec_who','price_types.name','accs.name');
+                  ->leftjoin('kazenas','kazena_id','kazenas.id')
 
-                $rec=Recsupp::
-                  when($this->repDate1,function ($q){
-                    $q->where('receipt_date','>=',$this->repDate1); })
-                  ->when($this->repDate2,function ($q){
-                    $q->where('receipt_date','<=',$this->repDate2); })
-                    ->when($this->place_id,function ($q){
-                        return $q->where('place_id',$this->place_id);
-                    })
-
-                    ->join('price_types','price_type_id','price_types.id')
-                  ->leftjoin('accs','acc_id','accs.id')
-                  ->where('imp_exp',1)
-                  ->selectRaw('rec_who,price_types.name,accs.name accName,sum(recsupps.val) as exp,0 as val')
-                  ->groupby('rec_who','price_types.name','accs.name')
-                    ->union($first);
+                  ->selectRaw('rec_who,price_types.name,accs.name accName,kazenas.name kazenaName,sum(rec_supp_unions.exp) as exp,sum(rec_supp_unions.val) as val')
+                  ->groupby('rec_who','price_types.name','accs.name','kazenas.name')
+                    ;
                 return $rec;
             }
 
@@ -99,12 +87,15 @@ class KlasaSupp extends BaseWidget
                 Tables\Columns\TextColumn::make('name')
                     ->label('طريقة الدفع'),
               Tables\Columns\TextColumn::make('accName')
-                ->label('الحساب المصرفي'),
+                  ->state(function (Model $record) {
+                      if ($record->accName!=null) return $record->accName; else return $record->kazenaName;
+                  })
+                ->label('الحساب'),
                 Tables\Columns\TextColumn::make('val')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
-                    ->state(function (Recsupp $record): string {
+                    ->state(function (Model $record): string {
                         if ($record->val==0)
                             return ''; else return $record->val;
                     })
@@ -113,7 +104,7 @@ class KlasaSupp extends BaseWidget
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
-                    ->state(function (Recsupp $record): string {
+                    ->state(function (Model $record): string {
                         if ($record->exp==0)
                             return ''; else return $record->exp;
                     })
