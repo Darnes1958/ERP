@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Reports;
 
 use App\Filament\Resources\SellResource\Pages\EditSell;
 use App\Filament\Resources\SellResource\Pages\SellEdit;
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Cust_tran2;
 use App\Models\Customer;
 use App\Models\Place_stock;
@@ -23,6 +24,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
@@ -35,9 +37,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 
 class CustTran extends Page implements HasForms,HasTable
 {
+    use PublicTrait;
   use InteractsWithTable,InteractsWithForms;
   protected static ?string $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel='حركة زبون';
@@ -212,15 +216,20 @@ class CustTran extends Page implements HasForms,HasTable
         \Filament\Forms\Components\Actions::make([
           \Filament\Forms\Components\Actions\Action::make('printorder')
           ->label('طباعة')
-            ->visible(function (){
-              return $this->chkDate($this->repDate) && $this->cust_id;
-            })
-
+            ->visible(function (){return $this->chkDate($this->repDate) && $this->cust_id;})
             ->button()
+            ->icon('heroicon-m-printer')
+            ->color('info')
+            ->action(function (Get $get){
+                $res=$this->getTableQueryForExport()->get();
+                $RepDate=date('Y-m-d');
+                return Response::download(self::ret_spatie($res,
+                    'PDF.pdf-jeha-tran',['RepDate'=>$RepDate,'tran_date'=>$this->repDate,
+                        'mden'=>$get('mden'),'daen'=>$get('daen'),'raseed'=>$get('raseed')],
 
-          ->icon('heroicon-m-printer')
-          ->color('info')
-          ->url(fn (): string => route('pdfcusttran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,])),
+                ), 'filename.pdf', self::ret_spatie_header());
+
+            }),
           \Filament\Forms\Components\Actions\Action::make('Exl')
             ->label('Excel')
             ->visible(function (){

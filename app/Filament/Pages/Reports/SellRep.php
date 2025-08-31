@@ -230,14 +230,8 @@ class SellRep extends Page implements HasForms,HasTable
              ->iconButton()
              ->color('blue')
              ->action(function (Sell $record) {
-
-
-
                  $sell=$record;
                  $res=Sell_tran::where('sell_id',$record->id)->get();
-
-
-
                  return Response::download(self::ret_spatie($res,
                      'PDF.rep-order-sell',[
                          'sell'=>$sell,

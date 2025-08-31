@@ -4,6 +4,7 @@ namespace App\Filament\Pages\Reports;
 
 use App\Exports\CustRaseedExl;
 use App\Exports\SuppTranExl;
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 use App\Models\Cust_tran;
 use App\Models\Cust_tran2;
@@ -32,11 +33,13 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SuppTran extends Page implements HasForms,HasTable
 {
     use InteractsWithTable,InteractsWithForms;
+    use PublicTrait;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='حركة مورد';
     protected static ?string $navigationGroup='زبائن وموردين';
@@ -220,7 +223,17 @@ class SuppTran extends Page implements HasForms,HasTable
                       ->color('danger')
                       ->icon('heroicon-m-printer')
                       ->color('info')
-                      ->url(fn (): string => route('pdfsupptran', ['tran_date'=>$this->repDate,'cust_id'=>$this->cust_id,])),
+                        ->action(function (Get $get){
+                            $res=$this->getTableQueryForExport()->get();
+                            $RepDate=date('Y-m-d');
+                            return Response::download(self::ret_spatie($res,
+                                'PDF.pdf-supp-tran',['RepDate'=>$RepDate,'tran_date'=>$this->repDate,
+                                    'mden'=>$get('mden'),'daen'=>$get('daen'),'raseed'=>$get('raseed')],
+
+                            ), 'filename.pdf', self::ret_spatie_header());
+
+                        }),
+
                       \Filament\Forms\Components\Actions\Action::make('excl')
                           ->label('Excel')
                           ->button()

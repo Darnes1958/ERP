@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Cust_tran;
@@ -21,9 +22,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 
 class PdfController extends Controller
 {
+    use PublicTrait;
     public function PdfRepMak(){
 
         $RepDate=date('Y-m-d');
@@ -285,21 +288,16 @@ class PdfController extends Controller
         if ($place_id) $place_name=Place::find($place_id)->name;
         else $place_name=' ';
 
-      $html = view('PDF.pdf-klasa',
-            ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
-              'cus'=>$cus,'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr,'salary'=>$salary,
-              'tar_buy'=>$tar_buy,'tar_sell'=>$tar_sell,
-                'place_name'=>$place_name])->toArabicHTML();
 
-        $pdf = PDF::loadHTML($html)->output();
-        $headers = array(
-            "Content-type" => "application/pdf",
-        );
-        return response()->streamDownload(
-            fn () => print($pdf),
-            "invoice.pdf",
-            $headers
-        );
+
+        return Response::download(self::ret_spatie($buy,
+            'PDF.pdf-klasa',['SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
+                'RepDate1'=>$repDate1,'RepDate2'=>$repDate2,'masr'=>$masr,'salary'=>$salary,
+                'tar_buy'=>$tar_buy,'tar_sell'=>$tar_sell,
+                'place_name'=>$place_name],
+
+        ), 'filename.pdf', self::ret_spatie_header());
+
 
 
     }
@@ -363,22 +361,13 @@ class PdfController extends Controller
         if ($request->place_id!=null) $place_name=Place::find($request->place_id)->name;
         else $place_name=' ';
 
-        $html = view('PDF.pdf-daily',
-            ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
-                'cus'=>$cus,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2,
-                'place_name'=>$place_name])->toArabicHTML();
 
+        return Response::download(self::ret_spatie($buy,
+            'PDF.pdf-daily',['SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
+                'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2,
+                'place_name'=>$place_name],
 
-
-        $pdf = PDF::loadHTML($html)->output();
-        $headers = array(
-            "Content-type" => "application/pdf",
-        );
-        return response()->streamDownload(
-            fn () => print($pdf),
-            "invoice.pdf",
-            $headers
-        );
+        ), 'filename.pdf', self::ret_spatie_header());
 
 
     }
