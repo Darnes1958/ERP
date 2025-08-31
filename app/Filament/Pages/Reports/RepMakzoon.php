@@ -74,7 +74,27 @@ class RepMakzoon extends Page implements HasTable
 
                         return Response::download(self::ret_spatie($res,
                             'PDF.pdf-rep-makzoone',[
-                                'place'=>$place,
+                                'place'=>$place,'show'=>true,
+                            ]
+                        ), 'filename.pdf', self::ret_spatie_header());
+
+                    }),
+                Action::make('print_without')
+                    ->label('طباعة بدون سعر الشراء')
+                    ->action(function (){
+                        $filters=$this->table->getFilters();
+
+                        $res=$this->getTableQueryForExport()->get();
+                        if ($res->count()==0) return ;
+
+                        if ($filters['place_id']->getState()['value'])
+                            $place=Place::find($filters['place_id']->getState()['value'])->name;
+                        else $place=null;
+
+
+                        return Response::download(self::ret_spatie($res,
+                            'PDF.pdf-rep-makzoone',[
+                                'place'=>$place,'show'=>false,
                             ]
                         ), 'filename.pdf', self::ret_spatie_header());
 

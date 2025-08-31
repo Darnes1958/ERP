@@ -6,6 +6,7 @@ use App\Livewire\Traits\PublicTrait;
 use App\Models\Main;
 use App\Models\Main_arc;
 use App\Models\Place;
+use App\Models\Sell_tran;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Concerns\HasTabs;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -30,6 +31,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
@@ -227,7 +229,23 @@ class SellRep extends Page implements HasForms,HasTable
              ->icon('heroicon-o-printer')
              ->iconButton()
              ->color('blue')
-             ->url(fn (Sell $record): string => route('pdfsell', ['id' => $record->id]))
+             ->action(function (Sell $record) {
+
+
+
+                 $sell=$record;
+                 $res=Sell_tran::where('sell_id',$record->id)->get();
+
+
+
+                 return Response::download(self::ret_spatie($res,
+                     'PDF.rep-order-sell',[
+                         'sell'=>$sell,
+                     ]
+                 ), 'filename.pdf', self::ret_spatie_header());
+
+             })
+
      ])
      ->modifyQueryUsing($this->modifyQueryWithActiveTab(...))
      ->filtersFormWidth(MaxWidth::Small)

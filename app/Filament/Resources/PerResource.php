@@ -4,11 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PerResource\Pages;
 use App\Filament\Resources\PerResource\RelationManagers;
+use App\Livewire\Traits\PublicTrait;
+
 use App\Models\Factory;
 use App\Models\Hall_stock;
 use App\Models\Item;
 use App\Models\Per;
+use App\Models\PerTran;
 use App\Models\Place_stock;
+
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
 use Filament\Actions\StaticAction;
@@ -32,10 +36,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
 
 class PerResource extends Resource
 {
+use PublicTrait;
     protected static ?string $model = Per::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -257,6 +263,20 @@ class PerResource extends Resource
                         'filament.pages.reports.views.view-per-tran-widget',
                         ['per_id' => $record->id],
                     )),
+                Action::make('print')
+                    ->icon('heroicon-o-printer')
+                    ->iconButton()
+                    ->color('blue')
+                    ->action(function (Per $record) {
+                        $per=$record;
+                        $res=PerTran::where('per_id',$record->id)->get();
+                        return Response::download(self::ret_spatie($res,
+                            'PDF.pdf-rep-per',[
+                                'per'=>$per,
+                            ]
+                        ), 'filename.pdf', self::ret_spatie_header());
+
+                    })
             ])
             ->bulkActions([
                 //
