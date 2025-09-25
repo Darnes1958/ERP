@@ -66,13 +66,6 @@ class AppServiceProvider extends ServiceProvider
             ]
       );
 
-      Filament::registerNavigationGroups([
-        'فواتير شراء',
-        'فواتير مبيعات',
-        'ايصالات قبض ودفع',
-        'زبائن وموردين',
-        'تقارير',
-      ]);
       FilamentColor::register([
         'Fuchsia' =>  Color::Fuchsia,
         'green' =>  Color::Green,
