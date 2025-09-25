@@ -28,6 +28,7 @@ class EditReceipt extends EditRecord
 
         return $data;
     }
+
     protected function afterSave(): void
     {
 
