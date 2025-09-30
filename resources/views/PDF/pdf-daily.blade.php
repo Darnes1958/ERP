@@ -100,7 +100,7 @@
           <td> {{$item->Customer->name}}  </td>
             <td>{{$item->id}}</td>
             <td>{{$item->order_date}}</td>
-            <td> {{number_format($item->tot, 2, '.', ',')}} </td>
+            <td> {{number_format($item->total, 2, '.', ',')}} </td>
             <td> {{number_format($item->pay, 2, '.', ',')}} </td>
             <td> {{number_format($item->baky, 2, '.', ',')}} </td>
         </tr>
