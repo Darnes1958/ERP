@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Actions\Action;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Customer;
 use App\Models\Place;
@@ -9,7 +10,6 @@ use App\Models\Place_stock;
 use App\Models\Setting;
 use Filament\Forms\Components\Checkbox;
 use Filament\Pages\Page;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -31,12 +31,12 @@ class RepMakzoon extends Page implements HasTable
 {
     use InteractsWithTable;
     use PublicTrait;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
 
-    protected static string $view = 'filament.pages.reports.rep-makzoon';
+    protected string $view = 'filament.pages.reports.rep-makzoon';
     protected static ?string $navigationLabel='تقرير عن المخزون';
-  protected static ?string $navigationGroup='مخازن و أصناف';
+  protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
   protected static ?int $navigationSort=6;
     protected ?string $heading="";
 
@@ -159,7 +159,7 @@ class RepMakzoon extends Page implements HasTable
             ])
             ->filters([
              Filter::make('anyfilter')
-                ->form([
+                ->schema([
                 Checkbox::make('showZero')
                  ->label('اطهار الاصفار'),
                 ])

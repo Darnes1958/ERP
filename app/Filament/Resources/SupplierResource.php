@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\SupplierResource\Pages\ListSuppliers;
+use App\Filament\Resources\SupplierResource\Pages\CreateSupplier;
+use App\Filament\Resources\SupplierResource\Pages\EditSupplier;
 use App\Filament\Resources\SupplierResource\Pages;
 use App\Filament\Resources\SupplierResource\RelationManagers;
 use App\Models\Buy;
@@ -13,7 +19,6 @@ use App\Models\Supplier;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -26,18 +31,18 @@ class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
   protected static ?string $navigationLabel='موردين';
-  protected static ?string $navigationGroup='زبائن وموردين';
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->can('ادخال موردين');
     }
 
-  public static function form(Form $form): Form
+  public static function form(Schema $schema): Schema
   {
-    return $form
-      ->schema([
+    return $schema
+      ->components([
         TextInput::make('name')
           ->required()
           ->label('الاسم'),
@@ -84,11 +89,11 @@ class SupplierResource extends Resource
       ->filters([
         //
       ])
-      ->actions([
-        Tables\Actions\EditAction::make()
+      ->recordActions([
+        EditAction::make()
           ->iconButton()
           ->hidden(fn(Supplier $record)=>$record->id==1),
-        Tables\Actions\DeleteAction::make()
+        DeleteAction::make()
           ->iconButton()
           ->modalHeading('حذف مورد')
           ->modalDescription('هل انت متأكد من الغاء هذا المورد ؟')
@@ -110,9 +115,9 @@ class SupplierResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSuppliers::route('/'),
-            'create' => Pages\CreateSupplier::route('/create'),
-            'edit' => Pages\EditSupplier::route('/{record}/edit'),
+            'index' => ListSuppliers::route('/'),
+            'create' => CreateSupplier::route('/create'),
+            'edit' => EditSupplier::route('/{record}/edit'),
         ];
     }
 }

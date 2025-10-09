@@ -2,6 +2,9 @@
 
 namespace App\Exports;
 
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Collection;
 use App\Models\Acc;
 use App\Models\Acc_tran;
 use App\Models\Cust_tran;
@@ -31,9 +34,8 @@ class AccTranExl implements  FromCollection,WithMapping,
     public $sum_daen;
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
-
+     * @return Collection
+     */
     public function __construct(int $acc_id,string $repDate1,string $repDate2)
     {
         $this->acc_id=$acc_id;
@@ -79,16 +81,16 @@ class AccTranExl implements  FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A8:F8')
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
 
                 $event->sheet->getDelegate()->getStyle('A')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $event->sheet->getDelegate()->getStyle('B')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 $event->sheet->setCellValue('C5', 'كشف حسابنا المصرفي :  '.$this->acc_name.'      من تاريخ  '.$this->repDate1.'     إلي تاريخ '.$this->repDate2);
 
@@ -100,7 +102,7 @@ class AccTranExl implements  FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A'.($this->rowcount+9).':F'.$this->rowcount+9)
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
 

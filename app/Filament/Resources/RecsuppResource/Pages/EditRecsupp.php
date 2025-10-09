@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RecsuppResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\RecsuppResource;
 use App\Models\Buy;
 use App\Models\Kazena;
@@ -59,7 +60,7 @@ class EditRecsupp extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء ايصالات موردين')),
+            DeleteAction::make()->visible(Auth::user()->can('الغاء ايصالات موردين')),
         ];
     }
 }

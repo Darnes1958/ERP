@@ -2,6 +2,15 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\ReceiptResource\Pages\ListReceipts;
+use App\Filament\Resources\ReceiptResource\Pages\CreateReceipt;
+use App\Filament\Resources\ReceiptResource\Pages\EditReceipt;
 use App\Enums\RecWho;
 use App\Filament\Resources\ReceiptResource\Pages;
 
@@ -15,8 +24,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
@@ -31,15 +38,14 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Filament\Forms\Get;
 
 class ReceiptResource extends Resource
 {
     protected static ?string $model = Receipt::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'ايصالات زبائن';
-    protected static ?string $navigationGroup = 'ايصالات قبض ودفع';
+    protected static string | \UnitEnum | null $navigationGroup = 'ايصالات قبض ودفع';
     protected static ?int $navigationSort = 1;
 
     public static function shouldRegisterNavigation(): bool
@@ -47,10 +53,10 @@ class ReceiptResource extends Resource
         return Auth::user()->can('ادخال ايصالات زبائن');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                Radio::make('rec_who')
                 ->inline()
                 ->inlineLabel(false)
@@ -221,7 +227,7 @@ class ReceiptResource extends Resource
                                     ->validationMessages([
                                         'unique' => ' :attribute مخزون مسبقا ',
                                     ])        ,
-                                Forms\Components\Select::make('user_id')
+                                Select::make('user_id')
                                     ->label('المستخدم')
                                     ->searchable()
                                     ->preload()
@@ -247,7 +253,7 @@ class ReceiptResource extends Resource
                                     ->validationMessages([
                                         'unique' => ' :attribute مخزون مسبقا ',
                                     ])        ,
-                                Forms\Components\Select::make('user_id')
+                                Select::make('user_id')
                                     ->label('المستخدم')
                                     ->searchable()
                                     ->preload()
@@ -323,7 +329,7 @@ class ReceiptResource extends Resource
                     ->label('البيان')
 
                     ->badge(),
-                Tables\Columns\TextColumn::make('Place.name')
+                TextColumn::make('Place.name')
                     ->label('المكان')
                     ->searchable()
                     ->sortable(),
@@ -342,20 +348,20 @@ class ReceiptResource extends Resource
                     ->options(Place::all()->pluck('name', 'id'))
                     ->searchable()
                     ->label('مكان معين'),
-              Tables\Filters\Filter::make('is_sell')
+              Filter::make('is_sell')
                 ->label('ايصالات فاتورة')
                 ->query(fn (Builder $query): Builder => $query->whereIn('rec_who', [3,4])),
-              Tables\Filters\Filter::make('is_imp')
+              Filter::make('is_imp')
                 ->label('ايصالات قبض')
                 ->query(fn (Builder $query): Builder => $query->where('rec_who', 1)),
-              Tables\Filters\Filter::make('is_exp')
+              Filter::make('is_exp')
                 ->label('ايصالات دقع')
                 ->query(fn (Builder $query): Builder => $query->where('rec_who', 2)),
-              Tables\Filters\Filter::make('created_at')
-                ->form([
-                  Forms\Components\DatePicker::make('Date1')
+              Filter::make('created_at')
+                ->schema([
+                  DatePicker::make('Date1')
                    ->label('من تاريخ'),
-                  Forms\Components\DatePicker::make('Date2')
+                  DatePicker::make('Date2')
                    ->label('إلي تاريخ'),
                 ])
                   ->indicateUsing(function (array $data): ?string {
@@ -381,13 +387,13 @@ class ReceiptResource extends Resource
                     );
                 })
             ])
-            ->actions([
-              Tables\Actions\EditAction::make()->iconButton()
+            ->recordActions([
+              EditAction::make()->iconButton()
                   ->color('blue')
                   ->visible(fn(Receipt $record): bool =>
                       $record->rec_who->value<7
                       || !Auth::user()->can('االغاء ايصالات زبائن')),
-              Tables\Actions\DeleteAction::make()->iconButton()
+              DeleteAction::make()->iconButton()
                   ->visible(fn(Receipt $record): bool =>
                       $record->rec_who->value<7
                        || !Auth::user()->can('االغاء ايصالات زبائن'))
@@ -407,7 +413,7 @@ class ReceiptResource extends Resource
 
                 }),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                //
             ]);
     }
@@ -417,9 +423,9 @@ class ReceiptResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReceipts::route('/'),
-            'create' => Pages\CreateReceipt::route('/create'),
-            'edit' => Pages\EditReceipt::route('/{record}/edit'),
+            'index' => ListReceipts::route('/'),
+            'create' => CreateReceipt::route('/create'),
+            'edit' => EditReceipt::route('/{record}/edit'),
         ];
     }
 }

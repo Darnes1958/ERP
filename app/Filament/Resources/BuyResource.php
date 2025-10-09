@@ -2,6 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\BuyResource\Pages\ListBuys;
+use App\Filament\Resources\BuyResource\Pages\CreateBuy;
+use App\Filament\Resources\BuyResource\Pages\EditBuy;
+use App\Filament\Resources\BuyResource\Pages\BuyEdit;
+use App\Filament\Resources\BuyResource\Pages\TarBuy;
 use App\Filament\Resources\BuyResource\Pages;
 use App\Filament\Resources\BuyResource\RelationManagers;
 use App\Livewire\Traits\Raseed;
@@ -12,7 +20,6 @@ use App\Models\Item;
 use App\Models\Place_stock;
 use App\Models\Recsupp;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -28,9 +35,9 @@ class BuyResource extends Resource
     use Raseed;
     protected static ?string $model = Buy::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='تعديل فاتورة شراء';
-    protected static ?string $navigationGroup='فواتير شراء';
+    protected static string | \UnitEnum | null $navigationGroup='فواتير شراء';
     protected static ?int $navigationSort=2;
 
     public static function shouldRegisterNavigation(): bool
@@ -38,10 +45,10 @@ class BuyResource extends Resource
         return Auth::user()->can('ادخال مشتريات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 //
             ]);
     }
@@ -78,18 +85,18 @@ class BuyResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\Action::make('buytran')
+            ->recordActions([
+                Action::make('buytran')
                     ->iconButton()
                     ->icon('heroicon-m-pencil')
                     ->color('info')
                     ->url(fn(Model $record) => self::getUrl('buyedit', ['record' => $record])),
-              Tables\Actions\Action::make('tarbuy')
+              Action::make('tarbuy')
                 ->iconButton()
                 ->icon('heroicon-m-arrows-right-left')
                 ->color('primary')
                 ->url(fn(Model $record) => self::getUrl('tarbuy', ['record' => $record])),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->iconButton()
                     ->modalHeading('حذف فاتورة شراء')
                     ->modalDescription('هل انت متأكد من الغاء هذه الفاتورة ؟')
@@ -122,11 +129,11 @@ class BuyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBuys::route('/'),
-            'create' => Pages\CreateBuy::route('/create'),
-            'edit' => Pages\EditBuy::route('/{record}/edit'),
-            'buyedit' => Pages\BuyEdit::route('/{record}/buyedit'),
-          'tarbuy' => Pages\TarBuy::route('/{record}/tarbuy'),
+            'index' => ListBuys::route('/'),
+            'create' => CreateBuy::route('/create'),
+            'edit' => EditBuy::route('/{record}/edit'),
+            'buyedit' => BuyEdit::route('/{record}/buyedit'),
+          'tarbuy' => TarBuy::route('/{record}/tarbuy'),
         ];
     }
 }

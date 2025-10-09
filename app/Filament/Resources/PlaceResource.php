@@ -2,6 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Radio;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\PlaceResource\Pages\ListPlaces;
+use App\Filament\Resources\PlaceResource\Pages\CreatePlace;
+use App\Filament\Resources\PlaceResource\Pages\EditPlace;
 use App\Enums\PlaceType;
 use App\Filament\Resources\PlaceResource\Pages;
 use App\Filament\Resources\PlaceResource\RelationManagers;
@@ -14,7 +22,6 @@ use App\Models\Sell;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -27,9 +34,9 @@ class PlaceResource extends Resource
 {
     protected static ?string $model = Place::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='ادخال مخازن ';
-    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=6;
 
     public static function shouldRegisterNavigation(): bool
@@ -37,15 +44,15 @@ class PlaceResource extends Resource
         return Auth::user()->hasRole('admin');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('name')
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->label('الاسم'),
-                Forms\Components\Radio::make('place_type')
+                Radio::make('place_type')
                     ->options(PlaceType::class)
                     ->label('')
                     ->inline()
@@ -58,15 +65,15 @@ class PlaceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                  ->label('الاسم')
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('del')
+            ->recordActions([
+                EditAction::make(),
+                Action::make('del')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->iconButton()
@@ -78,7 +85,7 @@ class PlaceResource extends Resource
                     ->hidden(fn(Model $record): bool => Place_stock::where('place_id',$record->id)
                             ->where('stock1','>',0)->exists() ),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 //
             ]);
     }
@@ -93,9 +100,9 @@ class PlaceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPlaces::route('/'),
-            'create' => Pages\CreatePlace::route('/create'),
-            'edit' => Pages\EditPlace::route('/{record}/edit'),
+            'index' => ListPlaces::route('/'),
+            'create' => CreatePlace::route('/create'),
+            'edit' => EditPlace::route('/{record}/edit'),
         ];
     }
 }

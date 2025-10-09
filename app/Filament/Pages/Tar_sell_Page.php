@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Actions\Action;
 use App\Livewire\Traits\Raseed;
 use App\Models\Sell;
 use App\Models\Sell_tran;
 use App\Models\Tar_sell;
 use Filament\Pages\Page;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -17,12 +17,12 @@ class Tar_sell_Page extends Page implements HasTable
 {
     use InteractsWithTable;
     use Raseed;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected ?string $heading='ترجيع المبيعات';
     protected static ?string $navigationLabel='عرض والغاء مبيعات';
-    protected static ?string $navigationGroup='فواتير مبيعات';
+    protected static string | \UnitEnum | null $navigationGroup='فواتير مبيعات';
     protected static ?int $navigationSort=6;
-    protected static string $view = 'filament.pages.tar_sell_-page';
+    protected string $view = 'filament.pages.tar_sell_-page';
     public  function table(Table $table): Table
     {
         return $table
@@ -64,7 +64,7 @@ class Tar_sell_Page extends Page implements HasTable
 
             ])
 
-            ->actions([
+            ->recordActions([
                 Action::make('del')
                     ->label('إلغاء الترجيع')
                     ->requiresConfirmation()

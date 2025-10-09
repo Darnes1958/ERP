@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MasrTypeResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\MasrTypeResource;
 use App\Models\Masrofat;
 use Filament\Actions;
@@ -14,7 +15,7 @@ class EditMasrType extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
             ->hidden(function ($record){Masrofat::where('masr_type_id', $record->id)->exists();}),
         ];
     }

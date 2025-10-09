@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\RoleResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
 use App\Filament\Resources\RoleResource;
 use App\Livewire\Traits\Raseed;
 use App\Models\Sell_tran;
@@ -17,8 +19,8 @@ class ListRoles extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
-            Actions\Action::make('Dec Qs1')
+            CreateAction::make(),
+            Action::make('Dec Qs1')
              ->action(function (){
 
                  $trans=Sell_tran::query()->orderBy('sell_id')->get();

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Actions\Action;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 
@@ -14,14 +15,12 @@ use App\Models\OurCompany;
 use App\Models\Supplier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Filament\Support\Enums\IconSize;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -41,11 +40,11 @@ class BuyRep extends Page implements HasForms,HasTable
   use InteractsWithForms, InteractsWithTable;
   use PublicTrait;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.reports.buy-rep';
+    protected string $view = 'filament.pages.reports.buy-rep';
   protected static ?string $navigationLabel = 'تقرير فواتير مشتريات';
-  protected static ?string $navigationGroup = 'فواتير شراء';
+  protected static string | \UnitEnum | null $navigationGroup = 'فواتير شراء';
   protected static ?int $navigationSort=4;
   protected ?string $heading = "";
 
@@ -120,12 +119,12 @@ class BuyRep extends Page implements HasForms,HasTable
           ->label('ملاحظات'),
       ])
 
-      ->actions([
+      ->recordActions([
 
         Action::make('عرض ')
           ->modalHeading(false)
           ->modalSubmitAction(false)
-          ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+          ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
           ->modalContent(fn (Buy $record): View => view(
             'filament.pages.reports.views.view-buy-tran-widget',
             ['buy_id' => $record->id],
@@ -168,7 +167,7 @@ class BuyRep extends Page implements HasForms,HasTable
           ->searchable()
           ->label('مورد معين'),
           Filter::make('created_at')
-              ->form([
+              ->schema([
                   DatePicker::make('Date1')
                       ->label('من تاريخ'),
                   DatePicker::make('Date2')

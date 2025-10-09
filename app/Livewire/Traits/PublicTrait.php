@@ -3,6 +3,7 @@ namespace App\Livewire\Traits;
 
 
 
+use Spatie\LaravelPdf\Facades\Pdf;
 use App\Enums\AccLevel;
 use App\Models\OurCompany;
 use App\Models\Rent;
@@ -38,7 +39,7 @@ trait PublicTrait {
           File::makeDirectory(Auth::user()->company);
       }
       $cus=OurCompany::where('Company',Auth::user()->company)->first();
-      \Spatie\LaravelPdf\Facades\Pdf::view($blade,
+      Pdf::view($blade,
           ['res'=>$res,'arr'=>$arr,'cus'=>$cus])
           ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
       return public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
@@ -46,7 +47,7 @@ trait PublicTrait {
   }
     public static function ret_spatie_land($res,$blade,$arr=[])
     {
-        \Spatie\LaravelPdf\Facades\Pdf::view($blade,
+        Pdf::view($blade,
             ['res'=>$res,'arr'=>$arr])
             ->landscape()
             ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');

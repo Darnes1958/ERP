@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupplierResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\SupplierResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -19,7 +20,7 @@ class ListSuppliers extends ListRecords
   protected function getHeaderActions(): array
   {
     return [
-      Actions\CreateAction::make()
+      CreateAction::make()
         ->label('إضافة مورد جديد'),
     ];
   }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SalaryResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\SalaryResource;
 use App\Models\Salary;
 use App\Models\Salarytran;
@@ -16,7 +17,7 @@ class EditSalary extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->modalHeading('الغاء المرتب')
                 ->visible(function (Salary $salary) {
                 return !Salarytran::where('salary_id',$salary->id)->exists();

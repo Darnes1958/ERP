@@ -2,6 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\CustomerResource\Pages\ListCustomers;
+use App\Filament\Resources\CustomerResource\Pages\CreateCustomer;
+use App\Filament\Resources\CustomerResource\Pages\EditCustomer;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
@@ -9,9 +16,7 @@ use App\Models\Receipt;
 use App\Models\Sell;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
@@ -27,18 +32,18 @@ class CustomerResource extends Resource
     protected static ?string $model = Customer::class;
     protected static ?string $navigationLabel='زبائن';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationGroup='زبائن وموردين';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين';
 
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->can('ادخال زبائن');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
               TextInput::make('name')
                 ->required()
                 ->label('الاسم'),
@@ -110,11 +115,11 @@ class CustomerResource extends Resource
                     ->relationship('Customer_type', 'name')
                     ->label('التصنيف')
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                  ->iconButton()
                  ->hidden(fn(Customer $record)=>$record->id<3),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                   ->iconButton()
                   ->modalHeading('حذف زبون')
                  ->modalDescription('هل انت متأكد من الغاء هذا الزبون ؟')
@@ -136,9 +141,9 @@ class CustomerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCustomers::route('/'),
-            'create' => Pages\CreateCustomer::route('/create'),
-            'edit' => Pages\EditCustomer::route('/{record}/edit'),
+            'index' => ListCustomers::route('/'),
+            'create' => CreateCustomer::route('/create'),
+            'edit' => EditCustomer::route('/{record}/edit'),
         ];
     }
 

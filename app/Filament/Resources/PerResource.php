@@ -2,6 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Actions\Action;
+use App\Filament\Resources\PerResource\Pages\ListPers;
+use App\Filament\Resources\PerResource\Pages\CreatePer;
+use App\Filament\Resources\PerResource\Pages\EditPer;
 use App\Filament\Resources\PerResource\Pages;
 use App\Filament\Resources\PerResource\RelationManagers;
 use App\Livewire\Traits\PublicTrait;
@@ -15,19 +26,14 @@ use App\Models\Place_stock;
 
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
-use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
@@ -44,9 +50,9 @@ class PerResource extends Resource
 use PublicTrait;
     protected static ?string $model = Per::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='نقل أصناف بين المخازن والمعارض';
-    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=2;
 
     public static function shouldRegisterNavigation(): bool
@@ -55,12 +61,12 @@ use PublicTrait;
     }
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Wizard::make([
-                    Wizard\Step::make('placefrom')
+                    Step::make('placefrom')
                         ->label('مــن')
                         ->schema([
                             Select::make('place_from')
@@ -75,13 +81,13 @@ use PublicTrait;
                                 ->columnSpan(3)
                                 ->live(),
                         ]),
-                    Wizard\Step::make('placeto')
+                    Step::make('placeto')
                         ->label('إلــي')
                         ->schema([
                             Select::make('place_to')
                                 ->label('إلـــــي')
                                 ->relationship('Placeto', 'name',
-                                    modifyQueryUsing: fn (Builder $query,Forms\Get $get) =>
+                                    modifyQueryUsing: fn (Builder $query,Get $get) =>
                                     $query->where('id','!=',$get('place_from'))
                                 )
                                 ->searchable()
@@ -92,13 +98,13 @@ use PublicTrait;
                                 ->preload()
                                 ->columnSpan(3)
                                 ->live(),
-                            Forms\Components\DatePicker::make('per_date')
+                            DatePicker::make('per_date')
                                 ->label('التاريخ')
                                 ->required()
                                 ->default(now()),
-                            Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+                            Hidden::make('user_id')->default(auth()->id()),
                         ]),
-                    Wizard\Step::make('quantity')
+                    Step::make('quantity')
                         ->label('الاصناف المنقولة')
                         ->schema([
                             TableRepeater::make('Per_tran')
@@ -115,14 +121,14 @@ use PublicTrait;
                                 ->schema([
                                     Select::make('item_id')
                                         ->relationship('Item', 'name',
-                                            modifyQueryUsing: fn (Builder $query,Forms\Get $get) =>
+                                            modifyQueryUsing: fn (Builder $query,Get $get) =>
                                              $query->whereIn('id',Place_stock::
                                                 where('place_id', $get('../../place_from'))
                                                 ->where('stock1','>',0)->pluck('item_id')),)
                                         ->searchable()
                                         ->required()
                                         ->preload()
-                                        ->afterStateUpdated(function ($state,Forms\Set $set,Forms\Get $get){
+                                        ->afterStateUpdated(function ($state,Set $set,Get $get){
                                                 $set('stock',Place_stock::where('place_id', $get('../../place_from'))
                                                                                ->where('item_id', $get('item_id'))->first()->stock1
                                                 );
@@ -136,10 +142,10 @@ use PublicTrait;
                                         ->live(),
 
 
-                                    Forms\Components\TextInput::make('quantity')
+                                    TextInput::make('quantity')
                                         ->label('الكمية')
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(function (Forms\Get $get,$state,Forms\Set $set){
+                                        ->afterStateUpdated(function (Get $get,$state,Set $set){
                                             $stock=Place_stock::where('place_id', $get('../../place_from'))
                                                 ->where('item_id',$get('item_id'))->first();
                                             if (!$stock || $state > $stock->stock1){
@@ -212,7 +218,7 @@ use PublicTrait;
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('del')
                     ->icon('heroicon-o-trash')
                     ->modalHeading('الغاء التصنيع')
@@ -258,7 +264,7 @@ use PublicTrait;
                     ->color('success')
                     ->modalHeading(false)
                     ->modalSubmitAction(false)
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Per $record): View => view(
                         'filament.pages.reports.views.view-per-tran-widget',
                         ['per_id' => $record->id],
@@ -278,7 +284,7 @@ use PublicTrait;
 
                     })
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 //
             ]);
     }
@@ -293,9 +299,9 @@ use PublicTrait;
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPers::route('/'),
-            'create' => Pages\CreatePer::route('/create'),
-            'edit' => Pages\EditPer::route('/{record}/edit'),
+            'index' => ListPers::route('/'),
+            'create' => CreatePer::route('/create'),
+            'edit' => EditPer::route('/{record}/edit'),
         ];
     }
 }

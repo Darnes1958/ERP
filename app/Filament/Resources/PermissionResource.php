@@ -2,11 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\PermissionResource\Pages\ListPermissions;
+use App\Filament\Resources\PermissionResource\Pages\CreatePermission;
+use App\Filament\Resources\PermissionResource\Pages\EditPermission;
 use App\Filament\Resources\PermissionResource\Pages;
 use App\Filament\Resources\PermissionResource\RelationManagers;
 use App\Models\Permission;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -24,13 +30,13 @@ class PermissionResource extends Resource
   }
     protected static ?string $model = \Spatie\Permission\Models\Permission::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-  protected static ?string $navigationGroup='Setting';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static string | \UnitEnum | null $navigationGroup='Setting';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('for_who')
                     ->default('sell')
                     ->options([
@@ -57,12 +63,12 @@ class PermissionResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -77,9 +83,9 @@ class PermissionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPermissions::route('/'),
-            'create' => Pages\CreatePermission::route('/create'),
-            'edit' => Pages\EditPermission::route('/{record}/edit'),
+            'index' => ListPermissions::route('/'),
+            'create' => CreatePermission::route('/create'),
+            'edit' => EditPermission::route('/{record}/edit'),
         ];
     }
 }

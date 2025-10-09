@@ -2,6 +2,13 @@
 
 namespace App\Filament\Resources\SellResource\Pages;
 
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use App\Livewire\Traits\Raseed;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Actions\Action;
 use App\Filament\Resources\SellResource;
 use App\Models\Acc;
 
@@ -17,11 +24,8 @@ use App\Models\Sell;
 use App\Models\Sell_tran;
 use App\Models\Setting;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\RawJs;
@@ -32,13 +36,13 @@ use Illuminate\Support\Facades\Auth;
 
 class SellEdit extends Page implements HasTable
 {
-    use \Filament\Tables\Concerns\InteractsWithTable;
-    use \Filament\Resources\Pages\Concerns\InteractsWithRecord;
-    use \App\Livewire\Traits\Raseed;
+    use InteractsWithTable;
+    use InteractsWithRecord;
+    use Raseed;
 
     protected static string $resource = SellResource::class;
 
-    protected static string $view = 'filament.resources.sell-resource.pages.sell-edit';
+    protected string $view = 'filament.resources.sell-resource.pages.sell-edit';
 
     protected ?string $heading='';
 
@@ -84,11 +88,11 @@ class SellEdit extends Page implements HasTable
         return array_merge(parent::getForms(), [
             "sellForm" => $this->makeForm()
                 ->model(Sell::class)
-                ->schema($this->getSellFormSchema())
+                ->components($this->getSellFormSchema())
                 ->statePath('sellData'),
             "sellTranForm" => $this->makeForm()
                 ->model(Sell_tran::class)
-                ->schema($this->getSellTranFormSchema())
+                ->components($this->getSellTranFormSchema())
                 ->statePath('selltranData'),
         ]);
     }
@@ -691,8 +695,8 @@ class SellEdit extends Page implements HasTable
                     }),
             ])
 
-            ->actions([
-                \Filament\Tables\Actions\Action::make('delete')
+            ->recordActions([
+                Action::make('delete')
                     ->action(function (Sell_tran $record){
 
 

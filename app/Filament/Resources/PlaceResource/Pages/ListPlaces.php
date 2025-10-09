@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PlaceResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Enums\AccRef;
 use App\Filament\Resources\PlaceResource;
 use App\Livewire\Traits\AccTrait;
@@ -19,7 +20,7 @@ class ListPlaces extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('ادخال'),
+            CreateAction::make()->label('ادخال'),
 
         ];
     }

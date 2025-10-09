@@ -2,6 +2,10 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Exports\SalaryTranExl;
 use App\Models\Rent;
 use App\Models\Renttran;
@@ -10,11 +14,8 @@ use App\Models\Salarytran;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -27,10 +28,10 @@ class RentTranView extends Page implements HasTable, HasForms
 {
     use InteractsWithTable,InteractsWithForms;
     protected static ?string $navigationLabel='حركة إيجار';
-    protected static ?string $navigationGroup='إيجارات';
+    protected static string | \UnitEnum | null $navigationGroup='إيجارات';
     protected static ?int $navigationSort=2;
     protected ?string $heading = '';
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
 
     public static function shouldRegisterNavigation(): bool
@@ -40,21 +41,21 @@ class RentTranView extends Page implements HasTable, HasForms
 
     public $rent_id;
 
-    protected static string $view = 'filament.pages.reports.rent-tran-view';
+    protected string $view = 'filament.pages.reports.rent-tran-view';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('rent_id')
                     ->options(Rent::all()->pluck('name', 'id')->toArray())
                     ->searchable()
                     ->preload()
                     ->live()
                     ->Label('الاسم'),
-                \Filament\Forms\Components\Actions::make([
+                Actions::make([
 
-                    \Filament\Forms\Components\Actions\Action::make('excl')
+                    Action::make('excl')
                         ->label('Excel')
                         ->button()
                         ->color('success')
@@ -101,7 +102,7 @@ class RentTranView extends Page implements HasTable, HasForms
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('delete')
                     ->requiresConfirmation()
                     ->icon('heroicon-o-trash')

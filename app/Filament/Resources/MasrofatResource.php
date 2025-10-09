@@ -2,6 +2,20 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Radio;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Support\Enums\Width;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\BulkAction;
+use App\Filament\Resources\MasrofatResource\Pages\ListMasrofats;
+use App\Filament\Resources\MasrofatResource\Pages\CreateMasrofat;
+use App\Filament\Resources\MasrofatResource\Pages\EditMasrofat;
 use App\Filament\Resources\MasrofatResource\Pages;
 use App\Filament\Resources\MasrofatResource\RelationManagers;
 use App\Models\Item;
@@ -12,14 +26,10 @@ use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -36,20 +46,20 @@ class MasrofatResource extends Resource
     protected static $place_id;
     protected static ?string $model = Masrofat::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralLabel='مصروفات';
-    protected static ?string $navigationGroup='مصروفات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات';
 
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->can('ادخال مصروفات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-               Forms\Components\Select::make('masr_type_id')
+        return $schema
+            ->components([
+               Select::make('masr_type_id')
                 ->relationship('Masr_type','name')
                 ->searchable()
                 ->required()
@@ -82,7 +92,7 @@ class MasrofatResource extends Resource
                            ])
                    ])
                 ->label('نوع المصروفات'),
-                Forms\Components\Radio::make('pay_type')
+                Radio::make('pay_type')
                     ->options([
                         0 => 'مصرفي',
                         1 => 'نقدا',
@@ -98,7 +108,7 @@ class MasrofatResource extends Resource
                     ->label('المصرف')
                     ->preload()
                     ->requiredIf('pay_type', 0)
-                    ->visible(function (Forms\Get $get){
+                    ->visible(function (Get $get){
                         return $get('pay_type')==0;
                     }),
                 Select::make('kazena_id')
@@ -145,7 +155,7 @@ class MasrofatResource extends Resource
 
                             ])->columns(2)
                     ])
-                    ->visible(function (Forms\Get $get){
+                    ->visible(function (Get $get){
                         return $get('pay_type')==1;
                     }),
                 Select::make('place_id')
@@ -153,7 +163,7 @@ class MasrofatResource extends Resource
                     ->label('المكان')
                     ->placeholder('غير محدد')
                     ->preload(),
-                Forms\Components\DatePicker::make('masr_date')
+                DatePicker::make('masr_date')
                  ->required()
                  ->default(now())
                 ->label('التاريخ'),
@@ -163,7 +173,7 @@ class MasrofatResource extends Resource
                  ->label('المبلغ'),
               TextInput::make('notes')
                 ->label('ملاحظات'),
-                Forms\Components\Hidden::make('user_id')->default(Auth::id())
+                Hidden::make('user_id')->default(Auth::id())
             ]);
     }
 
@@ -172,27 +182,27 @@ class MasrofatResource extends Resource
         return $table
             ->defaultSort('masr_date','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('masr_date')
+                TextColumn::make('masr_date')
                  ->label('التاريخ')
                 ->searchable()
                 ->sortable(),
-                Tables\Columns\TextColumn::make('Masr_type.name')
+                TextColumn::make('Masr_type.name')
                     ->label('البيان')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('Acc.name')
+                TextColumn::make('Acc.name')
                     ->label('المصرف')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('Kazena.name')
+                TextColumn::make('Kazena.name')
                     ->label('الخزينة')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('Place.name')
+                TextColumn::make('Place.name')
                     ->label('المكان')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('val')
+                TextColumn::make('val')
                     ->label('المبلغ')
                     ->searchable()
                     ->summarize(Sum::make()->label('')->numeric(
@@ -201,7 +211,7 @@ class MasrofatResource extends Resource
                         thousandsSeparator: ',',
                     ))
                     ->sortable(),
-                Tables\Columns\TextColumn::make('notes')
+                TextColumn::make('notes')
                     ->label('ملاحظات')
                     ->searchable()
                     ->sortable(),
@@ -219,10 +229,10 @@ class MasrofatResource extends Resource
                     ->preload()
                     ->label('نوع المصروفات'),
                 Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('Date1')
+                    ->schema([
+                        DatePicker::make('Date1')
                             ->label('من تاريخ'),
-                        Forms\Components\DatePicker::make('Date2')
+                        DatePicker::make('Date2')
                             ->label('إلي تاريخ'),
                     ])
                     ->indicateUsing(function (array $data): ?string {
@@ -249,14 +259,14 @@ class MasrofatResource extends Resource
                     }),
 
             ])
-            ->filtersFormWidth(MaxWidth::ExtraSmall)
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
+            ->filtersFormWidth(Width::ExtraSmall)
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
             ])
 
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+            ->toolbarActions([
+                BulkActionGroup::make([
                     BulkAction::make('editPlace')
                         ->deselectRecordsAfterCompletion()
                         ->label('تعديل المكان')
@@ -288,9 +298,9 @@ class MasrofatResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMasrofats::route('/'),
-            'create' => Pages\CreateMasrofat::route('/create'),
-            'edit' => Pages\EditMasrofat::route('/{record}/edit'),
+            'index' => ListMasrofats::route('/'),
+            'create' => CreateMasrofat::route('/create'),
+            'edit' => EditMasrofat::route('/{record}/edit'),
         ];
     }
 }

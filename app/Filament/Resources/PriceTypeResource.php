@@ -2,12 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\PriceTypeResource\Pages\ListPriceTypes;
+use App\Filament\Resources\PriceTypeResource\Pages\CreatePriceType;
+use App\Filament\Resources\PriceTypeResource\Pages\EditPriceType;
 use App\Filament\Resources\PriceTypeResource\Pages;
 use App\Filament\Resources\PriceTypeResource\RelationManagers;
 use App\Models\Price_type;
 
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -29,13 +35,13 @@ class PriceTypeResource extends Resource
   }
     protected static ?string $model = Price_type::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-  protected static ?string $navigationGroup='Setting';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static string | \UnitEnum | null $navigationGroup='Setting';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
               TextInput::make('name')
                 ->label('الاسم')
                 ->required()
@@ -73,12 +79,12 @@ class PriceTypeResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -93,9 +99,9 @@ class PriceTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPriceTypes::route('/'),
-            'create' => Pages\CreatePriceType::route('/create'),
-            'edit' => Pages\EditPriceType::route('/{record}/edit'),
+            'index' => ListPriceTypes::route('/'),
+            'create' => CreatePriceType::route('/create'),
+            'edit' => EditPriceType::route('/{record}/edit'),
         ];
     }
 }

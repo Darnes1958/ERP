@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RecsuppResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\RecsuppResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -18,7 +19,7 @@ class ListRecsupps extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
               ->label('إضافة إيصال'),
 
           ];

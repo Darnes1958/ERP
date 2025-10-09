@@ -2,6 +2,9 @@
 
 namespace App\Exports;
 
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Collection;
 use App\Filament\Pages\Reports\AccTran;
 use App\Models\Acc_tran;
 use App\Models\kazena;
@@ -32,9 +35,8 @@ class KazenaTranExl implements  FromCollection,WithMapping,
     public $sum_daen;
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
-
     public function __construct(int $kazena_id,string $repDate1,string $repDate2)
     {
         $this->kazena_id=$kazena_id;
@@ -82,16 +84,16 @@ class KazenaTranExl implements  FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A8:G8')
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
 
                 $event->sheet->getDelegate()->getStyle('A')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $event->sheet->getDelegate()->getStyle('C')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 $event->sheet->setCellValue('B5', 'كشف حساب الخزينة :  '.$this->kazena_name.'      من تاريخ  '.$this->repDate1.'     إلي تاريخ '.$this->repDate2);
 
@@ -103,7 +105,7 @@ class KazenaTranExl implements  FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A'.($this->rowcount+9).':G'.$this->rowcount+9)
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
 

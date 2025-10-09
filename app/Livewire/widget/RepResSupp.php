@@ -3,6 +3,7 @@
 namespace App\Livewire\widget;
 
 
+use Filament\Tables\Columns\TextColumn;
 use App\Models\Recsupp;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -88,17 +89,17 @@ class RepResSupp extends BaseWidget
 
             ->striped()
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('الرقم الألي'),
-                Tables\Columns\TextColumn::make('Supplier.name')
+                TextColumn::make('Supplier.name')
                     ->label('المورد'),
-                Tables\Columns\TextColumn::make('rec_who')
+                TextColumn::make('rec_who')
                     ->label('البيان')
                     ->badge(),
-                Tables\Columns\TextColumn::make('val')
+                TextColumn::make('val')
                     ->label('المبلغ'),
 
-                Tables\Columns\TextColumn::make('notes')
+                TextColumn::make('notes')
                     ->label('ملاحظات'),
 
             ])

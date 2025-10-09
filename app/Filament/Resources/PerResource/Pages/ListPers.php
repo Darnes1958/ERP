@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PerResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\PerResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -14,7 +15,7 @@ class ListPers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('ادخال اذن صرف'),
+            CreateAction::make()->label('ادخال اذن صرف'),
         ];
     }
 }

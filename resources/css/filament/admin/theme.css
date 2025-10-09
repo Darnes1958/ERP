@@ -1,5 +1,17 @@
-@import '/vendor/filament/filament/resources/css/theme.css';
-@import '/vendor/awcodes/filament-table-repeater/resources/css/plugin.css';
+
+
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../app/Filament/Clusters/**/*';
+@source '../../../../resources/views/filament/clusters/**/*';
+
+@source '../../../../app/Livewire/**/*';
+@source '../../../../resources/views/livewire/**/*';
+
+
+
 .fi-ta-ctn .py-4 {
     padding-top: .3rem !important;
     padding-bottom: .3rem !important;
@@ -8,4 +20,4 @@
 
     @apply gap-y-2;
 }
-@config 'tailwind.config.js';
+

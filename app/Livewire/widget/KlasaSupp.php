@@ -2,6 +2,7 @@
 
 namespace App\Livewire\widget;
 
+use Filament\Tables\Columns\TextColumn;
 use App\Models\Recsupp;
 
 use App\Models\RecSuppUnion;
@@ -46,7 +47,7 @@ class KlasaSupp extends BaseWidget
             'exp',
         ],
     ];
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
@@ -82,16 +83,16 @@ class KlasaSupp extends BaseWidget
           ->defaultPaginationPageOption(5)
             ->defaultSort('val')
             ->columns([
-                Tables\Columns\TextColumn::make('rec_who')
+                TextColumn::make('rec_who')
                     ->label('البيان'),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('طريقة الدفع'),
-              Tables\Columns\TextColumn::make('accName')
+              TextColumn::make('accName')
                   ->state(function (Model $record) {
                       if ($record->accName!=null) return $record->accName; else return $record->kazenaName;
                   })
                 ->label('الحساب'),
-                Tables\Columns\TextColumn::make('val')
+                TextColumn::make('val')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
@@ -100,7 +101,7 @@ class KlasaSupp extends BaseWidget
                             return ''; else return $record->val;
                     })
                     ->label('قبض'),
-                Tables\Columns\TextColumn::make('exp')
+                TextColumn::make('exp')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')

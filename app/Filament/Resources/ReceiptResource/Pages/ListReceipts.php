@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ReceiptResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\ReceiptResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -21,7 +22,7 @@ class ListReceipts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
              ->createAnother(false)
              ->label('إضافة إيصال'),
         ];

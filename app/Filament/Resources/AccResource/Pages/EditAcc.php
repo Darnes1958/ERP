@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AccResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\AccResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -14,7 +15,7 @@ class EditAcc extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصارف')),
+            DeleteAction::make()->visible(Auth::user()->can('الغاء مصارف')),
         ];
     }
 }

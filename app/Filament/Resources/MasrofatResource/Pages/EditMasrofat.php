@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MasrofatResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\MasrofatResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -15,7 +16,7 @@ class EditMasrofat extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
+            DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
         ];
     }
     protected function getRedirectUrl(): string

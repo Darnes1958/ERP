@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Set;
 use App\Livewire\widget\ChartArbah;
 use App\Livewire\widget\RebhMonth;
 use App\Livewire\widget\RebhMonthPlace;
@@ -17,17 +19,15 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
 class Arbah_place extends Page implements HasForms,HasActions
 {
   use InteractsWithForms,InteractsWithActions;
-  protected static ?string $navigationIcon = 'heroicon-o-document-text';
+  protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel = 'الارباح حسب الصالات';
-  protected static ?string $navigationGroup = 'الارباح';
+  protected static string | \UnitEnum | null $navigationGroup = 'الارباح';
   protected static ?int $navigationSort=3;
 
   public function chkDate($repDate){
@@ -43,7 +43,7 @@ class Arbah_place extends Page implements HasForms,HasActions
     return Auth::user()->hasRole('admin');
   }
 
-    protected static string $view = 'filament.pages.reports.arbah-place';
+    protected string $view = 'filament.pages.reports.arbah-place';
 
   protected ?string $heading="";
 
@@ -59,10 +59,10 @@ class Arbah_place extends Page implements HasForms,HasActions
        'year' => $year,'place' => $this->place,'amma' => $this->amma,
    ]);
   }
-public function form(Form $form): Form
+public function form(Schema $schema): Schema
 {
-    return $form
-        ->schema([
+    return $schema
+        ->components([
            Select::make('year')
             ->options(Rebh_first_place::selectraw('distinct wyear as year')->pluck('year','year'))
             ->label('السنه')

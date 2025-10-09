@@ -2,6 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\MasrTypeResource\Pages\ListMasrTypes;
+use App\Filament\Resources\MasrTypeResource\Pages\CreateMasrType;
+use App\Filament\Resources\MasrTypeResource\Pages\EditMasrType;
 use App\Filament\Resources\MasrTypeResource\Pages;
 use App\Filament\Resources\MasrTypeResource\RelationManagers;
 use App\Models\Masr_type;
@@ -9,7 +16,6 @@ use App\Models\Masr_type;
 use App\Models\Masrofat;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,19 +27,19 @@ class MasrTypeResource extends Resource
 {
     protected static ?string $model = Masr_type::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralLabel='انواع المصروفات';
-    protected static ?string $navigationGroup='مصروفات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات';
     protected static ?int $navigationSort=2;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->can('ادخال مصروفات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('name')
                     ->label('البيان')
                     ->required()
@@ -49,19 +55,19 @@ class MasrTypeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                 ->label('البيان'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make()
                     ->hidden(fn(Masr_type $record)=>
                         Masrofat::where('masr_type_id',$record->id)->count()>0),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 //
             ]);
     }
@@ -76,9 +82,9 @@ class MasrTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMasrTypes::route('/'),
-            'create' => Pages\CreateMasrType::route('/create'),
-            'edit' => Pages\EditMasrType::route('/{record}/edit'),
+            'index' => ListMasrTypes::route('/'),
+            'create' => CreateMasrType::route('/create'),
+            'edit' => EditMasrType::route('/{record}/edit'),
         ];
     }
 }

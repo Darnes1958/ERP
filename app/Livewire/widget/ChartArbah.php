@@ -20,7 +20,7 @@ class ChartArbah extends ChartWidget
         $this->place=$place;
 
     }
-    protected static ?string $heading = ' ';
+    protected ?string $heading = ' ';
 
   protected static ?int $sort=14;
     protected function getData(): array

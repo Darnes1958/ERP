@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources\BuysWorkResource\Pages;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Enums\PlaceType;
 use App\Enums\TwoUnit;
 use App\Filament\Resources\BuysWorkResource;
@@ -17,15 +22,11 @@ use App\Models\Price_sell;
 use App\Models\Recsupp;
 use App\Models\Sell_tran;
 use App\Models\Setting;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
@@ -42,7 +43,7 @@ class CreateBuy extends Page implements HasTable
   use Raseed;
     protected static string $resource = BuysWorkResource::class;
 
-    protected static string $view = 'filament.resources.buys-work-resource.pages.create-buy';
+    protected string $view = 'filament.resources.buys-work-resource.pages.create-buy';
     protected ?string $heading="";
 
   public $buy;
@@ -71,15 +72,15 @@ class CreateBuy extends Page implements HasTable
     return array_merge(parent::getForms(), [
       "buyForm" => $this->makeForm()
         ->model(Buys_work::class)
-        ->schema($this->getBuyFormSchema())
+        ->components($this->getBuyFormSchema())
         ->statePath('buyData'),
       "buyTranForm" => $this->makeForm()
         ->model(Buy_tran_work::class)
-        ->schema($this->getBuyTranFormSchema())
+        ->components($this->getBuyTranFormSchema())
         ->statePath('buytranData'),
       "buyStoreForm" => $this->makeForm()
         ->model(Recsupp::class)
-        ->schema($this->getBuyStoreFormSchema())
+        ->components($this->getBuyStoreFormSchema())
         ->statePath('buyStoreData'),
 
     ]);
@@ -125,7 +126,7 @@ class CreateBuy extends Page implements HasTable
                     $record=Buys_work::find(Auth::id());
                     return $record->pay>0 && $record->price_type_id==1;
                 }),
-          \Filament\Forms\Components\Actions::make([
+          Actions::make([
             Action::make('store')
               ->label('تخزين')
               ->icon('heroicon-m-plus')
@@ -757,8 +758,8 @@ class CreateBuy extends Page implements HasTable
             )
             ->sortable(),
         ])
-        ->actions([
-          \Filament\Tables\Actions\Action::make('delete')
+        ->recordActions([
+          Action::make('delete')
             ->action(function (Buy_tran_work $record) {
               $record->delete();
               $this->tot();

@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Exports\CustRaseedExl;
 
 use App\Exports\SuppRaseedExl;
@@ -9,7 +12,6 @@ use App\Models\Supp_tran;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -24,13 +26,13 @@ use Maatwebsite\Excel\Facades\Excel;
 class SuppRaseed extends Page implements HasForms,HasTable
 {
     use InteractsWithTable,InteractsWithForms;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='أرصدة الموردين';
-    protected static ?string $navigationGroup='زبائن وموردين';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين';
   protected static ?int $navigationSort=8;
     protected ?string $heading="";
 
-    protected static string $view = 'filament.pages.reports.supp-raseed';
+    protected string $view = 'filament.pages.reports.supp-raseed';
 
   public static function shouldRegisterNavigation(): bool
   {
@@ -45,14 +47,14 @@ class SuppRaseed extends Page implements HasForms,HasTable
         $this->repDate2=now();
         $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
     }
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 DatePicker::make('repDate1')
                     ->live()
                     ->afterStateUpdated(function ($state){
@@ -67,8 +69,8 @@ class SuppRaseed extends Page implements HasForms,HasTable
 
                     })
                     ->label('إلي تاريخ'),
-                \Filament\Forms\Components\Actions::make([
-                    \Filament\Forms\Components\Actions\Action::make('excl')
+                Actions::make([
+                    Action::make('excl')
                         ->label('Excel')
                         ->button()
                         ->color('success')

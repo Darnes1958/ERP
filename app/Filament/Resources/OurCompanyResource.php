@@ -2,11 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\OurCompanyResource\Pages\ListOurCompanies;
+use App\Filament\Resources\OurCompanyResource\Pages\CreateOurCompany;
+use App\Filament\Resources\OurCompanyResource\Pages\EditOurCompany;
 use App\Filament\Resources\OurCompanyResource\Pages;
 use App\Filament\Resources\OurCompanyResource\RelationManagers;
 use App\Models\OurCompany;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,13 +29,13 @@ class OurCompanyResource extends Resource
   }
     protected static ?string $model = OurCompany::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-  protected static ?string $navigationGroup='Setting';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static string | \UnitEnum | null $navigationGroup='Setting';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
               TextInput::make('Company')->unique(ignoreRecord: true)->required(),
               TextInput::make('CompanyName')->unique(ignoreRecord: true)->required(),
               TextInput::make('CompanyNameSuffix')->required(),
@@ -49,12 +55,12 @@ class OurCompanyResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -69,9 +75,9 @@ class OurCompanyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOurCompanies::route('/'),
-            'create' => Pages\CreateOurCompany::route('/create'),
-            'edit' => Pages\EditOurCompany::route('/{record}/edit'),
+            'index' => ListOurCompanies::route('/'),
+            'create' => CreateOurCompany::route('/create'),
+            'edit' => EditOurCompany::route('/{record}/edit'),
         ];
     }
 }

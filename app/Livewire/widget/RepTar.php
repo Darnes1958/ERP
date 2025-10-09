@@ -72,7 +72,7 @@ class RepTar extends BaseWidget
                     ->label('ملاحظات'),
 
             ])
-            ->actions([
+            ->recordActions([
                 //
             ])
             ->emptyStateHeading('لا توجد بيانات')

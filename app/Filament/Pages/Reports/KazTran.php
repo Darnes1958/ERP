@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Models\Acc;
 use App\Models\Acc_tran;
 use App\Models\Kazena;
@@ -13,7 +16,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
@@ -27,12 +29,12 @@ use Illuminate\Support\Facades\Auth;
 class KazTran extends Page implements HasForms,HasTable
 {
   use InteractsWithTable,InteractsWithForms;
-  protected static ?string $navigationIcon = 'heroicon-o-document-text';
+  protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel='حركة خزينة';
-  protected static ?string $navigationGroup='مصارف وخزائن';
+  protected static string | \UnitEnum | null $navigationGroup='مصارف وخزائن';
   protected ?string $heading="";
 
-  protected static string $view = 'filament.pages.reports.kaz-tran';
+  protected string $view = 'filament.pages.reports.kaz-tran';
 
   public static function shouldRegisterNavigation(): bool
   {
@@ -65,15 +67,15 @@ class KazTran extends Page implements HasForms,HasTable
     ],
   ];
 
-  public function getTableRecordKey(Model $record): string
+  public function getTableRecordKey(Model|array $record): string
   {
     return uniqid();
   }
 
-  public function form(Form $form): Form
+  public function form(Schema $schema): Schema
   {
-    return $form
-      ->schema([
+    return $schema
+      ->components([
         Select::make('kazena_id')
           ->options(Kazena::all()->pluck('name','id'))
           ->searchable()
@@ -114,8 +116,8 @@ class KazTran extends Page implements HasForms,HasTable
               $this->raseed=abs($this->mden-$this->daen);
           })
           ->label('إلي تاريخ'),
-          \Filament\Forms\Components\Actions::make([
-              \Filament\Forms\Components\Actions\Action::make('Exl')
+          Actions::make([
+              Action::make('Exl')
                   ->label('Excel')
                   ->visible(function (){
                       return ($this->chkDate($this->repDate1) || $this->chkDate($this->repDate2)) && $this->kazena_id;

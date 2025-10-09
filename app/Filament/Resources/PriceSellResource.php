@@ -2,13 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\PriceSellResource\Pages\ListPriceSells;
+use App\Filament\Resources\PriceSellResource\Pages\CreatePriceSell;
+use App\Filament\Resources\PriceSellResource\Pages\EditPriceSell;
 use App\Filament\Resources\PriceSellResource\Pages;
 use App\Filament\Resources\PriceSellResource\RelationManagers;
 use App\Models\Price_sell;
 use App\Models\PriceSell;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -25,17 +30,17 @@ class PriceSellResource extends Resource
 
 
     protected static ?string $navigationLabel='أسعار الأصناف';
-    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=7;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasRole('admin');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 //
             ]);
     }
@@ -62,12 +67,12 @@ class PriceSellResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -82,9 +87,9 @@ class PriceSellResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPriceSells::route('/'),
-            'create' => Pages\CreatePriceSell::route('/create'),
-            'edit' => Pages\EditPriceSell::route('/{record}/edit'),
+            'index' => ListPriceSells::route('/'),
+            'create' => CreatePriceSell::route('/create'),
+            'edit' => EditPriceSell::route('/{record}/edit'),
         ];
     }
 }

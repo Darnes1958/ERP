@@ -2,6 +2,9 @@
 
 namespace App\Exports;
 
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Collection;
 use App\Models\OurCompany;
 
 use App\Models\Supp_tran2;
@@ -80,18 +83,18 @@ class SuppTranExl implements FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A8:F8')
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
                 $event->sheet->getDelegate()->getStyle('A')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $event->sheet->getDelegate()->getStyle('B')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $event->sheet->getDelegate()->getStyle('C')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 $event->sheet->setCellValue('C5', 'كشف حساب المورد :  '.$this->supp_name.'      من تاريخ  '.$this->repDate);
                 $event->sheet->setCellValue('E7','مدين : '.$this->mden.'    دارئن : '.$this->daen.'    الرصيد : '.$this->raseed);
@@ -135,8 +138,8 @@ class SuppTranExl implements FromCollection,WithMapping,
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return Collection
+     */
     public function collection()
     {
         $rec=$this->data;

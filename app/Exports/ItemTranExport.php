@@ -2,6 +2,8 @@
 
 namespace App\Exports;
 
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use App\Models\Item;
 use App\Models\Item_tran;
 use App\Models\OurCompany;
@@ -78,15 +80,15 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
         $event->sheet
           ->getStyle('A8:J8')
           ->getFill()
-          ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+          ->setFillType(Fill::FILL_SOLID)
           ->getStartColor()
           ->setARGB('E8E1E1');
         $event->sheet->getDelegate()->getStyle('A')
           ->getAlignment()
-          ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+          ->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $event->sheet->getDelegate()->getStyle('C')
           ->getAlignment()
-          ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+          ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $event->sheet->setCellValue('D6', 'حركة الصنف :  '.$this->item_name.'      من تاريخ  '.$this->repDate);
         $event->sheet->getDelegate()->setRightToLeft(true);

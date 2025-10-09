@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AccResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\AccResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -14,7 +15,7 @@ class ListAccs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
             ->label('اضافة مصرف'),
         ];
     }

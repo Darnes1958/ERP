@@ -2,6 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\CustomerTypeResource\Pages\ListCustomerTypes;
+use App\Filament\Resources\CustomerTypeResource\Pages\CreateCustomerType;
+use App\Filament\Resources\CustomerTypeResource\Pages\EditCustomerType;
 use App\Filament\Resources\CustomerTypeResource\Pages;
 use App\Filament\Resources\CustomerTypeResource\RelationManagers;
 use App\Models\Customer;
@@ -9,7 +16,6 @@ use App\Models\Customer_type;
 use App\Models\CustomerType;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,21 +27,21 @@ class CustomerTypeResource extends Resource
 {
     protected static ?string $model = Customer_type::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $pluralLabel='تصنيف الزبائن';
-    protected static ?string $navigationGroup='زبائن وموردين';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين';
     protected static ?int $navigationSort=10;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasrole('admin');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
 
-            ->schema([
+            ->components([
                 TextInput::make('name')
                     ->label('البيان')
                     ->required()
@@ -52,19 +58,19 @@ class CustomerTypeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('البيان'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make()
                     ->hidden(fn(Customer_type $record)=>
                         Customer::where('customer_type_id',$record->id)->count()>0),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 //
             ]);
 
@@ -80,9 +86,9 @@ class CustomerTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCustomerTypes::route('/'),
-            'create' => Pages\CreateCustomerType::route('/create'),
-            'edit' => Pages\EditCustomerType::route('/{record}/edit'),
+            'index' => ListCustomerTypes::route('/'),
+            'create' => CreateCustomerType::route('/create'),
+            'edit' => EditCustomerType::route('/{record}/edit'),
         ];
     }
 }

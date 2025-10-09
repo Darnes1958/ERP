@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
 use App\Models\Acc;
 use App\Models\Acc_tran;
 use App\Models\Kazena;
@@ -11,7 +12,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\TextColumn;
@@ -24,11 +24,11 @@ use Illuminate\Support\Facades\Auth;
 class MasrTran extends Page  implements HasForms,HasTable
 {
     use InteractsWithTable,InteractsWithForms;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='حركة مصروفات';
-    protected static ?string $navigationGroup='مصروفات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات';
     protected ?string $heading="";
-    protected static string $view = 'filament.pages.reports.masr-tran';
+    protected string $view = 'filament.pages.reports.masr-tran';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -54,15 +54,15 @@ class MasrTran extends Page  implements HasForms,HasTable
         ],
     ];
 
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('masr_id')
                     ->options(Masr_type::all()->pluck('name','id'))
                     ->searchable()

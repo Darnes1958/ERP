@@ -2,6 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\BuysWorkResource\Pages\CreateBuysWork;
+use App\Filament\Resources\BuysWorkResource\Pages\CreateBuy;
+use App\Filament\Resources\BuysWorkResource\Pages\EditBuysWork;
+use App\Filament\Resources\BuysWorkResource\Pages\ListBuysWorks;
 use App\Enums\PlaceType;
 use App\Filament\Resources\BuysWorkResource\Pages;
 use App\Filament\Resources\BuysWorkResource\RelationManagers;
@@ -12,10 +20,8 @@ use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Pages\Page;
@@ -31,20 +37,20 @@ class BuysWorkResource extends Resource
 {
     protected static ?string $model = Buys_work::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
 protected static ?string $navigationLabel='فاتورة مشتريات جديدة';
-protected static ?string $navigationGroup='فواتير شراء';
+protected static string | \UnitEnum | null $navigationGroup='فواتير شراء';
 protected static ?int $navigationSort=1;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->can('ادخال مشتريات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                     ->schema([
                         DatePicker::make('order_date')
@@ -202,9 +208,9 @@ protected static ?int $navigationSort=1;
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('buytran')
+            ->recordActions([
+                EditAction::make(),
+                Action::make('buytran')
                 ->label('إدخال أصناف للفاتورة')
                 ->icon('heroicon-m-plus')
                 ->color('success')
@@ -226,10 +232,10 @@ protected static ?int $navigationSort=1;
     {
         return [
 
-            'create' => Pages\CreateBuysWork::route('/create'),
-            'createbuy' => Pages\CreateBuy::route('/createbuy'),
-            'edit' => Pages\EditBuysWork::route('/{record}/edit'),
-            'index' => Pages\ListBuysWorks::route('/'),
+            'create' => CreateBuysWork::route('/create'),
+            'createbuy' => CreateBuy::route('/createbuy'),
+            'edit' => EditBuysWork::route('/{record}/edit'),
+            'index' => ListBuysWorks::route('/'),
         ];
     }
 

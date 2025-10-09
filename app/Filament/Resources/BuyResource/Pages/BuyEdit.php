@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources\BuyResource\Pages;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Actions\Action;
 use App\Enums\TwoUnit;
 use App\Filament\Resources\BuyResource;
 use App\Livewire\Traits\Raseed;
@@ -18,11 +22,8 @@ use App\Models\Sell_tran;
 use App\Models\Setting;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
@@ -43,7 +44,7 @@ class BuyEdit extends Page implements HasTable
     use Raseed;
     protected static string $resource = BuyResource::class;
 
-    protected static string $view = 'filament.resources.buy-resource.pages.buy-edit';
+    protected string $view = 'filament.resources.buy-resource.pages.buy-edit';
 
     protected ?string $heading="";
 
@@ -81,11 +82,11 @@ class BuyEdit extends Page implements HasTable
         return array_merge(parent::getForms(), [
             "buyForm" => $this->makeForm()
                 ->model(Buy::class)
-                ->schema($this->getBuyFormSchema())
+                ->components($this->getBuyFormSchema())
                 ->statePath('buyData'),
             "buyTranForm" => $this->makeForm()
                 ->model(Buy_tran::class)
-                ->schema($this->getBuyTranFormSchema())
+                ->components($this->getBuyTranFormSchema())
                 ->statePath('buytranData'),
         ]);
     }
@@ -669,8 +670,8 @@ class BuyEdit extends Page implements HasTable
                     )
                     ->sortable(),
             ])
-            ->actions([
-                \Filament\Tables\Actions\Action::make('delete')
+            ->recordActions([
+                Action::make('delete')
                     ->action(function (Buy_tran $record){
                         $this->buytran= $record->delete();
                         $this->decAllBuy($record->item_id,$this->buy->place_id,$record->q1);
@@ -689,7 +690,7 @@ class BuyEdit extends Page implements HasTable
                         return Buy_tran::where('buy_id',$this->buy_id)->count()==1;
                     })
                     ->requiresConfirmation(),
-                \Filament\Tables\Actions\Action::make('edit')
+                Action::make('edit')
                     ->action(function (Buy_tran $record){
                         $this->buyTranForm->fill($record->toArray());
                         $this->dispatch('gotoitem',  test: 'q1' );

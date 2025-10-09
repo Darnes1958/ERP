@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MoneyResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\MoneyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -19,7 +20,7 @@ class ListMoney extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
 
             ->label('اضافة'),
         ];

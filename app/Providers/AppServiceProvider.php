@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Filament\Resources\BuysWorkResource;
+use App\Filament\Resources\SellWorkResource;
+use App\Filament\Resources\BuyResource;
+use App\Filament\Resources\SellResource;
+use Filament\Support\Assets\Js;
 use App\Models\GlobalSetting;
 use App\Models\Setting;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
@@ -49,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;
         });
-        Table::$defaultNumberLocale = 'nl';
+        Table::configureUsing(fn(Table $table) => $table->defaultNumberLocale('nl'));
         FilamentView::registerRenderHook(
             PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
             fn (): string => Blade::render('@livewire(\'top-bar\')'),
@@ -58,10 +63,10 @@ class AppServiceProvider extends ServiceProvider
         'panels::page.end',
         fn (): View => view('analytics'),
         scopes: [
-            \App\Filament\Resources\BuysWorkResource::class,
-            \App\Filament\Resources\SellWorkResource::class,
-            \App\Filament\Resources\BuyResource::class,
-            \App\Filament\Resources\SellResource::class,
+            BuysWorkResource::class,
+            SellWorkResource::class,
+            BuyResource::class,
+            SellResource::class,
 
             ]
       );
@@ -74,14 +79,10 @@ class AppServiceProvider extends ServiceProvider
       ]);
 
       FilamentAsset::register([
-        \Filament\Support\Assets\Js::make('example-external-script', 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
+        Js::make('example-external-script', 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
 
       ]);
-        LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
-            $switch
-                ->locales(['ar','en']) // also accepts a closure
-                ->displayLocale('ar');
-        });
+
         Model::unguard();
     }
 }

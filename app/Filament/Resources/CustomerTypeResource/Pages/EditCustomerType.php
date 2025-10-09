@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CustomerTypeResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\CustomerTypeResource;
 use App\Models\Customer;
 use Filament\Actions;
@@ -16,7 +17,7 @@ class EditCustomerType extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
 
 
                 ->hidden(function (){return Customer::where('customer_type_id', $this->getRecord()->id)->count()>0; }),

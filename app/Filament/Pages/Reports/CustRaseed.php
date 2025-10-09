@@ -2,15 +2,15 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Exports\CustRaseedExl;
 use App\Models\Cust_tran;
 use App\Models\Supp_tran;
-use Filament\Forms\Components\Actions;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
@@ -27,14 +27,14 @@ use Maatwebsite\Excel\Facades\Excel;
 class CustRaseed extends Page implements HasForms,HasTable
 {
     use InteractsWithTable,InteractsWithForms;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='أرصدة الزبائن';
-    protected static ?string $navigationGroup='زبائن وموردين';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين';
     protected static ?int $navigationSort=6;
     protected ?string $heading="";
 
 
-    protected static string $view = 'filament.pages.reports.cust-raseed';
+    protected string $view = 'filament.pages.reports.cust-raseed';
 
   public static function shouldRegisterNavigation(): bool
   {
@@ -48,14 +48,14 @@ class CustRaseed extends Page implements HasForms,HasTable
         $this->repDate2=now();
         $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2]);
     }
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 DatePicker::make('repDate1')
                     ->live()
                     ->afterStateUpdated(function ($state){
@@ -70,8 +70,8 @@ class CustRaseed extends Page implements HasForms,HasTable
 
                     })
                     ->label('إلي تاريخ'),
-                \Filament\Forms\Components\Actions::make([
-                    \Filament\Forms\Components\Actions\Action::make('excl')
+                Actions::make([
+                    Action::make('excl')
                         ->label('Excel')
                         ->button()
                         ->color('success')

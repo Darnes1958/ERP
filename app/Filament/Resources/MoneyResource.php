@@ -2,6 +2,21 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\MoneyResource\Pages\ListMoney;
+use App\Filament\Resources\MoneyResource\Pages\CreateMoney;
+use App\Filament\Resources\MoneyResource\Pages\EditMoney;
 use App\Enums\RecWho;
 use App\Enums\RecWhoMoney;
 use App\Filament\Resources\MoneyResource\Pages;
@@ -15,7 +30,6 @@ use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
@@ -28,20 +42,20 @@ class MoneyResource extends Resource
 {
     protected static ?string $model = Money::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
   protected static ?string $navigationLabel = 'تحويل';
-  protected static ?string $navigationGroup = 'تحويلات بين الخزائن والمصارف';
+  protected static string | \UnitEnum | null $navigationGroup = 'تحويلات بين الخزائن والمصارف';
   protected static ?int $navigationSort = 1;
 
   public static function shouldRegisterNavigation(): bool
   {
     return Auth::user()->can('ادخال تحويل');
   }
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
               Radio::make('rec_who')
                 ->inline()
                 ->inlineLabel(false)
@@ -52,17 +66,17 @@ class MoneyResource extends Resource
                 ->options(RecWhoMoney::class)
                 ->columnSpanFull(),
 
-              Forms\Components\Section::make()
+              Section::make()
                 ->schema([
                  Select::make('kazena_id')
                    ->label('من الخزينة')
                      ->options(Kazena::all()->pluck('name','id'))
                    ->searchable()
-                   ->required(function (Forms\Get $get){
+                   ->required(function (Get $get){
                      return $get('rec_who')==1 || $get('rec_who')==2;
                    })
                    ->live()
-                   ->visible(function (Forms\Get $get){
+                   ->visible(function (Get $get){
                      return $get('rec_who')==1 || $get('rec_who')==2;
                    })
                    ->preload(),
@@ -71,11 +85,11 @@ class MoneyResource extends Resource
                    ->options(Acc::all()->pluck('name','id'))
                    ->relationship('Acc','name')
                    ->searchable()
-                   ->required(function (Forms\Get $get){
+                   ->required(function (Get $get){
                      return $get('rec_who')==3 || $get('rec_who')==4;
                    })
 
-                   ->visible(function (Forms\Get $get){
+                   ->visible(function (Get $get){
                      return $get('rec_who')==3 || $get('rec_who')==4;
                    })
                    ->preload(),
@@ -83,11 +97,11 @@ class MoneyResource extends Resource
                    ->label('إلي الحزينة')
                      ->options(Kazena::all()->pluck('name','id'))
                    ->searchable()
-                   ->required(function (Forms\Get $get){
+                   ->required(function (Get $get){
                      return $get('rec_who')==1 || $get('rec_who')==3;
                    })
                    ->live()
-                   ->visible(function (Forms\Get $get){
+                   ->visible(function (Get $get){
                      return $get('rec_who')==1 || $get('rec_who')==3;
                    })
                    ->preload(),
@@ -95,23 +109,23 @@ class MoneyResource extends Resource
                    ->label('إلي الحساب المصرفي')
                      ->options(Acc::all()->pluck('name','id'))
                    ->searchable()
-                   ->required(function (Forms\Get $get){
+                   ->required(function (Get $get){
                      return $get('rec_who')==2 || $get('rec_who')==4;
                    })
                    ->live()
-                   ->visible(function (Forms\Get $get){
+                   ->visible(function (Get $get){
                      return $get('rec_who')==2 || $get('rec_who')==4;
                    })
                    ->preload(),
-                 Forms\Components\DatePicker::make('tran_date')
+                 DatePicker::make('tran_date')
                    ->required()
                    ->default(now())
                    ->label('التاريخ'),
-                 Forms\Components\TextInput::make('amount')
+                 TextInput::make('amount')
                    ->required()
                    ->numeric()
                    ->label('المبلغ'),
-                  Forms\Components\Textarea::make('notes')
+                  Textarea::make('notes')
                     ->columnSpanFull()
                     ->label('ملاحظات'),
 
@@ -120,7 +134,7 @@ class MoneyResource extends Resource
                 ->columnSpan(2),
 
               Hidden::make('price_type_id')
-               ->default(function (Forms\Get $get) {
+               ->default(function (Get $get) {
                  if ($get('rec_who')==4) return 2; else return  1;
                }),
               Hidden::make('user_id')
@@ -135,14 +149,14 @@ class MoneyResource extends Resource
             ->striped()
           ->defaultSort('created_at','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('rec_who')
+                TextColumn::make('rec_who')
                 ->sortable()
                 ->label('البيان')
                 ->badge(),
-                Tables\Columns\TextColumn::make('tran_date')
+                TextColumn::make('tran_date')
                   ->sortable()
                   ->label('التاريخ'),
-                Tables\Columns\TextColumn::make('from')
+                TextColumn::make('from')
                   ->state(function (Money $record): string {
                     if ($record->rec_who->value==1 || $record->rec_who->value==2)
                     return Kazena::find($record->kazena_id)->name;
@@ -151,7 +165,7 @@ class MoneyResource extends Resource
 
                   })
                   ->label('من'),
-                Tables\Columns\TextColumn::make('to')
+                TextColumn::make('to')
                   ->state(function (Money $record): string {
                     if ($record->rec_who->value==1 || $record->rec_who->value==3)
                       return Kazena::find($record->kazena2_id)->name;
@@ -160,9 +174,9 @@ class MoneyResource extends Resource
 
                   })
                   ->label('إلي'),
-              Tables\Columns\TextColumn::make('amount')
+              TextColumn::make('amount')
                 ->label('المبلغ'),
-              Tables\Columns\TextColumn::make('notes')
+              TextColumn::make('notes')
                 ->label('ملاحظات'),
             ])
             ->filters([
@@ -170,11 +184,11 @@ class MoneyResource extends Resource
                 ->options(RecWhoMoney::class)
                 ->searchable()
                 ->label('البيان'),
-              Tables\Filters\Filter::make('created_at')
-                ->form([
-                  Forms\Components\DatePicker::make('Date1')
+              Filter::make('created_at')
+                ->schema([
+                  DatePicker::make('Date1')
                     ->label('من تاريخ'),
-                  Forms\Components\DatePicker::make('Date2')
+                  DatePicker::make('Date2')
 
                     ->label('إلي تاريخ'),
                 ])
@@ -201,15 +215,15 @@ class MoneyResource extends Resource
                     );
                 })
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                 ->iconButton(),
-              Tables\Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء تحويل'))
+              DeleteAction::make()->visible(Auth::user()->can('الغاء تحويل'))
                 ->iconButton(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -224,9 +238,9 @@ class MoneyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMoney::route('/'),
-            'create' => Pages\CreateMoney::route('/create'),
-            'edit' => Pages\EditMoney::route('/{record}/edit'),
+            'index' => ListMoney::route('/'),
+            'create' => CreateMoney::route('/create'),
+            'edit' => EditMoney::route('/{record}/edit'),
         ];
     }
 }

@@ -2,6 +2,15 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Radio;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\OurCompany;
@@ -9,7 +18,6 @@ use App\Models\Place;
 use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -26,8 +34,8 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-  protected static ?string $navigationGroup='اعدادات';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static string | \UnitEnum | null $navigationGroup='اعدادات';
   protected static ?string $navigationLabel='مستخدمين وصلاحيات';
   protected static ?string $pluralLabel='مستخدم';
 
@@ -37,10 +45,10 @@ class UserResource extends Resource
   }
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('name')->label('الاسم')->unique(ignoreRecord: true)->required(),
                 TextInput::make('email')->label('الايميل')->email()->unique(ignoreRecord: true)->required(),
                 TextInput::make('password')->required()->visibleOn('create'),
@@ -71,7 +79,7 @@ class UserResource extends Resource
                 ->relationship('permissions','name', fn (Builder $query) => $query
                     ->where('for_who','sell'))
                 ->preload(),
-                Forms\Components\Radio::make('status')
+                Radio::make('status')
                  ->options([
                      1=>'نشط',
                      0=>'غير نشط',
@@ -100,7 +108,7 @@ class UserResource extends Resource
                 TextColumn::make('id')->label('الرقم الألي'),
                 TextColumn::make('name')->label('الاسم'),
                 TextColumn::make('email')->label('الايميل'),
-                Tables\Columns\IconColumn::make('status')
+                IconColumn::make('status')
 
                    ->label('الحالة'),
                 TextColumn::make('Place.name')->label('المكان'),
@@ -111,12 +119,12 @@ class UserResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -131,9 +139,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'index' => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'edit' => EditUser::route('/{record}/edit'),
         ];
     }
 }

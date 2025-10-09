@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
 use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Item;
@@ -14,7 +15,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -29,11 +29,11 @@ class ItemTran extends Page implements HasForms,HasTable
 {
   use InteractsWithForms,InteractsWithTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.reports.item-tran';
+    protected string $view = 'filament.pages.reports.item-tran';
     protected static ?string $navigationLabel='حركة صنف';
-  protected static ?string $navigationGroup='مخازن و أصناف';
+  protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
   protected static ?int $navigationSort=4;
     protected ?string $heading='';
     public static function shouldRegisterNavigation(): bool
@@ -53,10 +53,10 @@ class ItemTran extends Page implements HasForms,HasTable
    public function SetDate($repdate){
        $this->repDate=$repdate;
    }
-   public function form(Form $form): Form
+   public function form(Schema $schema): Schema
   {
-    return $form
-      ->schema([
+    return $schema
+      ->components([
         Select::make('item_id')
           ->options(Item::all()->pluck('name','id'))
           ->live()
@@ -104,7 +104,7 @@ class ItemTran extends Page implements HasForms,HasTable
       ->url(fn (): string => route('itemtranexl', ['item_id'=>$this->item_id,'repDate'=>$this->repDate,]));
   }
 
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }

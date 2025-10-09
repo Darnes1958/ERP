@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources\BuysWorkResource\Pages;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Filament\Resources\BuysWorkResource;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
@@ -12,11 +17,8 @@ use App\Models\Price_buy;
 use App\Models\Recsupp;
 use App\Models\Setting;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Tables\Actions\BulkAction;
@@ -36,7 +38,7 @@ class EditBuy extends Page implements HasTable
 
     protected static string $resource = BuysWorkResource::class;
 
-    protected static string $view = 'filament.resources.buys-work-resource.pages.edit-buy';
+    protected string $view = 'filament.resources.buys-work-resource.pages.edit-buy';
 
     protected static ?string $navigationLabel='تجربة مشتريات';
 
@@ -59,11 +61,11 @@ class EditBuy extends Page implements HasTable
         return array_merge(parent::getForms(), [
             "buyForm" => $this->makeForm()
                 ->model(Buy::class)
-                ->schema($this->getBuyFormSchema())
+                ->components($this->getBuyFormSchema())
                 ->statePath('buyData'),
             "buyTranForm" => $this->makeForm()
                 ->model(Buy_tran::class)
-                ->schema($this->getBuyTranFormSchema())
+                ->components($this->getBuyTranFormSchema())
                 ->statePath('buytranData'),
         ]);
     }
@@ -369,9 +371,9 @@ class EditBuy extends Page implements HasTable
                 }),
             Section::make()
                 ->schema([
-                    \Filament\Forms\Components\Actions::make([
+                    Actions::make([
 
-                        \Filament\Forms\Components\Actions\Action::make('الغاء الفاتورة')
+                        Action::make('الغاء الفاتورة')
                             ->icon('heroicon-m-trash')
                             ->button()
                             ->color('danger')
@@ -438,8 +440,8 @@ class EditBuy extends Page implements HasTable
                     )
                     ->sortable(),
             ])
-            ->actions([
-                \Filament\Tables\Actions\Action::make('delete')
+            ->recordActions([
+                Action::make('delete')
                     ->action(function (Buy_tran $record){
                         $record->delete();
                         $this->decAllBuy($record->item_id,$this->buy->place_id,$record->q1);
@@ -460,7 +462,7 @@ class EditBuy extends Page implements HasTable
                         return Buy_tran::where('buy_id',$this->buy_id)->count()==1;
                     })
                     ->requiresConfirmation(),
-                \Filament\Tables\Actions\Action::make('edit')
+                Action::make('edit')
                     ->action(function (Buy_tran $record){
                         $this->buyTranFormBlade->fill($record->toArray());
                         $this->dispatch('gotoitem',  test: 'q1' );

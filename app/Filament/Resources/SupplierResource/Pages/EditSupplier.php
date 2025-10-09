@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupplierResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\SupplierResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -14,7 +15,7 @@ class EditSupplier extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء موردين')),
+            DeleteAction::make()->visible(Auth::user()->can('الغاء موردين')),
         ];
     }
 }

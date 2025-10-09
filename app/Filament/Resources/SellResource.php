@@ -2,6 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\SellResource\Pages\ListSells;
+use App\Filament\Resources\SellResource\Pages\SellEdit;
+use App\Filament\Resources\SellResource\Pages\CreateSell;
+use App\Filament\Resources\SellResource\Pages\EditSell;
+use App\Filament\Resources\SellResource\Pages\TarSell;
 use App\Filament\Resources\SellResource\Pages;
 use App\Filament\Resources\SellResource\RelationManagers;
 use App\Livewire\Traits\Raseed;
@@ -13,7 +21,6 @@ use App\Models\Receipt;
 use App\Models\Sell;
 use App\Models\Sell_tran;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -29,9 +36,9 @@ class SellResource extends Resource
     use Raseed;
     protected static ?string $model = Sell::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='تعديل فاتورة مبيعات';
-    protected static ?string $navigationGroup='فواتير مبيعات';
+    protected static string | \UnitEnum | null $navigationGroup='فواتير مبيعات';
     protected static ?int $navigationSort=2;
 
     public static function shouldRegisterNavigation(): bool
@@ -46,10 +53,10 @@ class SellResource extends Resource
          return parent::getEloquentQuery()->where('place_id', Auth::user()->place_id);
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 //
             ]);
     }
@@ -161,18 +168,18 @@ class SellResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\Action::make('selltran')
+            ->recordActions([
+                Action::make('selltran')
                     ->iconButton()
                     ->icon('heroicon-m-pencil')
                     ->color('info')
                     ->url(fn(Model $record) => self::getUrl('selledit', ['record' => $record])),
-                Tables\Actions\Action::make('tarsell')
+                Action::make('tarsell')
                     ->iconButton()
                     ->icon('heroicon-m-arrows-right-left')
                     ->color('primary')
                     ->url(fn(Model $record) => self::getUrl('tarsell', ['record' => $record])),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->iconButton()
                     ->visible( function (Sell $record) {
                         return
@@ -204,11 +211,11 @@ class SellResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSells::route('/'),
-            'selledit' => Pages\SellEdit::route('/{record}/selledit'),
-            'create' => Pages\CreateSell::route('/create'),
-            'edit' => Pages\EditSell::route('/{record}/edit'),
-            'tarsell' => Pages\TarSell::route('/{record}/tarsell'),
+            'index' => ListSells::route('/'),
+            'selledit' => SellEdit::route('/{record}/selledit'),
+            'create' => CreateSell::route('/create'),
+            'edit' => EditSell::route('/{record}/edit'),
+            'tarsell' => TarSell::route('/{record}/tarsell'),
         ];
     }
 }

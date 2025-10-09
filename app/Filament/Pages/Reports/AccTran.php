@@ -2,6 +2,10 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Models\Acc;
 use App\Models\Acc_tran;
 
@@ -14,8 +18,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\TextColumn;
@@ -28,9 +30,9 @@ use Illuminate\Support\Facades\Auth;
 class AccTran extends Page  implements HasForms,HasTable
 {
     use InteractsWithTable,InteractsWithForms;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='حركة مصرف';
-    protected static ?string $navigationGroup='مصارف وخزائن';
+    protected static string | \UnitEnum | null $navigationGroup='مصارف وخزائن';
 
   public static function shouldRegisterNavigation(): bool
   {
@@ -38,7 +40,7 @@ class AccTran extends Page  implements HasForms,HasTable
   }
     protected ?string $heading="";
 
-    protected static string $view = 'filament.pages.reports.acc-tran';
+    protected string $view = 'filament.pages.reports.acc-tran';
 
     public $repDate1;
     public $repDate2;
@@ -62,15 +64,15 @@ class AccTran extends Page  implements HasForms,HasTable
             'order_id',
         ],
     ];
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('acc_id')
                     ->options(Acc::all()->pluck('name','id'))
                     ->searchable()
@@ -113,9 +115,9 @@ class AccTran extends Page  implements HasForms,HasTable
                         $this->raseed=abs($this->mden-$this->daen);
                     })
                     ->label('إلي تاريخ'),
-                \Filament\Forms\Components\Actions::make([
+                Actions::make([
 
-                    \Filament\Forms\Components\Actions\Action::make('Exl')
+                    Action::make('Exl')
                         ->label('Excel')
                         ->visible(function (){
                             return ($this->chkDate($this->repDate1) || $this->chkDate($this->repDate2)) && $this->acc_id;

@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\BuyResource\Pages;
 
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Filament\Resources\BuyResource;
 use App\Livewire\Traits\Raseed;
 use App\Models\Buy;
@@ -10,15 +16,10 @@ use App\Models\Item;
 
 use App\Models\Setting;
 use App\Models\Tar_buy;
-
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -30,8 +31,8 @@ class TarBuy extends Page implements HasTable
 {
     protected static string $resource = BuyResource::class;
 
-    protected static string $view = 'filament.resources.buy-resource.pages.tar-buy';
-  use \Filament\Resources\Pages\Concerns\InteractsWithRecord,InteractsWithTable;
+    protected string $view = 'filament.resources.buy-resource.pages.tar-buy';
+  use InteractsWithRecord,InteractsWithTable;
   use Raseed;
   protected ?string $heading='';
 
@@ -63,7 +64,7 @@ class TarBuy extends Page implements HasTable
     return array_merge(parent::getForms(), [
       "tarbuyForm" => $this->makeForm()
         ->model(Tar_buy::class)
-        ->schema($this->getTarbuyFormSchema())
+        ->components($this->getTarbuyFormSchema())
         ->statePath('tarbuyData'),
     ]);
   }
@@ -141,7 +142,7 @@ class TarBuy extends Page implements HasTable
             ->required()
             ->id('q1'),
           Hidden::make('p1'),
-          \Filament\Forms\Components\Actions::make([
+          Actions::make([
             Action::make('store')
               ->label('تخزين')
               ->icon('heroicon-m-plus')
@@ -224,8 +225,8 @@ class TarBuy extends Page implements HasTable
           ->label('سعر البيع'),
       ])
 
-      ->actions([
-        \Filament\Tables\Actions\Action::make('del_tar')
+      ->recordActions([
+        Action::make('del_tar')
           ->visible(function (Buy_tran $record){
             return  $record->tar_buy_id;
           })

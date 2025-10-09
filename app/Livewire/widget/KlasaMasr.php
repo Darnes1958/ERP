@@ -45,7 +45,7 @@ class KlasaMasr extends BaseWidget
       'val',
     ],
   ];
-  public function getTableRecordKey(Model $record): string
+  public function getTableRecordKey(Model|array $record): string
   {
     return uniqid();
   }

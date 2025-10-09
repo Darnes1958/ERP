@@ -2,6 +2,7 @@
 
 namespace App\Livewire\widget;
 
+use Filament\Tables\Columns\TextColumn;
 use App\Models\Buy;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -43,7 +44,7 @@ class KlasaBuy extends BaseWidget
             'baky',
         ],
     ];
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
@@ -73,20 +74,20 @@ class KlasaBuy extends BaseWidget
           ->defaultPaginationPageOption(5)
             ->defaultSort('tot')
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                  ->color('info')
                  ->label('نقطة البيع'),
-                Tables\Columns\TextColumn::make('tot')
+                TextColumn::make('tot')
                  ->numeric(decimalPlaces: 2,
                      decimalSeparator: '.',
                      thousandsSeparator: ',')
                  ->label('الإجمالي'),
-                Tables\Columns\TextColumn::make('pay')
+                TextColumn::make('pay')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
                     ->label('المدفوع'),
-                Tables\Columns\TextColumn::make('baky')
+                TextColumn::make('baky')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')

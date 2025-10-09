@@ -2,6 +2,7 @@
 
 namespace App\Livewire\widget;
 
+use Filament\Tables\Columns\TextColumn;
 use App\Livewire\Traits\AksatTrait;
 use App\Models\Place;
 use App\Models\Rebh_first_place;
@@ -41,7 +42,7 @@ class RebhMonthPlace extends BaseWidget
             'safi',
         ],
     ];
-  public function getTableRecordKey(Model $record): string
+  public function getTableRecordKey(Model|array $record): string
   {
     return uniqid();
   }
@@ -80,29 +81,29 @@ class RebhMonthPlace extends BaseWidget
           ->contentFooter(view('table.footerNoDecimal', $this->data_list))
           ->defaultSort('wmonth')
             ->columns([
-                Tables\Columns\TextColumn::make('wmonth')
+                TextColumn::make('wmonth')
                  ->label('الشهر'),
-                Tables\Columns\TextColumn::make('rebh')
+                TextColumn::make('rebh')
                     ->numeric(decimalPlaces: 0,
                         decimalSeparator: '',
                         thousandsSeparator: ',')
                  ->label('هامش الربح'),
-              Tables\Columns\TextColumn::make('masr')
+              TextColumn::make('masr')
                   ->numeric(decimalPlaces: 0,
                       decimalSeparator: '',
                       thousandsSeparator: ',')
                 ->label('مصروفات'),
-              Tables\Columns\TextColumn::make('sal')
+              TextColumn::make('sal')
                   ->numeric(decimalPlaces: 0,
                       decimalSeparator: '',
                       thousandsSeparator: ',')
                 ->label('مرتبات'),
-              Tables\Columns\TextColumn::make('rent')
+              TextColumn::make('rent')
                   ->numeric(decimalPlaces: 0,
                       decimalSeparator: '',
                       thousandsSeparator: ',')
                 ->label('ايجارات'),
-              Tables\Columns\TextColumn::make('safi')
+              TextColumn::make('safi')
                   ->numeric(decimalPlaces: 0,
                       decimalSeparator: '',
                       thousandsSeparator: ',')

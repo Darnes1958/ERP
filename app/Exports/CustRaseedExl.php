@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use App\Models\Cust_tran;
 use App\Models\Customer;
 use App\Models\Customer_type;
@@ -75,7 +76,7 @@ class CustRaseedExl implements FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A8:E8')
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
 
@@ -89,7 +90,7 @@ class CustRaseedExl implements FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A'.($this->rowcount+9).':E'.$this->rowcount+9)
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
 

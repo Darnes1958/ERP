@@ -3,9 +3,10 @@
 namespace App\Livewire\widget;
 
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
 use App\Models\Sell;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\HtmlString;
@@ -81,22 +82,22 @@ class RepSell extends BaseWidget
             ->defaultSort('order_date','desc')
             ->striped()
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->sortable()
                     ->label('رقم الفاتورة'),
-                Tables\Columns\TextColumn::make('Customer.name')
+                TextColumn::make('Customer.name')
                     ->label('الزبون'),
-                Tables\Columns\TextColumn::make('total')
+                TextColumn::make('total')
                     ->label('الإجمالي'),
-                Tables\Columns\TextColumn::make('pay')
+                TextColumn::make('pay')
                     ->label('المدفوع'),
-                Tables\Columns\TextColumn::make('baky')
+                TextColumn::make('baky')
                     ->label('المتبقي'),
-                Tables\Columns\TextColumn::make('notes')
+                TextColumn::make('notes')
                     ->label('ملاحظات'),
 
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('print')
                     ->icon('heroicon-o-printer')
                     ->iconButton()

@@ -2,12 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\SalaryResource\Pages\ListSalaries;
+use App\Filament\Resources\SalaryResource\Pages\CreateSalary;
+use App\Filament\Resources\SalaryResource\Pages\EditSalary;
 use App\Filament\Resources\SalaryResource\Pages;
 use App\Filament\Resources\SalaryResource\RelationManagers;
 use App\Models\Salary;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,13 +27,13 @@ class SalaryResource extends Resource
 {
 
     protected static ?string $pluralModelLabel='ادراج مرتبات';
-    protected static ?string $navigationGroup='مرتبات';
+    protected static string | \UnitEnum | null $navigationGroup='مرتبات';
     protected static ?int $navigationSort=1;
 
     protected static ?string $model = Salary::class;
     protected static ?string $pluralLabel='مرتب';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -35,10 +41,10 @@ class SalaryResource extends Resource
     }
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('name')
                  ->required()
                  ->label('الاسم'),
@@ -79,13 +85,13 @@ class SalaryResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -100,9 +106,9 @@ class SalaryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSalaries::route('/'),
-            'create' => Pages\CreateSalary::route('/create'),
-            'edit' => Pages\EditSalary::route('/{record}/edit'),
+            'index' => ListSalaries::route('/'),
+            'create' => CreateSalary::route('/create'),
+            'edit' => EditSalary::route('/{record}/edit'),
 
 
         ];

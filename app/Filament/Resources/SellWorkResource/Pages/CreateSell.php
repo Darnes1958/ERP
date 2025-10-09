@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources\SellWorkResource\Pages;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Enums\PlaceType;
 use App\Enums\TwoUnit;
 use App\Filament\Resources\SellWorkResource;
@@ -20,16 +25,12 @@ use App\Models\Sell_tran_work;
 use App\Models\Sell_work;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
@@ -48,7 +49,7 @@ class CreateSell extends Page
 
     protected static string $resource = SellWorkResource::class;
 
-    protected static string $view = 'filament.resources.sell-work-resource.pages.create-sell';
+    protected string $view = 'filament.resources.sell-work-resource.pages.create-sell';
     protected ?string $heading="";
 
     public $sell;
@@ -119,15 +120,15 @@ class CreateSell extends Page
         return array_merge(parent::getForms(), [
             "sellForm" => $this->makeForm()
                 ->model(Sell_work::class)
-                ->schema($this->getsellFormSchema())
+                ->components($this->getsellFormSchema())
                 ->statePath('sellData'),
             "sellTranForm" => $this->makeForm()
                 ->model(Sell_tran_work::class)
-                ->schema($this->getsellTranFormSchema())
+                ->components($this->getsellTranFormSchema())
                 ->statePath('selltranData'),
             "sellStoreForm" => $this->makeForm()
                 ->model(Receipt::class)
-                ->schema($this->getsellStoreFormSchema())
+                ->components($this->getsellStoreFormSchema())
                 ->statePath('sellStoreData'),
 
         ]);
@@ -890,7 +891,7 @@ class CreateSell extends Page
                         ->visible(function (){
                             return $this->sell->pay>0 && $this->sell->price_type_id==1;
                         }),
-                    \Filament\Forms\Components\Actions::make([
+                    Actions::make([
                         Action::make('store')
                             ->label('تخزين')
                             ->icon('heroicon-m-plus')
@@ -1105,8 +1106,8 @@ class CreateSell extends Page
                     )
                     ->sortable(),
             ])
-            ->actions([
-                \Filament\Tables\Actions\Action::make('delete')
+            ->recordActions([
+                Action::make('delete')
                     ->action(function (Sell_tran_work $record) {
                         $record->delete();
                         $this->tot();

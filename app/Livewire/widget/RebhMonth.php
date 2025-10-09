@@ -2,6 +2,7 @@
 
 namespace App\Livewire\widget;
 
+use Filament\Tables\Columns\TextColumn;
 use App\Livewire\Traits\AksatTrait;
 use App\Models\Rebh_second;
 use Carbon\Carbon;
@@ -35,7 +36,7 @@ class RebhMonth extends BaseWidget
             'safi',
         ],
     ];
-  public function getTableRecordKey(Model $record): string
+  public function getTableRecordKey(Model|array $record): string
   {
     return uniqid();
   }
@@ -65,18 +66,18 @@ class RebhMonth extends BaseWidget
           ->contentFooter(view('table.footer', $this->data_list))
           ->defaultSort('date')
             ->columns([
-                Tables\Columns\TextColumn::make('date')
+                TextColumn::make('date')
 
                  ->label('الشهر'),
-                Tables\Columns\TextColumn::make('rebh')
+                TextColumn::make('rebh')
                  ->label('هامش الربح'),
-              Tables\Columns\TextColumn::make('masr')
+              TextColumn::make('masr')
                 ->label('مصروفات'),
-              Tables\Columns\TextColumn::make('sal')
+              TextColumn::make('sal')
                 ->label('مرتبات'),
-              Tables\Columns\TextColumn::make('rent')
+              TextColumn::make('rent')
                 ->label('ايجارات'),
-              Tables\Columns\TextColumn::make('safi')
+              TextColumn::make('safi')
                     ->label('صافي الأرباح'),
 
 

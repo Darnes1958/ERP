@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BuysWorkResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\BuysWorkResource;
 use App\Models\Buys_work;
 use Filament\Actions;
@@ -16,7 +17,7 @@ class ListBuysWorks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
           ->label('ادخال أصتاف للفاتورة'),
 
 

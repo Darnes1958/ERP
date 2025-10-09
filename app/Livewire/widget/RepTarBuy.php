@@ -2,6 +2,7 @@
 
 namespace App\Livewire\widget;
 
+use Filament\Tables\Columns\TextColumn;
 use App\Models\Buy;
 use App\Models\Tar_buy;
 use App\Models\Tar_sell;
@@ -63,22 +64,22 @@ class RepTarBuy extends BaseWidget
         ->defaultSort('tar_date','desc')
         ->striped()
         ->columns([
-          Tables\Columns\TextColumn::make('id')
+          TextColumn::make('id')
             ->label('رقم ألي'),
-          Tables\Columns\TextColumn::make('Item.name')
+          TextColumn::make('Item.name')
             ->label('الصنف'),
-          Tables\Columns\TextColumn::make('sub_tot')
+          TextColumn::make('sub_tot')
             ->label('الإجمالي'),
-          Tables\Columns\TextColumn::make('q1')
+          TextColumn::make('q1')
             ->label('الكمية'),
-          Tables\Columns\TextColumn::make('buy_id')
+          TextColumn::make('buy_id')
             ->label('رقم فاتورة المشتريات'),
-          Tables\Columns\TextColumn::make('notes')
+          TextColumn::make('notes')
             ->label('ملاحظات'),
 
         ])
 
-        ->actions([
+        ->recordActions([
 
           //
         ])

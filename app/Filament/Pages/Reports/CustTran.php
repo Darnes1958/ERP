@@ -3,6 +3,10 @@
 namespace App\Filament\Pages\Reports;
 
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Resources\SellResource\Pages\EditSell;
 use App\Filament\Resources\SellResource\Pages\SellEdit;
 use App\Livewire\Traits\PublicTrait;
@@ -16,16 +20,12 @@ use App\Models\Setting;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Actions\Action;
-use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\RawJs;
@@ -43,12 +43,12 @@ class CustTran extends Page implements HasForms,HasTable
 {
     use PublicTrait;
   use InteractsWithTable,InteractsWithForms;
-  protected static ?string $navigationIcon = 'heroicon-o-document-text';
+  protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel='حركة زبون';
-  protected static ?string $navigationGroup='زبائن وموردين';
+  protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين';
   protected static ?int $navigationSort=5;
   protected ?string $heading="";
-  protected static string $view = 'filament.pages.reports.cust-tran';
+  protected string $view = 'filament.pages.reports.cust-tran';
 
   public static function shouldRegisterNavigation(): bool
   {
@@ -73,13 +73,13 @@ class CustTran extends Page implements HasForms,HasTable
     {
         return array_merge(parent::getForms(), [
             "myForm" => $this->makeForm()
-                ->schema($this->getMyFormSchema())
+                ->components($this->getMyFormSchema())
                 ->statePath('formData'),
 
         ]);
     }
 
-  public function getTableRecordKey(Model $record): string
+  public function getTableRecordKey(Model|array $record): string
   {
     return $record->idd;
   }
@@ -96,14 +96,14 @@ class CustTran extends Page implements HasForms,HasTable
       })
       ->deferLoading()
 
-      ->actions([
-        \Filament\Tables\Actions\Action::make('عرض')
+      ->recordActions([
+        Action::make('عرض')
           ->visible(function (Model $record) {return $record->rec_who->value==7;})
           ->modalHeading(false)
           ->action(fn (Cust_tran2 $record) =>  $record->idd)
             ->modalSubmitActionLabel('طباعة')
             ->modalSubmitAction(
-                fn (\Filament\Actions\StaticAction $action,Cust_tran2 $record) =>
+                fn (Action $action,Cust_tran2 $record) =>
                 $action->color('blue')
                     ->icon('heroicon-o-printer')
                     ->url(function () use($record){
@@ -111,7 +111,7 @@ class CustTran extends Page implements HasForms,HasTable
                         return route('pdfsell', ['id' => $record->id]);
                     })
             )
-          ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+          ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
           ->modalContent(fn (Cust_tran2 $record): View => view(
             'filament.pages.reports.views.view-sell-tran',
             ['record' => Sell::with('Sell_tran')->where('id',$record->id)->first()],
@@ -213,8 +213,8 @@ class CustTran extends Page implements HasForms,HasTable
        TextInput::make('raseed')
               ->readOnly()
               ->label('الرصيد'),
-        \Filament\Forms\Components\Actions::make([
-          \Filament\Forms\Components\Actions\Action::make('printorder')
+        Actions::make([
+          Action::make('printorder')
           ->label('طباعة')
             ->visible(function (){return $this->chkDate($this->repDate) && $this->cust_id;})
             ->button()
@@ -230,7 +230,7 @@ class CustTran extends Page implements HasForms,HasTable
                 ), 'filename.pdf', self::ret_spatie_header());
 
             }),
-          \Filament\Forms\Components\Actions\Action::make('Exl')
+          Action::make('Exl')
             ->label('Excel')
             ->visible(function (){
               return $this->chkDate($this->repDate) && $this->cust_id;

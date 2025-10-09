@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BuyResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\BuyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -14,7 +15,7 @@ class ListBuys extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

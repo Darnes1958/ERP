@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MoneyResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\MoneyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -14,7 +15,7 @@ class EditMoney extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء تحويل')),
+            DeleteAction::make()->visible(Auth::user()->can('الغاء تحويل')),
         ];
     }
 

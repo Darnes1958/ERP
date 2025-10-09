@@ -2,10 +2,10 @@
 
 namespace App\Livewire\widget;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
 use App\Models\Buy;
-use Filament\Actions\StaticAction;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\View\View;
@@ -81,23 +81,23 @@ class RepBuy extends BaseWidget
                 ->defaultSort('order_date','desc')
                 ->striped()
                 ->columns([
-                    Tables\Columns\TextColumn::make('id')
+                    TextColumn::make('id')
                         ->sortable()
                         ->label('رقم الفاتورة'),
-                    Tables\Columns\TextColumn::make('Supplier.name')
+                    TextColumn::make('Supplier.name')
                         ->label('المورد'),
-                    Tables\Columns\TextColumn::make('tot')
+                    TextColumn::make('tot')
                         ->label('الإجمالي'),
-                    Tables\Columns\TextColumn::make('pay')
+                    TextColumn::make('pay')
                         ->label('المدفوع'),
-                    Tables\Columns\TextColumn::make('baky')
+                    TextColumn::make('baky')
                         ->label('المتبقي'),
-                    Tables\Columns\TextColumn::make('notes')
+                    TextColumn::make('notes')
                         ->label('ملاحظات'),
 
                 ])
 
-                ->actions([
+                ->recordActions([
                     Action::make('print')
                         ->icon('heroicon-o-printer')
                         ->iconButton()
@@ -105,13 +105,13 @@ class RepBuy extends BaseWidget
                         ->url(fn (Buy $record): string => route('pdfbuy', ['id' => $record->id]))
                     ])
 
-              ->actions([
+              ->recordActions([
 
                 Action::make('عرض')
                   ->modalHeading(false)
                   ->action(fn (Buy $record) => $record->id())
                   ->modalSubmitAction(false)
-                  ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                  ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                   ->modalContent(fn (Buy $record): View => view(
                     'filament.pages.reports.views.view-buy-tran',
                     ['record' => $record],

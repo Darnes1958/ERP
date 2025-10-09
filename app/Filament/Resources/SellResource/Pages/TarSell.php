@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\SellResource\Pages;
 
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Filament\Resources\SellResource;
 use App\Livewire\Traits\Raseed;
 use App\Models\Item;
@@ -12,14 +18,10 @@ use App\Models\Sell_tran_work;
 use App\Models\Sell_work;
 use App\Models\Setting;
 use App\Models\Tar_sell;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
@@ -32,9 +34,9 @@ class TarSell extends Page implements HasTable
 {
 
     protected static string $resource = SellResource::class;
-    use \Filament\Resources\Pages\Concerns\InteractsWithRecord,InteractsWithTable;
+    use InteractsWithRecord,InteractsWithTable;
     use Raseed;
-    protected static string $view = 'filament.resources.sell-resource.pages.tar-sell';
+    protected string $view = 'filament.resources.sell-resource.pages.tar-sell';
     protected ?string $heading='';
 
     public $sell;
@@ -68,7 +70,7 @@ class TarSell extends Page implements HasTable
         return array_merge(parent::getForms(), [
             "tarsellForm" => $this->makeForm()
                 ->model(Tar_sell::class)
-                ->schema($this->getTarsellFormSchema())
+                ->components($this->getTarsellFormSchema())
                 ->statePath('tarsellData'),
         ]);
     }
@@ -148,7 +150,7 @@ class TarSell extends Page implements HasTable
                         ->required()
                         ->id('q1'),
                     Hidden::make('p1'),
-                    \Filament\Forms\Components\Actions::make([
+                    Actions::make([
                         Action::make('store')
                             ->label('تخزين')
                             ->icon('heroicon-m-plus')
@@ -239,8 +241,8 @@ class TarSell extends Page implements HasTable
                     }),
             ])
 
-            ->actions([
-              \Filament\Tables\Actions\Action::make('del_tar')
+            ->recordActions([
+              Action::make('del_tar')
               ->visible(function (Sell_tran $record){
                 return  $record->tar_sell_id;
               })

@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Section;
+use Filament\Tables\Columns\TextInputColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\ItemResource\Pages\ListItems;
+use App\Filament\Resources\ItemResource\Pages\CreateItem;
+use App\Filament\Resources\ItemResource\Pages\EditItem;
 use App\Enums\TwoUnit;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
@@ -14,11 +24,8 @@ use App\Models\Setting;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -32,9 +39,9 @@ class ItemResource extends Resource
     protected static ?string $model = Item::class;
 
     protected static ?string $pluralModelLabel='أصناف';
-  protected static ?string $navigationGroup='مخازن و أصناف';
+  protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
 
     public static function shouldRegisterNavigation(): bool
@@ -42,10 +49,10 @@ class ItemResource extends Resource
         return Auth::user()->can('ادخال مشتريات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('id')
                  ->hidden(fn(string $operation)=>$operation=='create')
                  ->disabled()
@@ -261,12 +268,12 @@ class ItemResource extends Resource
                         return $state;
                     })
                     ->visible(Setting::find(Auth::user()->company)->has_two),
-              Tables\Columns\TextInputColumn::make('price_buy')
+              TextInputColumn::make('price_buy')
                   ->afterStateUpdated(function ($state,Model $record){
                       Price_buy::where('item_id',$record->id)->where('price_type_id',1)->update(['price'=>$state]);
                   })
                 ->label('سعر الشراء'),
-                Tables\Columns\TextInputColumn::make('price1')
+                TextInputColumn::make('price1')
                     ->afterStateUpdated(function ($state,Model $record){
                         Price_sell::where('item_id',$record->id)->where('price_type_id',1)->update(['price1'=>$state]);
                     })
@@ -287,9 +294,9 @@ class ItemResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()->iconButton(),
-              Tables\Actions\DeleteAction::make()
+            ->recordActions([
+                EditAction::make()->iconButton(),
+              DeleteAction::make()
                   ->hidden(fn ($record):bool =>
                   $record->Buy_tran()->exists()
                   || Auth::user()->can('الغاء مشتريات')
@@ -297,9 +304,9 @@ class ItemResource extends Resource
 
                   ->iconButton(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -314,9 +321,9 @@ class ItemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListItems::route('/'),
-            'create' => Pages\CreateItem::route('/create'),
-            'edit' => Pages\EditItem::route('/{record}/edit'),
+            'index' => ListItems::route('/'),
+            'create' => CreateItem::route('/create'),
+            'edit' => EditItem::route('/{record}/edit'),
         ];
     }
 }

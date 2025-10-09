@@ -2,12 +2,14 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Actions\Action;
+use Filament\Support\Enums\Width;
+use Filament\Schemas\Components\Tabs\Tab;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Main;
 use App\Models\Main_arc;
 use App\Models\Place;
 use App\Models\Sell_tran;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Concerns\HasTabs;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Enums\FiltersLayout;
@@ -15,13 +17,10 @@ use App\Models\Buy;
 use App\Models\Customer;
 use App\Models\Sell;
 use Carbon\Carbon;
-use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Actions\BulkAction;
@@ -41,11 +40,11 @@ class SellRep extends Page implements HasForms,HasTable
   use InteractsWithForms, InteractsWithTable;
   use HasTabs;
   use PublicTrait;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.reports.sell-rep';
+    protected string $view = 'filament.pages.reports.sell-rep';
     protected static ?string $navigationLabel = 'تقرير فواتير مبيعات';
-    protected static ?string $navigationGroup = 'فواتير مبيعات';
+    protected static string | \UnitEnum | null $navigationGroup = 'فواتير مبيعات';
     protected static ?int $navigationSort=3;
     protected ?string $heading = "";
 
@@ -62,9 +61,9 @@ class SellRep extends Page implements HasForms,HasTable
  public function table(Table $table): Table
  {
    return $table
-    ->query(function (Sell $sell){
-      $sell->all();
-      return $sell;
+    ->query(function (){
+      ;
+      return Sell::query();
     })
        ->headerActions([
            Action::make('print1')
@@ -214,11 +213,11 @@ class SellRep extends Page implements HasForms,HasTable
 
      ])
 
-     ->actions([
+     ->recordActions([
        Action::make('عرض ')
          ->modalHeading(false)
          ->modalSubmitAction(false)
-         ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+         ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
          ->modalContent(fn (Sell $record): View => view(
            'filament.pages.reports.views.view-sell-tran-widget',
            ['sell_id' => $record->id],
@@ -242,7 +241,7 @@ class SellRep extends Page implements HasForms,HasTable
 
      ])
      ->modifyQueryUsing($this->modifyQueryWithActiveTab(...))
-     ->filtersFormWidth(MaxWidth::Small)
+     ->filtersFormWidth(Width::Small)
 
      ->filters([
        SelectFilter::make('customer_id')
@@ -254,7 +253,7 @@ class SellRep extends Page implements HasForms,HasTable
              ->searchable()
              ->label('نقطة بيع معينة'),
        Filter::make('created_at')
-         ->form([
+         ->schema([
            DatePicker::make('Date1')
              ->label('من تاريخ'),
            DatePicker::make('Date2')

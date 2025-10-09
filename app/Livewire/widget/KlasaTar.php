@@ -39,7 +39,7 @@ class KlasaTar extends BaseWidget
             'sub_tot',
         ],
     ];
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
@@ -72,7 +72,7 @@ class KlasaTar extends BaseWidget
                 TextColumn::make('sub_tot')
                     ->label('الاجمالي'),
             ])
-            ->actions([
+            ->recordActions([
 
             ])
             ->emptyStateHeading('لا توجد بيانات')

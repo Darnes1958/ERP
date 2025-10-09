@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
 use App\Livewire\widget\RepBuy;
 use App\Livewire\widget\RepMasr;
 use App\Livewire\widget\RepReceipt;
@@ -18,23 +19,22 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
 class RepDaily extends Page implements HasForms
 {
     use InteractsWithForms;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'الحركة اليومية';
-    protected static ?string $navigationGroup = 'الحركة اليومية';
+    protected static string | \UnitEnum | null $navigationGroup = 'الحركة اليومية';
     protected static ?int $navigationSort=1;
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasRole('admin') || Auth::user()->hasRole('تقارير');
     }
 
-    protected static string $view = 'filament.pages.reports.rep-daily';
+    protected string $view = 'filament.pages.reports.rep-daily';
     protected ?string $heading="";
 
     public $repDate1;
@@ -94,10 +94,10 @@ class RepDaily extends Page implements HasForms
             return false;
         }
     }
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 DatePicker::make('repDate1')
                     ->live()
                     ->afterStateUpdated(function ($state){

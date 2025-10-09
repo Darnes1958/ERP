@@ -2,6 +2,9 @@
 
 namespace App\Exports;
 
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Collection;
 use App\Models\OurCompany;
 
 use App\Models\Salarytran;
@@ -85,18 +88,18 @@ class SalaryTranExl implements FromCollection,WithMapping,
                 $event->sheet
                     ->getStyle('A8:F8')
                     ->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setARGB('E8E1E1');
                 $event->sheet->getDelegate()->getStyle('A')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $event->sheet->getDelegate()->getStyle('B')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $event->sheet->getDelegate()->getStyle('D')
                     ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 $event->sheet->setCellValue('C5', $this->name);
                 if ($this->rep=='sal')
@@ -141,7 +144,7 @@ class SalaryTranExl implements FromCollection,WithMapping,
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function collection()
     {
