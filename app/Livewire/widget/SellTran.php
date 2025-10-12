@@ -22,7 +22,7 @@ class SellTran extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Sell_tran $sell_tran){
+            ->query(function (){
               $sell_tran=Sell_tran::where('sell_id',$this->sell_id);
               return $sell_tran;
             }

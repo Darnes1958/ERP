@@ -46,7 +46,7 @@ class KlasaTar extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Tar_sell $rec){
+            ->query(function (){
 
                 $rec=Tar_sell::when($this->repDate1,function ($q){
                     $q->where('tar_date','>=',$this->repDate1);

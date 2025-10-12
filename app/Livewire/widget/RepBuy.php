@@ -55,7 +55,7 @@ class RepBuy extends BaseWidget
     {
 
             return $table
-                ->query(function (Buy $buy){
+                ->query(function (){
 
                     if ($this->repDate1 && !$this->repDate2)
                       $buy=Buy::where('order_date','>=',$this->repDate1)->when($this->place_id,function ($q){
@@ -113,7 +113,7 @@ class RepBuy extends BaseWidget
                   ->modalSubmitAction(false)
                   ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                   ->modalContent(fn (Buy $record): View => view(
-                    'filament.pages.reports.views.view-buy-tran',
+                    'filament.market.pages.reports.views.view-buy-tran',
                     ['record' => $record],
                   ))
                   ->icon('heroicon-o-eye')

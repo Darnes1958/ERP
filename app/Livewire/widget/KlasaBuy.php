@@ -51,7 +51,7 @@ class KlasaBuy extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(Buy $buy){
+            ->query(function(){
                $buy=Buy::when($this->repDate1,function ($q){
                  $q->where('order_date','>=',$this->repDate1);
                })

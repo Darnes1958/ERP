@@ -18,7 +18,7 @@ class BuyTran extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-          ->query(function (Buy_tran $buy_tran){
+          ->query(function (){
             return Buy_tran::where('buy_id',$this->buy_id);
 
           })

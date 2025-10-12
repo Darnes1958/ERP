@@ -2,15 +2,15 @@
 
 namespace App\Providers;
 
-use App\Filament\Resources\BuysWorkResource;
-use App\Filament\Resources\SellWorkResource;
-use App\Filament\Resources\BuyResource;
-use App\Filament\Resources\SellResource;
-use Filament\Support\Assets\Js;
+use App\Filament\ins\Pages\KsmKst;
+use App\Filament\ins\Pages\newCont;
+use App\Filament\ins\Resources\MainResource;
+use App\Filament\market\Resources\BuyResource;
+use App\Filament\market\Resources\BuysWorkResource;
+use App\Filament\market\Resources\SellResource;
+use App\Filament\market\Resources\SellWorkResource;
 use App\Models\GlobalSetting;
-use App\Models\Setting;
-use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
-use Filament\Facades\Filament;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
@@ -18,10 +18,8 @@ use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Table;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View;
 use Spatie\Browsershot\Browsershot;
@@ -54,7 +52,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;
         });
-        Table::configureUsing(fn(Table $table) => $table->defaultNumberLocale('nl'));
+        Table::configureUsing(fn(Table $table) => $table
+            ->defaultNumberLocale('nl')
+            ->emptyStateHeading('لا توجد بيانات')
+            ->defaultKeySort(false)
+        );
         FilamentView::registerRenderHook(
             PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
             fn (): string => Blade::render('@livewire(\'top-bar\')'),
@@ -67,6 +69,9 @@ class AppServiceProvider extends ServiceProvider
             SellWorkResource::class,
             BuyResource::class,
             SellResource::class,
+            KsmKst::class,
+            MainResource::class,
+            newCont::class,
 
             ]
       );

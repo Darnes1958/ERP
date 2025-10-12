@@ -54,7 +54,7 @@ class KlasaSell extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(Sell $rec){
+            ->query(function(){
 
                 $rec=Sell::when($this->repDate1,function ($q){
                   $q->where('order_date','>=',$this->repDate1);

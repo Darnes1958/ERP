@@ -54,7 +54,7 @@ class KlasaSupp extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(RecSuppUnion $rec){
+            ->query(function(){
 
 
                 $rec=RecSuppUnion::

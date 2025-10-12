@@ -52,7 +52,7 @@ class KlasaMasr extends BaseWidget
   public function table(Table $table): Table
   {
     return $table
-      ->query(function(Masr_view $masr){
+      ->query(function(){
         $masr=Masr_view::when($this->repDate1,function ($q){
           $q->where('masr_date','>=',$this->repDate1);
         })

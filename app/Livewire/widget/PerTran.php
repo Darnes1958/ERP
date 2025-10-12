@@ -19,7 +19,7 @@ class PerTran extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-          ->query(function (\App\Models\PerTran $buy_tran){
+          ->query(function (){
             return \App\Models\PerTran::where('per_id',$this->per_id);
 
           })

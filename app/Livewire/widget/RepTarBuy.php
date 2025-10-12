@@ -50,7 +50,7 @@ class RepTarBuy extends BaseWidget
     public function table(Table $table): Table
     {
       return $table
-        ->query(function (Tar_buy $tar_sell){
+        ->query(function (){
           return Tar_buy::whereBetween('tar_date',[$this->repDate1,$this->repDate2])
               ->when($this->place_id,function ($q){
                   return $q->whereIn('buy_id',Buy::where('place_id', $this->place_id)->pluck('id'));

@@ -40,7 +40,7 @@ class RepTar extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Tar_sell $sell){
+            ->query(function (){
 
                 if ($this->repDate1 && !$this->repDate2)
                     $sell=Tar_sell::where('tar_date','>=',$this->repDate1);

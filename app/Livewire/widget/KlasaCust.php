@@ -55,7 +55,7 @@ class KlasaCust extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(ReceiptUnion $rec){
+            ->query(function(){
 
 
 

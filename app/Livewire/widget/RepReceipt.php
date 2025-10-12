@@ -102,7 +102,7 @@ class RepReceipt extends BaseWidget
     {
 
         return $table
-            ->query(function (Receipt $buy){
+            ->query(function (){
 
 
               if ($this->repDate1 && !$this->repDate2)

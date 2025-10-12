@@ -49,7 +49,7 @@ class RepMasr extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-          ->query(function (Masrofat $tar_sell){
+          ->query(function (){
             return Masrofat::whereBetween('masr_date',[$this->repDate1,$this->repDate2])->when($this->place_id,function ($q){
                 return $q->where('place_id',$this->place_id);
             });

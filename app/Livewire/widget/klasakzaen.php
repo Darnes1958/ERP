@@ -46,7 +46,7 @@ class klasakzaen extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Acc_tran $rec){
+            ->query(function (){
 
               $rec=Acc_tran::
                 where('receipt_date','>=',$this->repDate1)
