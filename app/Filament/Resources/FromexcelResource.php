@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Filament\ins\Resources;
+namespace App\Filament\Resources;
 
-use App\Filament\ins\Resources\FromexcelResource\Pages\CreateFromexcel;
-use App\Filament\ins\Resources\FromexcelResource\Pages\EditFromexcel;
-use App\Filament\ins\Resources\FromexcelResource\Pages\ListFromexcels;
-use App\Filament\Resources\FromexcelResource\Pages;
+use App\Filament\Resources\FromexcelResource\Pages\CreateFromexcel;
+use App\Filament\Resources\FromexcelResource\Pages\EditFromexcel;
+use App\Filament\Resources\FromexcelResource\Pages\ListFromexcels;
 use App\Filament\Resources\FromexcelResource\RelationManagers;
 use App\Models\Fromexcel;
 use Filament\Resources\Resource;

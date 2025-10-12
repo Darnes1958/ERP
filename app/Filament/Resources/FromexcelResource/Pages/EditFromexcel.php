@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\ins\Resources\FromexcelResource\Pages;
+namespace App\Filament\Resources\FromexcelResource\Pages;
 
-use App\Filament\ins\Resources\FromexcelResource;
+use App\Filament\Resources\FromexcelResource;
 use Filament\Resources\Pages\EditRecord;
 
 class EditFromexcel extends EditRecord

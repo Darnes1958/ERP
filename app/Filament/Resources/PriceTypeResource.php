@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Filament\market\Resources;
+namespace App\Filament\Resources;
 
-use App\Filament\market\Resources\PriceTypeResource\Pages\CreatePriceType;
-use App\Filament\market\Resources\PriceTypeResource\Pages\EditPriceType;
-use App\Filament\market\Resources\PriceTypeResource\Pages\ListPriceTypes;
-use App\Filament\Resources\PriceTypeResource\Pages;
+use App\Filament\Resources\PriceTypeResource\Pages\CreatePriceType;
+use App\Filament\Resources\PriceTypeResource\Pages\EditPriceType;
+use App\Filament\Resources\PriceTypeResource\Pages\ListPriceTypes;
 use App\Filament\Resources\PriceTypeResource\RelationManagers;
 use App\Models\Price_type;
 use Filament\Actions\BulkActionGroup;

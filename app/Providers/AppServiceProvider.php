@@ -87,6 +87,10 @@ class AppServiceProvider extends ServiceProvider
         Js::make('example-external-script', 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
 
       ]);
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+            fn (): string => Blade::render('@livewire(\'panel-change\')'),
+        );
 
         Model::unguard();
     }

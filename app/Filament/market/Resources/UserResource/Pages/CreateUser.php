@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Pages;
+namespace App\Filament\market\Resources\UserResource\Pages;
 
-use App\Filament\Resources\UserResource;
-use Filament\Actions;
+use App\Filament\market\Resources\UserResource;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 

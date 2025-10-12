@@ -7,6 +7,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -26,6 +27,7 @@ class MarketPanelProvider extends PanelProvider
     {
         return $panel
             ->viteTheme('resources/css/filament/market/theme.css')
+            ->login()
             ->brandName('نظام الوسيط (ماركت)')
             ->profile(EditProfile::class)
             ->sidebarFullyCollapsibleOnDesktop()
@@ -44,6 +46,24 @@ class MarketPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Market/Widgets'), for: 'App\Filament\Market\Widgets')
             ->widgets([
                 //
+            ])
+            ->navigationGroups([
+                NavigationGroup::make('فواتير شراء'),
+                NavigationGroup::make('فواتير مبيعات'),
+                NavigationGroup::make('ايصالات قبض ودفع'),
+                NavigationGroup::make('زبائن وموردين'),
+                NavigationGroup::make('مصارف وخزائن'),
+                NavigationGroup::make('مصروفات'),
+                NavigationGroup::make('مخازن و أصناف'),
+                NavigationGroup::make('الحركة اليومية'),
+
+                NavigationGroup::make('تحويلات بين الخزائن والمصارف'),
+                NavigationGroup::make('إيجارات'),
+                NavigationGroup::make('مرتبات'),
+                NavigationGroup::make('الارباح'),
+                NavigationGroup::make('اعدادات'),
+
+
             ])
             ->middleware([
                 EncryptCookies::class,

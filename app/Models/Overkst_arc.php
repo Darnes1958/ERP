@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use App\Enums\UserStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ class Overkst_arc extends Model
 {
   protected $connection = 'other';
     protected $casts = [
-        'status' => UserStatus::class,
+        'status' => Status::class,
     ];
   public function Main_arc(){
     return $this->belongsTo(Main_arc::class);

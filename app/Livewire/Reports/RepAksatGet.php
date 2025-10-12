@@ -5,6 +5,8 @@ namespace App\Livewire\Reports;
 use App\Models\Main;
 use App\Models\Tran;
 
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -18,11 +20,11 @@ use Livewire\Attributes\Reactive;
 use Livewire\Component;
 use Filament\Forms\Get;
 
-class RepAksatGet extends Component implements HasTable, HasForms
+class RepAksatGet extends Component implements HasTable, HasForms,HasActions
 {
 
 
-    use InteractsWithTable,InteractsWithForms;
+    use InteractsWithTable,InteractsWithForms,InteractsWithActions;
   #[Reactive]
 public $bank_id;
   #[Reactive]
@@ -43,7 +45,7 @@ public $Date2;
     {
         return $table
             ->pluralModelLabel('العقود')
-            ->query(function (Tran $tran)  {
+            ->query(function ()  {
                $tran= Tran::whereBetween('ksm_date',[$this->Date1,$this->Date2])
                    ->wherein('main_id',function ($q){
                            $q->select('id')->from('mains')->where('taj_id',$this->bank_id);

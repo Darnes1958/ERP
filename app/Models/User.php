@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserStatus;
+use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -27,6 +28,11 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
+
+        if ($panel->getId() === 'admin') {
+            if ($this->is_prog) return true;
+            else redirect(Filament::getPanel('market')->getPath());
+        }
 
       return  $this->status->value==1;
     }
@@ -52,5 +58,6 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'status' => UserStatus::class,
+        'ís_prog'=>'bool',
     ];
 }

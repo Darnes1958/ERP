@@ -1,33 +1,27 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\market\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\Radio;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Actions\EditAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\UserResource\Pages\ListUsers;
-use App\Filament\Resources\UserResource\Pages\CreateUser;
-use App\Filament\Resources\UserResource\Pages\EditUser;
+use App\Filament\market\Resources\UserResource\Pages\CreateUser;
+use App\Filament\market\Resources\UserResource\Pages\EditUser;
+use App\Filament\market\Resources\UserResource\Pages\ListUsers;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\OurCompany;
 use App\Models\Place;
 use App\Models\User;
-use Filament\Actions\CreateAction;
-use Filament\Forms;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-
-use Filament\Navigation\NavigationItem;
 use Illuminate\Support\Facades\Auth;
 
 class UserResource extends Resource
@@ -105,16 +99,15 @@ class UserResource extends Resource
                 }
             })
             ->columns([
-                TextColumn::make('id')->label('الرقم الألي'),
-                TextColumn::make('name')->label('الاسم'),
-                TextColumn::make('email')->label('الايميل'),
-                IconColumn::make('status')
-
+                TextColumn::make('id')->label('الرقم الألي')->sortable(),
+                TextColumn::make('name')->label('الاسم')->searchable()->sortable(),
+                TextColumn::make('email')->label('الايميل')->searchable(),
+                IconColumn::make('status')->sortable()
                    ->label('الحالة'),
                 TextColumn::make('Place.name')->label('المكان'),
-                TextColumn::make('company')->visibleOn(Auth::id()==1),
-                TextColumn::make('created_at')->label('تاريخ الادخال'),
-                TextColumn::make('updated_at')->label('تاريخ التعديل'),
+                TextColumn::make('company')->visible(Auth::user()->is_prog)->searchable(),
+                TextColumn::make('created_at')->label('تاريخ الادخال')->toggleable()->toggledHiddenByDefault(),
+                TextColumn::make('updated_at')->label('تاريخ التعديل')->toggleable()->toggledHiddenByDefault(),
             ])
             ->filters([
                 //

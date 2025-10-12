@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\market\Resources\PriceTypeResource\Pages;
+namespace App\Filament\Resources\PriceTypeResource\Pages;
 
-use App\Filament\market\Resources\PriceTypeResource;
+use App\Filament\Resources\PriceTypeResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePriceType extends CreateRecord

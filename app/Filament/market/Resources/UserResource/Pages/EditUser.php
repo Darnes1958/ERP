@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Pages;
+namespace App\Filament\market\Resources\UserResource\Pages;
 
+use App\Filament\market\Resources\UserResource;
 use Filament\Actions\DeleteAction;
-use App\Filament\Resources\UserResource;
-use App\Models\Sell;
-use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
 

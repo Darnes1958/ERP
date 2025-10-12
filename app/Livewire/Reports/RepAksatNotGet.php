@@ -3,6 +3,8 @@
 namespace App\Livewire\Reports;
 
 use App\Models\Main;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Illuminate\Database\Query\Builder;
 use Livewire\Component;
@@ -19,9 +21,9 @@ use Livewire\Attributes\Reactive;
 use Filament\Forms\Get;
 
 
-class RepAksatNotGet extends Component implements HasTable, HasForms
+class RepAksatNotGet extends Component implements HasTable, HasForms,HasActions
 {
-    use InteractsWithTable,InteractsWithForms;
+    use InteractsWithTable,InteractsWithForms,InteractsWithActions;
     #[Reactive]
     public $bank_id;
     #[Reactive]
@@ -38,7 +40,7 @@ class RepAksatNotGet extends Component implements HasTable, HasForms
     {
         return $table
             ->pluralModelLabel('العقود')
-            ->query(function (Main $main)  {
+            ->query(function ()  {
 
                  $main= Main::where('taj_id',$this->bank_id)
                   ->whereNotin('id',function ($q){

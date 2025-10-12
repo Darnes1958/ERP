@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OverMorph;
+use App\Enums\Status;
 use App\Enums\UserStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ class Overkst extends Model
 {
   protected $connection = 'other';
     protected $casts = [
-        'status' => UserStatus::class,'overkstable_type'=>OverMorph::class,
+        'status' => Status::class,'overkstable_type'=>OverMorph::class,
     ];
     protected $appends =['name'];
     public function getNameAttribute(){

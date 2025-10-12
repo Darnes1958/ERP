@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4fc96f1ee480855965419093bf9403b7",
+    "content-hash": "467c6f64c79d80486297567b16212f01",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -581,6 +581,77 @@
                 }
             ],
             "time": "2024-07-16T11:13:48+00:00"
+        },
+        {
+            "name": "codeat3/blade-phosphor-icons",
+            "version": "2.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/codeat3/blade-phosphor-icons.git",
+                "reference": "2812a27ec642359344429d344c7f7bbdfad489ce"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/codeat3/blade-phosphor-icons/zipball/2812a27ec642359344429d344c7f7bbdfad489ce",
+                "reference": "2812a27ec642359344429d344c7f7bbdfad489ce",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.1",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "codeat3/blade-icon-generation-helpers": "^0.10",
+                "codeat3/phpcs-styles": "^1.0",
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0",
+                "phpunit/phpunit": "^9.0|^10.5|^11.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Codeat3\\BladePhosphorIcons\\BladePhosphorIconsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Codeat3\\BladePhosphorIcons\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Swapnil Sarwe",
+                    "homepage": "https://swapnilsarwe.com"
+                },
+                {
+                    "name": "Dries Vints",
+                    "homepage": "https://driesvints.com"
+                }
+            ],
+            "description": "A package to easily make use of \"Phosphor Icons\" in your Laravel Blade views.",
+            "homepage": "https://github.com/codeat3/blade-phosphor-icons",
+            "keywords": [
+                "blade",
+                "laravel",
+                "phosphor-icons"
+            ],
+            "support": {
+                "issues": "https://github.com/codeat3/blade-phosphor-icons/issues",
+                "source": "https://github.com/codeat3/blade-phosphor-icons/tree/2.3.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/swapnilsarwe",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-02-25T06:29:09+00:00"
         },
         {
             "name": "composer/pcre",
@@ -5782,6 +5853,86 @@
             "time": "2025-02-25T09:09:36+00:00"
         },
         {
+            "name": "schmeits/filament-4-phosphor-icons",
+            "version": "1.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/schmeits/filament-4-phosphor-icons.git",
+                "reference": "b517af6695d8f39a7b8f5fcfe6b32978817cb4c0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/schmeits/filament-4-phosphor-icons/zipball/b517af6695d8f39a7b8f5fcfe6b32978817cb4c0",
+                "reference": "b517af6695d8f39a7b8f5fcfe6b32978817cb4c0",
+                "shasum": ""
+            },
+            "require": {
+                "codeat3/blade-phosphor-icons": "^2.3",
+                "filament/filament": "^v4.0.0-beta",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "larastan/larastan": "^2.9",
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^8.0",
+                "orchestra/testbench": "^9.0",
+                "pestphp/pest": "^3.2",
+                "pestphp/pest-plugin-arch": "^3.0",
+                "pestphp/pest-plugin-laravel": "^3.0",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "spatie/laravel-ray": "^1.26"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "FilamentPhosphorIcons": "Schmeits\\FilamentPhosphorIcons\\Facades\\FilamentPhosphorIcons"
+                    },
+                    "providers": [
+                        "Schmeits\\FilamentPhosphorIcons\\FilamentPhosphorIconsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Schmeits\\FilamentPhosphorIcons\\": "src/",
+                    "Schmeits\\FilamentPhosphorIcons\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tally Schmeits",
+                    "email": "tally@schmeits.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "This is my package filament-4-phosphor-icons",
+            "homepage": "https://github.com/schmeits/filament-4-phosphor-icons",
+            "keywords": [
+                "filament-4-phosphor-icons",
+                "laravel",
+                "schmeits"
+            ],
+            "support": {
+                "issues": "https://github.com/schmeits/filament-4-phosphor-icons/issues",
+                "source": "https://github.com/schmeits/filament-4-phosphor-icons"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/schmeits",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-06-18T12:01:54+00:00"
+        },
+        {
             "name": "scrivo/highlight.php",
             "version": "v9.18.1.10",
             "source": {
@@ -9834,11 +9985,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.30",
+            "version": "2.1.31",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a4a7f159927983dd4f7c8020ed227d80b7f39d7d",
-                "reference": "a4a7f159927983dd4f7c8020ed227d80b7f39d7d",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ead89849d879fe203ce9292c6ef5e7e76f867b96",
+                "reference": "ead89849d879fe203ce9292c6ef5e7e76f867b96",
                 "shasum": ""
             },
             "require": {
@@ -9883,7 +10034,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-02T16:07:52+00:00"
+            "time": "2025-10-10T14:14:11+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -10317,16 +10468,16 @@
         },
         {
             "name": "rector/rector",
-            "version": "2.2.1",
+            "version": "2.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "e1aaf3061e9ae9342ed0824865e3a3360defddeb"
+                "reference": "d27f976a332a87b5d03553c2e6f04adbe5da034f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/e1aaf3061e9ae9342ed0824865e3a3360defddeb",
-                "reference": "e1aaf3061e9ae9342ed0824865e3a3360defddeb",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/d27f976a332a87b5d03553c2e6f04adbe5da034f",
+                "reference": "d27f976a332a87b5d03553c2e6f04adbe5da034f",
                 "shasum": ""
             },
             "require": {
@@ -10365,7 +10516,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.2.1"
+                "source": "https://github.com/rectorphp/rector/tree/2.2.3"
             },
             "funding": [
                 {
@@ -10373,7 +10524,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-06T21:25:14+00:00"
+            "time": "2025-10-11T21:50:23+00:00"
         },
         {
             "name": "sebastian/cli-parser",

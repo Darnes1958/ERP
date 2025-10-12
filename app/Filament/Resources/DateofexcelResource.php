@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Filament\ins\Resources;
+namespace App\Filament\Resources;
 
-use App\Filament\ins\Resources\DateofexcelResource\Pages\CreateDateofexcel;
-use App\Filament\ins\Resources\DateofexcelResource\Pages\EditDateofexcel;
-use App\Filament\ins\Resources\DateofexcelResource\Pages\ListDateofexcels;
-use App\Filament\Resources\DateofexcelResource\Pages;
+use App\Filament\Resources\DateofexcelResource\Pages\CreateDateofexcel;
+use App\Filament\Resources\DateofexcelResource\Pages\EditDateofexcel;
+use App\Filament\Resources\DateofexcelResource\Pages\ListDateofexcels;
 use App\Filament\Resources\DateofexcelResource\RelationManagers;
 use App\Models\Dateofexcel;
 use Filament\Actions\BulkActionGroup;

@@ -8,6 +8,7 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -25,7 +26,9 @@ class InsPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->subNavigationPosition(SubNavigationPosition::Top)
             ->viteTheme('resources/css/filament/ins/theme.css')
+            ->login()
             ->brandName('نظام الوسيط (ماركت)')
             ->profile(EditProfile::class)
             ->sidebarFullyCollapsibleOnDesktop()

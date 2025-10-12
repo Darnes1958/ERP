@@ -16,6 +16,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
         "maatwebsite/excel": "^3.1",
+        "schmeits/filament-4-phosphor-icons": "^1.0",
         "spatie/laravel-pdf": "^1.6",
         "spatie/laravel-permission": "^6.3",
         "thiagoprz/eloquent-composite-key": "^1.0"

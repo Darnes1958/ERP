@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\ins\Resources\FromexcelResource\Pages;
+namespace App\Filament\Resources\FromexcelResource\Pages;
 
-use App\Filament\ins\Resources\FromexcelResource;
+use App\Filament\Resources\FromexcelResource;
 use App\Imports\FromExcelImport;
 use App\Livewire\Traits\AksatTrait;
 use App\Models\Dateofexcel;

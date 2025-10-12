@@ -48,24 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
               StatsOverView::class,
             ])
-            ->navigationGroups([
-                NavigationGroup::make('فواتير شراء'),
-                NavigationGroup::make('فواتير مبيعات'),
-                NavigationGroup::make('ايصالات قبض ودفع'),
-                NavigationGroup::make('زبائن وموردين'),
-                NavigationGroup::make('مصارف وخزائن'),
-                NavigationGroup::make('مصروفات'),
-                NavigationGroup::make('مخازن و أصناف'),
-                NavigationGroup::make('الحركة اليومية'),
 
-                NavigationGroup::make('تحويلات بين الخزائن والمصارف'),
-                NavigationGroup::make('إيجارات'),
-                NavigationGroup::make('مرتبات'),
-                NavigationGroup::make('الارباح'),
-                NavigationGroup::make('اعدادات'),
-                NavigationGroup::make('Setting'),
-
-            ])
 
             ->middleware([
                 EncryptCookies::class,
