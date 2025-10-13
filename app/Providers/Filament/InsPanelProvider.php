@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Widgets\StatsOverView;
+use App\Livewire\FacingWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -48,6 +49,7 @@ class InsPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Ins/Widgets'), for: 'App\Filament\Ins\Widgets')
             ->widgets([
                 StatsOverView::class,
+                FacingWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
