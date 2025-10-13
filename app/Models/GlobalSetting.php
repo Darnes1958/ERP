@@ -7,5 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class GlobalSetting extends Model
 {
-    use HasFactory;
+
+    protected $primaryKey=null;
+    public $timestamps=false;
 }

@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Widgets\StatsOverView;
+use App\Livewire\FacingWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -41,11 +43,12 @@ class MarketPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Market/Resources'), for: 'App\Filament\Market\Resources')
             ->discoverPages(in: app_path('Filament/Market/Pages'), for: 'App\Filament\Market\Pages')
             ->pages([
-                Dashboard::class,
+                //
             ])
             ->discoverWidgets(in: app_path('Filament/Market/Widgets'), for: 'App\Filament\Market\Widgets')
             ->widgets([
-                //
+                StatsOverView::class,
+                FacingWidget::class,
             ])
             ->navigationGroups([
                 NavigationGroup::make('فواتير شراء'),

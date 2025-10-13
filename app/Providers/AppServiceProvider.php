@@ -10,6 +10,7 @@ use App\Filament\market\Resources\BuysWorkResource;
 use App\Filament\market\Resources\SellResource;
 use App\Filament\market\Resources\SellWorkResource;
 use App\Models\GlobalSetting;
+use Filament\Forms\Components\RichEditor;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -72,7 +73,6 @@ class AppServiceProvider extends ServiceProvider
             KsmKst::class,
             MainResource::class,
             newCont::class,
-
             ]
       );
 
@@ -91,6 +91,17 @@ class AppServiceProvider extends ServiceProvider
             PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
             fn (): string => Blade::render('@livewire(\'panel-change\')'),
         );
+        RichEditor::configureUsing(function (RichEditor $richEditor):void {
+            $richEditor->toolbarButtons([
+                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link'],
+                ['h1','h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd','alignJustify','textColor'],
+                ['blockquote', 'codeBlock', 'bulletList', 'orderedList','lead'],
+                ['customBlocks','mergeTags'],
+                ['table', 'attachFiles'], // The `customBlocks` and `mergeTags` tools are also added here if those features are used.
+                ['undo', 'redo'],
+                ['grid','gridDelete','details','horizontalRule','highlight']
+            ]);
+        });
 
         Model::unguard();
     }

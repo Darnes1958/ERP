@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Widgets\StatsOverView;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -42,11 +43,11 @@ class InsPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Ins/Resources'), for: 'App\Filament\Ins\Resources')
             ->discoverPages(in: app_path('Filament/Ins/Pages'), for: 'App\Filament\Ins\Pages')
             ->pages([
-                Dashboard::class,
+               //
             ])
             ->discoverWidgets(in: app_path('Filament/Ins/Widgets'), for: 'App\Filament\Ins\Widgets')
             ->widgets([
-                //
+                StatsOverView::class,
             ])
             ->middleware([
                 EncryptCookies::class,
