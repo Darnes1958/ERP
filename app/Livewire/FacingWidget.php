@@ -17,7 +17,7 @@ class FacingWidget extends Widget implements  HasForms
 
     protected string $view = 'livewire.facing-widget';
     protected static ?int $sort=2;
-    protected int | string | array $columnSpan=6;
+    protected int | string | array $columnSpan='full';
 
     public function form(Schema $schema): Schema
     {

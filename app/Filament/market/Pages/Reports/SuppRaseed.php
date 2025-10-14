@@ -71,7 +71,7 @@ class SuppRaseed extends Page implements HasForms,HasTable
                     ->label('إلي تاريخ'),
                 Checkbox::make('withZero')
                     ->live()
-                    ->label('إظهار الرصدة الصفرية'),
+                    ->label('إظهار الأرصدة الصفرية'),
                 Actions::make([
                     Action::make('excl')
                         ->label('Excel')
