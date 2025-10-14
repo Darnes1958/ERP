@@ -5,6 +5,7 @@ namespace App\Filament\market\Pages\Reports;
 use App\Exports\CustRaseedExl;
 use App\Models\Cust_tran;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -41,6 +42,7 @@ class CustRaseed extends Page implements HasForms,HasTable
 
     public $repDate1;
     public $repDate2;
+    public $withZero=false;
     public function mount(){
         $this->repDate1=now();
         $this->repDate2=now();
@@ -68,6 +70,9 @@ class CustRaseed extends Page implements HasForms,HasTable
 
                     })
                     ->label('إلي تاريخ'),
+                Checkbox::make('withZero')
+                    ->live()
+                    ->label('إظهار الرصدة الصفرية'),
                 Actions::make([
                     Action::make('excl')
                         ->label('Excel')
@@ -102,6 +107,9 @@ class CustRaseed extends Page implements HasForms,HasTable
                 })
                     ->when($this->repDate2,function ($q){
                         $q->where('repDate','<=',$this->repDate2);
+                    })
+                    ->when(!$this->withZero,function ($q){
+                        $q->havingRaw("sum(mden-daen) != 0");
                     })
                     ->groupBy('customer_id','name')
                 ;

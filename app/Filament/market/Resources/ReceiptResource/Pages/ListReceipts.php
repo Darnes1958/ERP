@@ -2,15 +2,25 @@
 
 namespace App\Filament\market\Resources\ReceiptResource\Pages;
 
+use App\Exports\ReceiptExl;
+use App\Exports\SalaryTranExl;
 use App\Filament\market\Resources\ReceiptResource;
+use App\Models\Customer;
+use App\Models\Place;
+use App\Models\Salary;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ListReceipts extends ListRecords
 {
     protected static string $resource = ReceiptResource::class;
+
+
 
 
   public function getTitle():  string|Htmlable
@@ -24,6 +34,17 @@ class ListReceipts extends ListRecords
             CreateAction::make()
              ->createAnother(false)
              ->label('إضافة إيصال'),
+            Action::make('Exl')
+                ->label('Excel')
+
+                ->button()
+                ->color('success')
+                ->action(function (){
+
+                    return Excel::download(new ReceiptExl(
+                       $this->table->getFilters(), $this->getTableQueryForExport()),'receipt.xlsx');
+                })
+
         ];
     }
 }
