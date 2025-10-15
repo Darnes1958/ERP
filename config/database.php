@@ -107,28 +107,14 @@ return [
             'prefix_indexes' => true,
             'trust_server_certificate' => true,
         ],
-        'Market' => [
-            'driver' => 'sqlsrv',
-            'url' => env('DATABASE_URL_OTHER'),
-            'host' => env('DB_HOST_OTHER', 'localhost'),
-            'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Market', 'forge'),
-            'username' => env('DB_USERNAME_OTHER', 'forge'),
-            'password' => env('DB_PASSWORD_OTHER', ''),
-            'charset' => 'utf8',
-            'prefix' => '',
-
-            'prefix_indexes' => true,
-            'trust_server_certificate' => true,
-        ],
       'Hala' => [
         'driver' => 'sqlsrv',
         'url' => env('DATABASE_URL_OTHER'),
         'host' => env('DB_HOST_OTHER', 'localhost'),
         'port' => env('DB_PORT_OTHER', '1433'),
 
-        'database' => env('DB_DATABASE_Hala', 'forge'),
+        'database' => env('DB_DATABASE_Hala', 'Hala'),
         'username' => env('DB_USERNAME_OTHER', 'forge'),
         'password' => env('DB_PASSWORD_OTHER', ''),
         'charset' => 'utf8',
@@ -143,7 +129,7 @@ return [
         'host' => env('DB_HOST_OTHER', 'localhost'),
         'port' => env('DB_PORT_OTHER', '1433'),
 
-        'database' => env('DB_DATABASE_Yzen', 'forge'),
+        'database' => env('DB_DATABASE_Yzen', 'Yzen'),
         'username' => env('DB_USERNAME_OTHER', 'forge'),
         'password' => env('DB_PASSWORD_OTHER', ''),
         'charset' => 'utf8',
@@ -158,7 +144,7 @@ return [
             'host' => env('DB_HOST_OTHER', 'localhost'),
             'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Alateek', 'forge'),
+            'database' => env('DB_DATABASE_Alateek', 'Alateek'),
             'username' => env('DB_USERNAME_OTHER', 'forge'),
             'password' => env('DB_PASSWORD_OTHER', ''),
             'charset' => 'utf8',
@@ -173,7 +159,7 @@ return [
             'host' => env('DB_HOST_OTHER', 'localhost'),
             'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Algaser', 'forge'),
+            'database' => env('DB_DATABASE_Algaser', 'Algaser'),
             'username' => env('DB_USERNAME_OTHER', 'forge'),
             'password' => env('DB_PASSWORD_OTHER', ''),
             'charset' => 'utf8',
@@ -188,7 +174,7 @@ return [
             'host' => env('DB_HOST_OTHER', 'localhost'),
             'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Motafoek', 'forge'),
+            'database' => env('DB_DATABASE_Motafoek', 'Motafoek'),
             'username' => env('DB_USERNAME_OTHER', 'forge'),
             'password' => env('DB_PASSWORD_OTHER', ''),
             'charset' => 'utf8',
@@ -203,7 +189,7 @@ return [
             'host' => env('DB_HOST_OTHER', 'localhost'),
             'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Shoshan', 'forge'),
+            'database' => env('DB_DATABASE_Shoshan', 'Shoshan'),
             'username' => env('DB_USERNAME_OTHER', 'forge'),
             'password' => env('DB_PASSWORD_OTHER', ''),
             'charset' => 'utf8',
@@ -218,7 +204,7 @@ return [
             'host' => env('DB_HOST_OTHER', 'localhost'),
             'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Lamsa', 'forge'),
+            'database' => env('DB_DATABASE_Lamsa', 'Lamsa'),
             'username' => env('DB_USERNAME_OTHER', 'forge'),
             'password' => env('DB_PASSWORD_OTHER', ''),
             'charset' => 'utf8',
@@ -233,7 +219,7 @@ return [
             'host' => env('DB_HOST_OTHER', 'localhost'),
             'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Almakazen', 'forge'),
+            'database' => env('DB_DATABASE_Almakazen', 'Almakazen'),
             'username' => env('DB_USERNAME_OTHER', 'forge'),
             'password' => env('DB_PASSWORD_OTHER', ''),
             'charset' => 'utf8',
@@ -248,7 +234,7 @@ return [
             'host' => env('DB_HOST_OTHER', 'localhost'),
             'port' => env('DB_PORT_OTHER', '1433'),
 
-            'database' => env('DB_DATABASE_Nuri', 'forge'),
+            'database' => env('DB_DATABASE_Nuri', 'Nuri'),
             'username' => env('DB_USERNAME_OTHER', 'forge'),
             'password' => env('DB_PASSWORD_OTHER', ''),
             'charset' => 'utf8',
