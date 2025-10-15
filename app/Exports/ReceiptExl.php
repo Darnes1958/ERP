@@ -58,11 +58,15 @@ class ReceiptExl implements FromCollection,WithMapping,
     public function map($rec): array
     {
         if ($rec->Place) $place=$rec->Place->name; else $place=' ';
+        $name='';
+        if ($rec->kazena_id) $name=$rec->Kazena->name;
+        if ($rec->acc_id) $name=$rec->Acc->name;
         return [
             $rec->id,
             $rec->receipt_date,
             $rec->Customer->name,
             $rec->price_type->name,
+            $name,
             $rec->rec_who->name,
             $place,
             $rec->val,
@@ -84,7 +88,7 @@ class ReceiptExl implements FromCollection,WithMapping,
             [''],
             [''],
             [''],
-            ['الرقم الألي','التاريخ','الزبون','طريقة الدفع','البيان','دفعت من ','المبلغ','ملاحظات',]
+            ['الرقم الألي','التاريخ','الزبون','طريقة الدفع','بواسطة','البيان','دفعت من ','المبلغ','ملاحظات',]
         ];
     }
     public function registerEvents(): array
@@ -92,7 +96,7 @@ class ReceiptExl implements FromCollection,WithMapping,
         return [
             AfterSheet::class => function(AfterSheet $event)  {
                 $event->sheet
-                    ->getStyle('A8:F8')
+                    ->getStyle('A10:I10')
                     ->getFill()
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
@@ -144,10 +148,13 @@ class ReceiptExl implements FromCollection,WithMapping,
         return [
             'A' => 14,
             'B' => 14,
-            'C' => 30,
+            'C' => 40,
             'D' => 14,
-            'E' => 14,
-            'F' => 40,
+            'E' => 34,
+            'F' => 14,
+            'G' => 20,
+            'H' => 14,
+            'I' => 50,
         ];
     }
 
