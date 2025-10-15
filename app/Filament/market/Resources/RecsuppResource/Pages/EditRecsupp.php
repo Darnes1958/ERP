@@ -32,7 +32,8 @@ class EditRecsupp extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
   {
-      $this->rec_who=$data['rec_who'];
+      $this->rec_who=$data['rec_who']->value;
+      $data['rec_who']= $data['rec_who']->value;
       if ($this->rec_who == 3 || $this->rec_who == 4 || $this->rec_who == 5 || $this->rec_who == 6)
         $this->buy_to_save=$data['buy_id'];
 

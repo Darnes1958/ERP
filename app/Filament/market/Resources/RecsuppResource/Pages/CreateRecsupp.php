@@ -21,6 +21,7 @@ class CreateRecsupp extends CreateRecord
 
   protected function mutateFormDataBeforeCreate(array $data): array
   {
+      $data['rec_who']=$data['rec_who']->value;
       if ($data['price_type_id']==1) {
           $res=Kazena::where('user_id',Auth::id())->first();
           if ($res) $data['kazena_id']=$res->id;

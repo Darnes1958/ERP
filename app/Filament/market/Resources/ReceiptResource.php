@@ -22,6 +22,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -60,6 +61,7 @@ class ReceiptResource extends Resource
                 ->default(1)
                 ->live()
                 ->columnSpan(2)
+
                 ->options(RecWho::class),
 
                Select::make('customer_id')
