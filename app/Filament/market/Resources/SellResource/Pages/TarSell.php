@@ -14,23 +14,26 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class TarSell extends Page implements HasTable
+class TarSell extends Page implements HasTable,HasForms
 {
 
     protected static string $resource = SellResource::class;
-    use InteractsWithRecord,InteractsWithTable;
+    use InteractsWithRecord,InteractsWithTable,InteractsWithForms;
     use Raseed;
     protected string $view = 'filament.market.resources.sell-resource.pages.tar-sell';
     protected ?string $heading='';
@@ -61,15 +64,14 @@ class TarSell extends Page implements HasTable
 
 
     }
-    protected function getForms(): array
-    {
-        return array_merge(parent::getForms(), [
-            "tarsellForm" => $this->makeForm()
-                ->model(Tar_sell::class)
-                ->components($this->getTarsellFormSchema())
-                ->statePath('tarsellData'),
-        ]);
-    }
+
+public function tarsellForm(Schema $schema): Schema
+{
+    return $schema
+        ->model(Tar_sell::class)
+        ->components($this->getTarsellFormSchema())
+        ->statePath('tarsellData');
+}
 
     public function ChkItem(){
 
@@ -194,7 +196,7 @@ class TarSell extends Page implements HasTable
     public function table(Table $table):Table
     {
         return $table
-            ->query(function (Sell_tran $sell_tran)  {
+            ->query(function ()  {
                 $sell_tran=Sell_tran::where('sell_id',$this->sell_id);
 
                 return  $sell_tran;
