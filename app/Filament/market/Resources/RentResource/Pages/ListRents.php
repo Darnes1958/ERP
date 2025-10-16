@@ -4,6 +4,7 @@ namespace App\Filament\market\Resources\RentResource\Pages;
 
 use App\Filament\market\Resources\RentResource;
 use App\Livewire\Traits\AksatTrait;
+use App\Livewire\Traits\Raseed;
 use App\Models\Acc;
 use App\Models\Kazena;
 use App\Models\Rent;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ListRents extends ListRecords
 {
-    use AksatTrait;
+    use Raseed;
     protected static string $resource = RentResource::class;
 
     protected function getHeaderActions(): array

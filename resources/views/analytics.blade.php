@@ -7,7 +7,6 @@
             postid = (event.test);
 
             if (postid == 'kst') {
-
                 $("#kst").focus();
                 $("#kst").select();
             }
@@ -21,11 +20,7 @@
                 $("#ksm").focus();
                 $("#ksm").select();
             }
-            if (postid == 'kst') {
 
-                $("#kst").focus();
-                $("#kst").select();
-            }
             if (postid == 'kst_count') {
 
                 $("#kst_count").focus();

@@ -4,6 +4,7 @@ namespace App\Filament\market\Resources\SalaryResource\Pages;
 
 use App\Filament\market\Resources\SalaryResource;
 use App\Livewire\Traits\AksatTrait;
+use App\Livewire\Traits\Raseed;
 use App\Models\Acc;
 use App\Models\Kazena;
 use App\Models\Place;
@@ -25,7 +26,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ListSalaries extends ListRecords
 {
-  use AksatTrait;
+  use Raseed;
     protected static string $resource = SalaryResource::class;
 
     public function getTabs(): array

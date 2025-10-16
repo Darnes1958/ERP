@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use mysql_xdevapi\Table;
@@ -26,6 +27,10 @@ class Main extends Model
     }
   public function Bank(){
     return $this->belongsTo(Bank::class);
+  }
+  public function Job(): BelongsTo
+  {
+      return $this->belongsTo(Job::class);
   }
     public function Taj(){
         return $this->belongsTo(Taj::class);

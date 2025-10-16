@@ -125,7 +125,7 @@ class SellResource extends Resource
                 return  $sell;
             })
             ->defaultKeySort(false)
-            ->defaultSort('id','desc')
+            ->defaultSort('updated_at','desc')
             ->emptyStateHeading('لا توجد فواتير')
             ->columns([
                 TextColumn::make('id')

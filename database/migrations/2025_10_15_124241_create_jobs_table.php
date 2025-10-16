@@ -14,10 +14,10 @@ return new class extends Migration
     {
         foreach (config('database.connections') as $key=>$connection) {
             if ($connection['driver']=='sqlsrv' && !in_array($key,['other','sqlsrv']))
-            {$databaseName = $key;
+            {
                 try {
                     if ( ! Schema::connection($key)->hasTable('jobs')) {
-                        info('here '.$key);
+
                         Schema::connection($key)->create('jobs', function (Blueprint $table) {
                             $table->id();
                             $table->string('name');
@@ -26,6 +26,9 @@ return new class extends Migration
                         Schema::connection($key)->table('mains', function($table) {
                             $table->bigInteger('job_id')->nullable();
                         });
+                        DB::connection($key)->table('jobs')->insert(['name'=>'عام']);
+
+                        DB::connection($key)->table('mains')->update(['job_id'=>1]);
                     }
 
                 } catch (\Exception $e) {

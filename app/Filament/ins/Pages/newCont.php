@@ -2,6 +2,7 @@
 
 namespace App\Filament\ins\Pages;
 
+use App\Models\Job;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Actions\Action;
@@ -32,6 +33,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\VerticalAlignment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -73,6 +75,7 @@ class newCont extends Page implements HasForms
                     'sell_id'=>$this->Sell->id,
                     'acc'=>$acc,
                     'bank_id'=>$bank_id,
+                    'job_id'=>Job::min('id'),
                     'taj_id'=>$taj_id,
                     'baky'=>$this->Sell->baky,
                     'sul'=>$this->Sell->baky,
@@ -81,21 +84,250 @@ class newCont extends Page implements HasForms
             );
             if ($main) $this->go('kst_count'); else $this->go('acc');
         } else {
-            $this->contForm->fill(['sul_begin'=>now(),'id'=>Main::max('id')+1]);
+            $this->contForm->fill(['sul_begin'=>now(),'id'=>Main::max('id')+1,'job_id'=>Job::min('id')]);
 
         }
 
     }
-    protected function getForms(): array
-{
-    return array_merge(parent::getForms(),[
-        'contForm'=> $this->makeForm()
-            ->model(Main::class)
-            ->components($this->getContFormSchema())
-            ->statePath('contData'),
 
-    ]);
-}
+
+    public function contForm(Schema $schema): Schema
+    {
+        return $schema
+            ->model(Main::class)
+            ->statePath('contData')
+            ->components([
+                Grid::make()
+                    ->schema([
+                        Section::make()
+                            ->schema([
+                                Select::make('sell_id')
+                                    ->hiddenLabel()
+                                    ->prefix('الفاتورة')
+                                    ->relationship('Sell','name',modifyQueryUsing: fn (Builder $query) =>
+                                    $query->WhereDoesntHave('Main')
+                                        ->WhereDoesntHave('Main_arc')->where('price_type_id','=',3),)
+                                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->Customer->name} {$record->total}")
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->required()
+                                    ->suffixAction(
+                                        Action::make('copyCostToPrice')
+                                            ->icon('heroicon-m-plus')
+
+                                            ->url(fn (): string =>
+                                            route('filament.ins.pages.new-sell')),
+                                    )
+
+                                    ->afterStateUpdated(function ($state,Set $set){
+                                        $this->Sell=Sell::find($state);
+                                        $set('total',$this->Sell->total);
+                                        $set('pay',$this->Sell->pay);
+                                        $set('baky',$this->Sell->baky);
+                                        $set('sul',$this->Sell->baky);
+                                        $set('id',Main::Max('id')+1);
+                                        $set('customer_id',$this->Sell->customer_id);
+                                        $main=Main::where('customer_id',$this->Sell->customer_id)->first();
+                                        if ($main) {$set('bank_id',$main->bank_id);
+                                            $set('taj_id',$main->taj_id);
+                                            $set('acc',$main->acc);}
+
+                                        $this->go('main_id');
+                                    })
+                                    ->columnSpan('full')
+
+                                ,
+                                Hidden::make('customer_id'),
+
+                                TextInput::make('baky')
+                                    ->prefix('الاجمالي')
+                                    ->hiddenLabel()
+                                    ->columnSpan(2)
+                                    ->disabled(),
+                                TextInput::make('id')
+                                    ->prefix('رقم العقد')
+                                    ->hiddenLabel()
+                                    ->columnSpan(2)
+                                    ->required()
+                                    ->unique(ignoreRecord: true)
+                                    ->unique(table: Main_arc::class)
+                                    ->default(Main::max('id')+1)
+                                    ->numeric()
+                                    ->extraAttributes([
+                                        'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'acc' })",
+                                    ])
+                                    ->id('main_id'),
+
+
+                            ])
+                            ->columnSpan(2)
+                            ->columns(4),
+                        Section::make()
+                            ->schema([
+
+                                Select::make('bank_id')
+                                    ->prefix('المصرف')
+                                    ->hiddenLabel()
+                                    ->columnSpan(2)
+                                    ->relationship('Bank','BankName')
+                                    ->searchable()
+                                    ->preload()
+                                    ->createOptionForm([
+                                        Section::make('ادخال مصارف')
+                                            ->description('ادخال بيانات مصرف .. ويمكن ادخال المصرف التجميعي اذا كان غير موجود بالقائمة')
+                                            ->schema([
+                                                TextInput::make('BankName')
+                                                    ->required()
+                                                    ->label('اسم المصرف')
+                                                    ->maxLength(255),
+                                                Select::make('taj_id')
+                                                    ->relationship('Taj','TajName')
+                                                    ->label('المصرف التجميعي')
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->createOptionForm([
+                                                        TextInput::make('TajName')
+                                                            ->required()
+                                                            ->label('المصرف التجميعي')
+                                                            ->maxLength(255),
+                                                        TextInput::make('TajAcc')
+                                                            ->label('رقم الحساب')
+                                                            ->required(),
+                                                    ])
+                                                    ->required(),
+                                            ])
+                                    ])
+                                    ->editOptionForm([
+                                        Section::make('ادخال مصارف')
+                                            ->description('ادخال بيانات مصرف .. ويمكن ادخال المصرف التجميعي اذا كان غير موجود بالقائمة')
+                                            ->schema([
+                                                TextInput::make('BankName')
+                                                    ->required()
+                                                    ->label('اسم المصرف')
+                                                    ->maxLength(255),
+
+                                            ])
+                                    ])
+                                    ->createOptionAction(fn ($action) => $action->color('success'))
+                                    ->editOptionAction(fn ($action) => $action->color('info'))
+                                    ->afterStateUpdated(function ($state,Set $set){
+                                        $set('taj_id',Bank::find($state)->taj_id);
+                                        $this->go('acc');
+                                    })
+                                    ->id('bank_id')
+                                    ->required(),
+
+                                Hidden::make('taj_id'),
+
+                                TextInput::make('acc')
+                                    ->columnSpan(2)
+                                    ->prefix('رقم الحساب')
+                                    ->hiddenLabel()
+                                    ->required()
+                                    ->id('acc')
+                                    ->extraAttributes([
+                                        'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'sul_begin' })",
+                                    ]),
+                                Select::make('job_id')
+                                    ->prefix('مكان العمل')
+                                    ->hiddenLabel()
+                                    ->columnSpan(4)
+                                    ->required()
+                                    ->relationship('Job','name')
+                                    ->preload()
+                                    ->searchable()
+                                    ->createOptionForm([
+                                        TextInput::make('name')
+                                            ->label('مكان العمل')
+                                            ->required(),
+                                    ])
+                                    ->editOptionForm([
+                                        TextInput::make('name')
+                                            ->label('مكان العمل')
+                                            ->required(),
+                                    ]),
+
+
+                                DatePicker::make('sul_begin')
+                                    ->required()
+                                    ->label('تاريخ العقد')
+                                    ->columnSpan(2)
+                                    ->maxDate(now())
+                                    ->extraAttributes([
+                                        'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'kst_count' })",
+                                    ])
+
+                                    ->id('sul_begin'),
+                                TextInput::make('sul')
+                                    ->label('قيمة العقد')
+                                    ->columnSpan(2)
+                                    ->readOnly()
+                                    ->live(onBlur: true)
+                                    ->readOnly()                     ,
+                                TextInput::make('kst_count')
+                                    ->prefix('عدد الأقساط')
+                                    ->hiddenLabel()
+                                    ->columnSpan(2)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function (Get $get,Set $set) {
+                                        $val=$get('sul') / $get('kst_count');
+                                        $set('kst', $val);
+                                    })
+                                    ->required()
+                                    ->extraAttributes([
+                                        'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'kst' })",
+                                    ])
+
+                                    ->id('kst_count'),
+                                TextInput::make('kst')
+                                    ->columnSpan(2)
+                                    ->prefix('القسط')
+                                    ->hiddenLabel()
+                                    ->id('kst')
+                                    ->extraAttributes([
+                                        'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'notes' })",
+                                    ])
+                                    ->required(),
+                                TextInput::make('notes')
+                                    ->label('ملاحظات')
+                                    ->columnSpan('full')
+                                    ->id('notes')
+                                    ->columnSpanFull(),
+                                Actions::make([
+                                    Action::make('storeCont')
+                                        ->label('تخزين')
+                                        ->action(function (){
+                                            $this->contForm->validate();
+                                            Main::create(collect($this->contData)->except(['total','pay','baky'])->toArray());
+                                            Notification::make()
+                                                ->title('تم تحزين البيانات بنجاح')
+                                                ->success()
+                                                ->send();
+                                            $this->Sell=null;
+                                            $this->contForm->fill(['sul_begin'=>now(),'id'=>Main::max('id')+1]);
+                                        })
+                                        ->color('success')
+                                    ,
+                                    Action::make('cancelCont')
+                                        ->label('تجاهل')
+                                        ->color('info')
+
+                                        ->action(function (){
+
+
+                                            $this->mount();
+
+                                        }),
+                                ])->columnSpan('full')
+
+                            ])
+                            ->columnSpan(2)
+                            ->columns(4),
+                    ])->columns(3)
+            ]);
+    }
+
     public function go($who){
         $this->dispatch('gotoitem', test: $who);
     }
@@ -112,209 +344,5 @@ class newCont extends Page implements HasForms
         $this->mount();
     }
 
-    protected function getContFormSchema(): array
-    {
-        return [
-            Grid::make()
-             ->schema([
-                 Section::make()
-                     ->schema([
-                         Select::make('sell_id')
-                             ->hiddenLabel()
-                             ->prefix('الفاتورة')
-                             ->relationship('Sell','name',modifyQueryUsing: fn (Builder $query) =>
-                             $query->WhereDoesntHave('Main')
-                                 ->WhereDoesntHave('Main_arc')->where('price_type_id','=',3),)
-                             ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->Customer->name} {$record->total}")
-                             ->searchable()
-                             ->preload()
-                             ->live()
-                             ->required()
-                             ->suffixAction(
-                                 Action::make('copyCostToPrice')
-                                     ->icon('heroicon-m-plus')
 
-                                     ->url(fn (): string =>
-                                     route('filament.admin.pages.new-sell')),
-                             )
-
-                             ->afterStateUpdated(function ($state,Set $set){
-                                 $this->Sell=Sell::find($state);
-                                 $set('total',$this->Sell->total);
-                                 $set('pay',$this->Sell->pay);
-                                 $set('baky',$this->Sell->baky);
-                                 $set('sul',$this->Sell->baky);
-                                 $set('id',Main::Max('id')+1);
-                                 $set('customer_id',$this->Sell->customer_id);
-                                 $main=Main::where('customer_id',$this->Sell->customer_id)->first();
-                                 if ($main) {$set('bank_id',$main->bank_id);
-                                     $set('taj_id',$main->taj_id);
-                                     $set('acc',$main->acc);}
-
-                                 $this->go('main_id');
-                             })
-                             ->columnSpan('full')
-
-                         ,
-                         Hidden::make('customer_id'),
-
-                         TextInput::make('baky')
-                             ->prefix('الاجمالي')
-                             ->hiddenLabel()
-                             ->columnSpan(2)
-                             ->disabled(),
-                         TextInput::make('id')
-                             ->prefix('رقم العقد')
-                             ->hiddenLabel()
-                             ->columnSpan(2)
-                             ->required()
-                             ->unique(ignoreRecord: true)
-                             ->unique(table: Main_arc::class)
-                             ->default(Main::max('id')+1)
-                             ->numeric()
-                             ->extraAttributes([
-                                 'wire:keydown.enter'=>'$dispatch("gotoitem", {test: "acc"})',
-
-                             ])
-                             ->id('main_id'),
-
-
-                     ])
-                     ->columnSpan(2)
-                     ->columns(4),
-                 Section::make()
-                     ->schema([
-
-                         Select::make('bank_id')
-                             ->prefix('المصرف')
-                             ->hiddenLabel()
-                             ->columnSpan(4)
-                             ->relationship('Bank','BankName')
-                             ->searchable()
-                             ->preload()
-                             ->createOptionForm([
-                                 Section::make('ادخال مصارف')
-                                     ->description('ادخال بيانات مصرف .. ويمكن ادخال المصرف التجميعي اذا كان غير موجود بالقائمة')
-                                     ->schema([
-                                         TextInput::make('BankName')
-                                             ->required()
-                                             ->label('اسم المصرف')
-                                             ->maxLength(255),
-                                         Select::make('taj_id')
-                                             ->relationship('Taj','TajName')
-                                             ->label('المصرف التجميعي')
-                                             ->searchable()
-                                             ->preload()
-                                             ->createOptionForm([
-                                                 TextInput::make('TajName')
-                                                     ->required()
-                                                     ->label('المصرف التجميعي')
-                                                     ->maxLength(255),
-                                                 TextInput::make('TajAcc')
-                                                     ->label('رقم الحساب')
-                                                     ->required(),
-                                             ])
-                                             ->required(),
-                                     ])
-                             ])
-                             ->editOptionForm([
-                                 Section::make('ادخال مصارف')
-                                     ->description('ادخال بيانات مصرف .. ويمكن ادخال المصرف التجميعي اذا كان غير موجود بالقائمة')
-                                     ->schema([
-                                         TextInput::make('BankName')
-                                             ->required()
-                                             ->label('اسم المصرف')
-                                             ->maxLength(255),
-
-                                     ])
-                             ])
-                             ->createOptionAction(fn ($action) => $action->color('success'))
-                             ->editOptionAction(fn ($action) => $action->color('info'))
-                             ->afterStateUpdated(function ($state,Set $set){
-                                 $set('taj_id',Bank::find($state)->taj_id);
-                                 $this->go('acc');
-                             })
-                             ->id('bank_id')
-                             ->required(),
-
-                         Hidden::make('taj_id'),
-
-                         TextInput::make('acc')
-                             ->columnSpan(4)
-                             ->prefix('رقم الحساب')
-                             ->hiddenLabel()
-                             ->required()
-                             ->id('acc')
-                             ->extraAttributes(['wire:keydown.enter'=>'$dispatch("gotoitem", {test: "sul_begin"})',]),
-                         DatePicker::make('sul_begin')
-                             ->required()
-                             ->label('تاريخ العقد')
-                             ->columnSpan(2)
-                             ->maxDate(now())
-                             ->extraAttributes(['wire:keydown.enter'=>'$dispatch("gotoitem", {test: "kst_count"})',])
-                             ->id('sul_begin'),
-                         TextInput::make('sul')
-                             ->label('قيمة العقد')
-                             ->columnSpan(2)
-                             ->readOnly()
-                             ->live(onBlur: true)
-                             ->readOnly()                     ,
-                         TextInput::make('kst_count')
-                             ->prefix('عدد الأقساط')
-                             ->hiddenLabel()
-                             ->columnSpan(2)
-                             ->live(onBlur: true)
-                             ->afterStateUpdated(function (Get $get,Set $set) {
-                                 $val=$get('sul') / $get('kst_count');
-                                 $set('kst', $val);
-                             })
-                             ->required()
-                             ->extraAttributes(['wire:keydown.enter'=>'$dispatch("gotoitem", {test: "kst"})',])
-                             ->id('kst_count'),
-                         TextInput::make('kst')
-                             ->columnSpan(2)
-                             ->prefix('القسط')
-                             ->hiddenLabel()
-                             ->id('kst')
-                             ->extraAttributes(['wire:keydown.enter'=>'$dispatch("gotoitem", {test: "notes"})',])
-                             ->required(),
-                         TextInput::make('notes')
-                             ->label('ملاحظات')
-                             ->columnSpan('full')
-                             ->id('notes')
-                             ->columnSpanFull(),
-                         Actions::make([
-                             Action::make('storeCont')
-                                 ->label('تخزين')
-                                 ->action(function (){
-                                     $this->contForm->validate();
-                                     Main::create(collect($this->contData)->except(['total','pay','baky'])->toArray());
-                                     Notification::make()
-                                         ->title('تم تحزين البيانات بنجاح')
-                                         ->success()
-                                         ->send();
-                                     $this->Sell=null;
-                                     $this->contForm->fill(['sul_begin'=>now(),'id'=>Main::max('id')+1]);
-                                 })
-                                 ->color('success')
-                             ,
-                             Action::make('cancelCont')
-                                 ->label('تجاهل')
-                                 ->color('info')
-
-                                 ->action(function (){
-
-
-                                     $this->mount();
-
-                                 }),
-                         ])->columnSpan('full')
-
-                     ])
-                     ->columnSpan(2)
-                     ->columns(4),
-             ])->columns(3)
-
-        ];
-    }
 }

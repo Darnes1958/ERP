@@ -188,13 +188,27 @@ class MainResource extends Resource
                 ])
                 ->createOptionAction(fn ($action) => $action->color('success'))
                 ->editOptionAction(fn ($action) => $action->color('info'))
-
                 ->required(),
               TextInput::make('acc')
                 ->label('رقم الحساب')
                 ->required()
                 ->extraAttributes([
                   'wire:keydown.enter'=>'$dispatch("goto", {test: "wrong_kst"})',
+                ]),
+              Select::make('job_id')
+                ->required()
+                ->relationship('Job','name')
+                ->preload()
+                ->searchable()
+                ->createOptionForm([
+                    TextInput::make('name')
+                        ->label('مكان العمل')
+                        ->required(),
+                ])
+                ->editOptionForm([
+                    TextInput::make('name')
+                        ->label('مكان العمل')
+                        ->required(),
                 ]),
               DatePicker::make('sul_begin')
                ->required()
@@ -204,7 +218,6 @@ class MainResource extends Resource
               TextInput::make('sul')
                 ->label('قيمة العقد')
                 ->live(onBlur: true)
-
                 ->afterStateUpdated(function (Get $get,Set $set) {
                   if ($get('sul') && $get('kst_count') &&
                     !$get('kst') && $get('kst')!=0) {

@@ -14,6 +14,10 @@ use App\Models\Place_stock;
 use App\Models\Price_buy;
 use App\Models\Price_sell;
 use App\Models\Price_type;
+use App\Models\Rent;
+use App\Models\Renttran;
+use App\Models\Salary;
+use App\Models\Salarytran;
 use App\Models\Sell_tran;
 use App\Models\Setting;
 use Illuminate\Database\Eloquent\Builder;
@@ -388,5 +392,29 @@ trait Raseed {
        ->where('item_id',$item)
        ->delete();
   }
+    public function TarseedTrans(){
+        $res=Salary::all();
+        foreach ($res as $item)
+            Salary::find($item->id)->update([
+                'raseed'=>
+                    Salarytran::where('salary_id',$item->id)->where('tran_type','سحب')->sum('val')+
+                    Salarytran::where('salary_id',$item->id)->where('tran_type','خصم')->sum('val')-
+                    Salarytran::where('salary_id',$item->id)->where('tran_type','مرتب')->sum('val')-
+                    Salarytran::where('salary_id',$item->id)->where('tran_type','اضافة')->sum('val')
+
+            ]);
+    }
+    public function TarseedRents(){
+        $res=Rent::all();
+        foreach ($res as $item)
+            Rent::find($item->id)->update([
+                'raseed'=>
+                    Renttran::where('rent_id',$item->id)->where('tran_type','سحب')->sum('val')-
+                    Renttran::where('rent_id',$item->id)->where('tran_type','إيجار')->sum('val')
+                ,
+            ]);
+    }
+
+
 
 }

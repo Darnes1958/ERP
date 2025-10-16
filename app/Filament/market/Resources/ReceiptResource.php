@@ -61,9 +61,7 @@ class ReceiptResource extends Resource
                 ->default(1)
                 ->live()
                 ->columnSpan(2)
-
                 ->options(RecWho::class),
-
                Select::make('customer_id')
                 ->label('الزبون')
                 ->relationship('Customer','name')
@@ -120,7 +118,7 @@ class ReceiptResource extends Resource
                   ->pluck('name', 'id'))
                 ->searchable()
                 ->requiredIf('rec_who',[3,4])
-                ->visible(fn(Get $get): bool =>($get('rec_who')==3 || $get('rec_who') ==4))
+                ->visible(fn(Get $get): bool =>($get('rec_who')->value==3 || $get('rec_who')->value ==4))
                 ->preload(),
 
                 Select::make('price_type_id')
@@ -397,18 +395,14 @@ class ReceiptResource extends Resource
                        || !Auth::user()->can('االغاء ايصالات زبائن'))
                 ->modalHeading('حذف الإيصال')
                 ->after(function (Receipt $record) {
-
                   if ($record->rec_who->value==3 || $record->rec_who->value==4 || $record->rec_who->value==5 || $record->rec_who->value==6) {
-
                     $sum=Receipt::where('sell_id',$record->sell_id)->whereIn('rec_who',[3,6])->sum('val');
                     $sub=Receipt::where('sell_id',$record->sell_id)->whereIn('rec_who',[4,5])->sum('val');
-
                     $sell=Sell::find($record->sell_id);
                     $sell->pay=$sum-$sub;
                     $sell->baky=$sell->total-$sum+$sub;
                     $sell->save();
                   }
-
                 }),
             ])
             ->toolbarActions([
