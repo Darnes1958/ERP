@@ -6,7 +6,7 @@ use App\Enums\RecWho;
 use App\Filament\market\Resources\ReceiptResource\Pages\CreateReceipt;
 use App\Filament\market\Resources\ReceiptResource\Pages\EditReceipt;
 use App\Filament\market\Resources\ReceiptResource\Pages\ListReceipts;
-use App\Filament\Resources\ReceiptResource\Pages;
+
 use App\Models\Acc;
 use App\Models\Customer;
 use App\Models\Kazena;
@@ -22,7 +22,6 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -113,13 +112,13 @@ class ReceiptResource extends Resource
               Select::make('sell_id')
                 ->label('رقم الفاتورة')
                 ->options(fn (Get $get): Collection => Sell::query()
-                  ->where('customer_id', $get('customer_id'))
+                 ->where('customer_id', $get('customer_id'))
                   ->selectRaw('\' رقم \'+str(id)+\' الاجمالي \'+str(total)+\' بتاريخ \'+convert(varchar,order_date)+\' الباقي \'+str(baky) as name,id')
                   ->pluck('name', 'id'))
-                ->searchable()
+         //       ->searchable()
                 ->requiredIf('rec_who',[3,4])
                 ->visible(fn(Get $get): bool =>($get('rec_who')->value==3 || $get('rec_who')->value ==4))
-                ->preload(),
+               ->preload(),
 
                 Select::make('price_type_id')
                     ->label('طريقة الدفع')
