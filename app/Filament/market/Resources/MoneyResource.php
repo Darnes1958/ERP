@@ -68,11 +68,11 @@ class MoneyResource extends Resource
                      ->options(Kazena::all()->pluck('name','id'))
                    ->searchable()
                    ->required(function (Get $get){
-                     return $get('rec_who')==1 || $get('rec_who')==2;
+                     return $get('rec_who')->value==1 || $get('rec_who')->value==2;
                    })
                    ->live()
                    ->visible(function (Get $get){
-                     return $get('rec_who')==1 || $get('rec_who')==2;
+                     return $get('rec_who')->value==1 || $get('rec_who')->value==2;
                    })
                    ->preload(),
                  Select::make('acc_id')
@@ -81,11 +81,11 @@ class MoneyResource extends Resource
                    ->relationship('Acc','name')
                    ->searchable()
                    ->required(function (Get $get){
-                     return $get('rec_who')==3 || $get('rec_who')==4;
+                     return $get('rec_who')->value==3 || $get('rec_who')->value==4;
                    })
 
                    ->visible(function (Get $get){
-                     return $get('rec_who')==3 || $get('rec_who')==4;
+                     return $get('rec_who')->value==3 || $get('rec_who')->value==4;
                    })
                    ->preload(),
                  Select::make('kazena2_id')
@@ -93,11 +93,11 @@ class MoneyResource extends Resource
                      ->options(Kazena::all()->pluck('name','id'))
                    ->searchable()
                    ->required(function (Get $get){
-                     return $get('rec_who')==1 || $get('rec_who')==3;
+                     return $get('rec_who')->value==1 || $get('rec_who')->value==3;
                    })
                    ->live()
                    ->visible(function (Get $get){
-                     return $get('rec_who')==1 || $get('rec_who')==3;
+                     return $get('rec_who')->value==1 || $get('rec_who')->value==3;
                    })
                    ->preload(),
                  Select::make('acc2_id')
@@ -105,11 +105,11 @@ class MoneyResource extends Resource
                      ->options(Acc::all()->pluck('name','id'))
                    ->searchable()
                    ->required(function (Get $get){
-                     return $get('rec_who')==2 || $get('rec_who')==4;
+                     return $get('rec_who')->value==2 || $get('rec_who')->value==4;
                    })
                    ->live()
                    ->visible(function (Get $get){
-                     return $get('rec_who')==2 || $get('rec_who')==4;
+                     return $get('rec_who')->value==2 || $get('rec_who')->value==4;
                    })
                    ->preload(),
                  DatePicker::make('tran_date')
@@ -130,7 +130,7 @@ class MoneyResource extends Resource
 
               Hidden::make('price_type_id')
                ->default(function (Get $get) {
-                 if ($get('rec_who')==4) return 2; else return  1;
+                 if ($get('rec_who')->value==4) return 2; else return  1;
                }),
               Hidden::make('user_id')
                 ->default(Auth::id()),
