@@ -2,6 +2,9 @@
 
 namespace App\Filament\ins\Pages;
 
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -16,18 +19,19 @@ use App\Models\Place_stock;
 use App\Models\Price_sell;
 use App\Models\Sell;
 use App\Models\Sell_tran;
-use Awcodes\TableRepeater\Components\TableRepeater;
-use Awcodes\TableRepeater\Header;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Repeater\TableColumn;
 
-class NewSell extends Page
+class NewSell extends Page implements HasForms
 {
+    use InteractsWithForms;
     use Raseed;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
@@ -46,16 +50,15 @@ class NewSell extends Page
         $this->sellForm->fill(['order_date'=>now(),'place_id'=>Place::first()->id]);
 
     }
-    protected function getForms(): array
-    {
-        return array_merge(parent::getForms(),[
 
-            'sellForm'=> $this->makeForm()
-                ->model(Sell::class)
-                ->components($this->getSellFormSchema())
-                ->statePath('sellData'),
-        ]);
+    public function sellForm(Schema $schema): Schema
+    {
+        return $schema
+            ->model(Sell::class)
+            ->components($this->getSellFormSchema())
+            ->statePath('sellData');
     }
+
     protected function getSellFormSchema(): array
     {
         return [
@@ -149,22 +152,22 @@ class NewSell extends Page
                          Hidden::make('single'),
                          Hidden::make('baky'),
                          Hidden::make('user_id'),
-                         TableRepeater::make('Sell_tran')
+                         Repeater::make('Sell_tran')
                              ->hiddenLabel()
                              ->required()
                              ->addActionLabel('اضافة صنف')
                              ->relationship()
-                             ->headers([
-                                 Header::make('الصنف')
+                             ->table([
+                                 TableColumn::make('الصنف')
                                      ->width('40%'),
-                                 Header::make('الكمية')
-                                     ->width('12%'),
-                                 Header::make('السعر')
-                                     ->width('17%'),
-                                 Header::make('الرصيد')
-                                     ->width('12%'),
-                                 Header::make('الاجمالي')
-                                     ->width('17%'),
+                                 TableColumn::make('الكمية')
+                                         ->width('12%'),
+                                 TableColumn::make('السعر')
+                                        ->width('17%'),
+                                 TableColumn::make('الرصيد')
+                                         ->width('12%'),
+                                 TableColumn::make('الاجمالي')
+                                        ->width('17%'),
 
                              ])
                              ->schema([
@@ -302,7 +305,7 @@ class NewSell extends Page
                                      $this->sell_id=$sell->id;
 
                                         $this->redirect(url(
-                                            route('filament.admin.pages.new-cont', ['sell_id'=>$this->sell_id])));
+                                            route('filament.ins.pages.new-cont', ['sell_id'=>$this->sell_id])));
 
                                  })
                                  ,
@@ -310,7 +313,7 @@ class NewSell extends Page
                                  ->label('عودة')
                                  ->color('info')
                                  ->url(fn (): string =>
-                                 route('filament.admin.pages.new-cont')),
+                                 route('filament.ins.pages.new-cont')),
 
 
                          ])->columnSpan('full')
