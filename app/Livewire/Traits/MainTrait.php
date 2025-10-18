@@ -46,7 +46,7 @@ trait MainTrait {
         $count=Tran::where('main_id',$main_id)->count();
         if ($months>($kst_count-$count)) $months=$kst_count-$count;
 
-        return $months;
+        return intval($months);
 
     }
   public function LateChk(){

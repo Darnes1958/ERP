@@ -56,9 +56,6 @@ class newCont extends Page implements HasForms
     }
 
     public $contData;
-
-
-
     public $Sell;
 
     public function mount(): void
@@ -106,7 +103,9 @@ class newCont extends Page implements HasForms
                                     ->prefix('الفاتورة')
                                     ->relationship('Sell','name',modifyQueryUsing: fn (Builder $query) =>
                                     $query->WhereDoesntHave('Main')
-                                        ->WhereDoesntHave('Main_arc')->where('price_type_id','=',3),)
+                                        ->WhereDoesntHave('Main_arc')
+
+                                        ->where('price_type_id','=',3),)
                                     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->Customer->name} {$record->total}")
                                     ->searchable()
                                     ->preload()
