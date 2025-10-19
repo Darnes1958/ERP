@@ -7,6 +7,7 @@ use App\Filament\market\Resources\ReceiptResource\Pages\CreateReceipt;
 use App\Filament\market\Resources\ReceiptResource\Pages\EditReceipt;
 use App\Filament\market\Resources\ReceiptResource\Pages\ListReceipts;
 
+use App\Filament\Tables\SellTable;
 use App\Models\Acc;
 use App\Models\Customer;
 use App\Models\Kazena;
@@ -15,10 +16,12 @@ use App\Models\Receipt;
 use App\Models\Sell;
 use App\Models\User;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\ModalTableSelect;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -109,17 +112,24 @@ class ReceiptResource extends Resource
 
                            ])->columns(2)
                    ]),
-              Select::make('sell_id')
-                ->label('رقم الفاتورة')
-                ->options(fn (Get $get): Collection => Sell::query()
-                 ->where('customer_id', $get('customer_id'))
-                  ->selectRaw('\' رقم \'+str(id)+\' الاجمالي \'+str(total)+\' بتاريخ \'+convert(varchar,order_date)+\' الباقي \'+str(baky) as name,id')
-                  ->pluck('name', 'id'))
-         //       ->searchable()
-                ->requiredIf('rec_who',[3,4])
-                ->visible(fn(Get $get): bool =>($get('rec_who')->value==3 || $get('rec_who')->value ==4))
-               ->preload(),
-
+              ModalTableSelect::make('sell_id')
+                  ->label('رقم الفاتورة')
+                  ->relationship('Sell','id')
+                  ->selectAction(
+                      fn (Action $action) => $action
+                          ->label('إضغط هنا لبحث')
+                          ->modalHeading('البحث عن فاتورة')
+                          ->modalSubmitActionLabel('تأكيد الإختيار'),
+                  )
+                  ->tableConfiguration(SellTable::class)
+                  ->getOptionLabelFromRecordUsing(fn (Sell $record): string => "{$record->id} ({$record->Customer->name}  {$record->total})")
+                  ->tableArguments(function (Get $get): array {
+                      return [
+                          'customer_id' => $get('customer_id'),
+                      ];
+                  })
+                  ->requiredIf('rec_who',[3,4])
+                  ->visible(fn(Get $get): bool =>($get('rec_who')->value==3 || $get('rec_who')->value ==4)),
                 Select::make('price_type_id')
                     ->label('طريقة الدفع')
                     ->relationship('Price_type','name')

@@ -3,6 +3,7 @@
 namespace App\Livewire\Reports;
 
 
+use App\Filament\Tables\MainTable;
 use App\Livewire\Forms\MainForm;
 use App\Livewire\Forms\OverForm;
 use App\Livewire\Forms\TarForm;
@@ -22,6 +23,7 @@ use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\ModalTableSelect;
 use Filament\Schemas\Components\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -83,7 +85,7 @@ class   MainInfo extends Component implements HasInfolists,HasForms,HasTable,Has
       $this->form->fill([]);
   }
 
-  public function Do(Get $get,Set $set)
+  public function Do()
   {
       if (!Main::find($this->mainId))
       Notification::make()
@@ -95,23 +97,27 @@ class   MainInfo extends Component implements HasInfolists,HasForms,HasTable,Has
         return $schema
             ->model(Tran::class)
             ->schema([
-                Select::make('main_id')
-                    ->columnSpan(2)
-                    ->relationship('Main', 'id')
-                    ->getOptionLabelFromRecordUsing(fn (Main $record) => "{$record->Customer->name} {$record->acc}")
+                ModalTableSelect::make('main_id')
+                    ->label('بحث')
+                    ->relationship('Main','id')
                     ->live()
-                    ->searchable()
-                    ->preload()
-                    ->Label('بحث')
-                    ->afterStateUpdated(function (Get $get,Set $set) {
+                    ->selectAction(
+                        fn (Action $action) => $action
+                            ->label('إضغط هنا لبحث')
+                            ->modalHeading('البحث عن عقد')
+                            ->modalSubmitActionLabel('تأكيد الإختيار'),
+                    )
+                    ->tableConfiguration(MainTable::class)
+                    ->getOptionLabelFromRecordUsing(fn (Main $record) => "{$record->Customer->name} ({$record->acc})")
+                    ->afterStateUpdated(function ($state,Set $set) {
 
-                        if (Main::where('id',$get('main_id'))->exists())
+                        if (Main::where('id',$state)->exists())
                         {
-                            $this->main_id=$get('main_id');
-
-                            $this->mainRec=Main::find($this->main_id);
-                            $this->dispatch('Take_Main_Id',main_id: $this->main_id);
+                            $this->main_id=$state;
                             $set('mainId',$this->main_id);
+                            $this->mainRec=Main::find($state);
+                            $this->dispatch('Take_Main_Id',main_id: $this->main_id);
+
                             $this->montahy=$this->mainRec->raseed<=0;
 
                             $this->showArc=(Main_arc::where('customer_id', $this->mainRec->customer_id)->exists());

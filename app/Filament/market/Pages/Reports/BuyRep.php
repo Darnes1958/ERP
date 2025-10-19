@@ -124,6 +124,7 @@ class BuyRep extends Page implements HasForms,HasTable
             'filament.market.pages.reports.views.view-buy-tran-widget',
             ['buy_id' => $record->id],
           ))
+
           ->icon('heroicon-o-eye')
           ->iconButton(),
       Action::make('print')
