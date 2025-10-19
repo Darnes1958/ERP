@@ -28,6 +28,8 @@ class MarketPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
             ->viteTheme('resources/css/filament/market/theme.css')
             ->login()
             ->brandName('نظام الوسيط (ماركت)')

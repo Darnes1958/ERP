@@ -53,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;
         });
+
         Table::configureUsing(fn(Table $table) => $table
             ->defaultNumberLocale('nl')
             ->emptyStateHeading('لا توجد بيانات')

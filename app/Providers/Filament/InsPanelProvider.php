@@ -28,6 +28,8 @@ class InsPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
             ->subNavigationPosition(SubNavigationPosition::Top)
             ->viteTheme('resources/css/filament/ins/theme.css')
             ->login()

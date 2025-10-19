@@ -27,6 +27,8 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
              ->viteTheme('resources/css/filament/admin/theme.css')
             ->brandName('نظام الوسيط (ماركت)')
             ->profile(EditProfile::class)
