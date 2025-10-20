@@ -8,6 +8,7 @@ use App\Models\Main_arc;
 use App\Models\Overkst;
 use App\Models\OverTar\over_kst_a;
 use App\Models\OverTar\tar_kst;
+use Filament\Support\Enums\TextSize;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextColumn\TextColumnSize;
@@ -45,7 +46,7 @@ class ContArc extends BaseWidget
             ->pluralModelLabel('أرشيف')
             ->paginated(false)
             ->defaultSort('sul_begin')
-            ->query(function (Main_arc $main){
+            ->query(function (){
                 $main=Main_arc::where('customer_id',$this->cust);
                 return $main;
             })
@@ -55,21 +56,21 @@ class ContArc extends BaseWidget
                 TextColumn::make('id')
                     ->action(function (Main_arc $record){$this->Do($record->id);})
                     ->tooltip('انقر للعرض')
-                    ->size(TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->label(new HtmlString('<span style="font-size: smaller;color: #00bb00">عقود سابقة&nbsp;&nbsp;</span>')),
                 TextColumn::make('sul_begin')
                     ->action(function (Main_arc $record){$this->Do($record->id);})
                     ->tooltip('انقر للعرض')
-                    ->size(TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->label('التاريخ'),
 
                 TextColumn::make('sul')
-                    ->size(TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->tooltip('انقر للعرض')
                     ->action(function (Main_arc $record){$this->Do($record->id);})
                     ->label('الاجمالي'),
                 TextColumn::make('kst')
-                    ->size(TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->tooltip('انقر للعرض')
                     ->action(function (Main_arc $record){$this->Do($record->id);})
                     ->label('القسط'),
