@@ -2,6 +2,8 @@
 
 @source '../../../../app/Filament/Ins/**/*';
 @source '../../../../resources/views/filament/ins/**/*';
+@source '../../../../app/Livewire/**/*';
+@source '../../../../resources/views/livewire/**/*';
 
 
 .fi-ta-ctn .py-4 {

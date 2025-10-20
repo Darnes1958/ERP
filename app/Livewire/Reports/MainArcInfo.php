@@ -96,10 +96,11 @@ class   MainArcInfo extends Component implements HasInfolists,HasForms,HasTable,
   public function form(Schema $schema): Schema
   {
     return $schema
-      ->schema([
+      ->components([
         Select::make('mainId')
           ->options(Main_arc::all()->pluck('Customer.name', 'id')->toArray())
           ->searchable()
+          ->preload()
           ->live()
           ->Label('بحث')
           ->visible(fn():bool=>!$this->showFromOther)
@@ -151,52 +152,105 @@ class   MainArcInfo extends Component implements HasInfolists,HasForms,HasTable,
   {
     return $schema
       ->record($this->mainRec)
-        ->schema([
-
+        ->components([
             TextEntry::make('Customer.name')
+                ->state(function (){
+                    return $this->mainRec->Customer->name;
+                })
+
                 ->label(new HtmlString('<div class="text-primary-400 text-lg font-extrabold">اسم الزبون</div>'))
                 ->color('info')->size(TextSize::Large)
                 ->weight(FontWeight::ExtraBold)
                 ->columnSpan(3),
             TextEntry::make('Bank.BankName')
+                ->state(function (){
+                    return $this->mainRec->Bank->BankName;
+                })
+
                 ->label('المصرف')
                 ->columnSpan(3)
                 ->color('info'),
             TextEntry::make('acc')->label('رقم الحساب')
+                ->state(function (){
+                    return $this->mainRec->acc;
+                })
+
                 ->columnSpan(2)
                 ->color('info'),
             TextEntry::make('id')
+                ->state(function (){
+                    return $this->mainRec->id;
+                })
+
                 ->columnSpan(2)
                 ->label(new HtmlString('<div class="text-primary-400 text-lg">رقم العقد</div>'))
                 ->color('info')
                 ->weight(FontWeight::ExtraBold)
                 ->size(TextSize::Large),
-            TextEntry::make('sul_begin')->label('تاريخ العقد')->columnSpan(2),
-            TextEntry::make('sul')->label('قيمة العقد')->color('info')->columnSpan(2),
+            TextEntry::make('sul_begin')                    ->state(function (){
+                return $this->mainRec->sul_begin;
+            })
+                ->label('تاريخ العقد')->columnSpan(2),
+            TextEntry::make('sul')                    ->state(function (){
+                return $this->mainRec->sul;
+            })
+                ->label('قيمة العقد')->color('info')->columnSpan(2),
 
-            TextEntry::make('kst_count')->label('عدد الأقساط')->columnSpan(2),
-            TextEntry::make('kst')->label('القسط')->columnSpan(2),
-            TextEntry::make('pay')->label('المدفوع')->columnSpan(2),
-            TextEntry::make('raseed')->label('المتبقي')->color('danger')
+            TextEntry::make('kst_count')                    ->state(function (){
+                return $this->mainRec->kst_count;
+            })
+                ->label('عدد الأقساط')->columnSpan(2),
+            TextEntry::make('kst')                    ->state(function (){
+                return $this->mainRec->kst;
+            })
+                ->label('القسط')->columnSpan(2),
+            TextEntry::make('pay')                    ->state(function (){
+                return $this->mainRec->pay;
+            })
+                ->label('المدفوع')->columnSpan(2),
+            TextEntry::make('raseed')                    ->state(function (){
+                return $this->mainRec->raseed;
+            })
+                ->label('المتبقي')->color('danger')
                 ->weight(FontWeight::ExtraBold)->columnSpan(2),
 
 
-            TextEntry::make('LastKsm')->label('تاريخ اخر خصم')->columnSpan(2),
+            TextEntry::make('LastKsm')                    ->state(function (){
+                return $this->mainRec->LastKsm;
+            })
+                ->label('تاريخ اخر خصم')
+                ->visible(fn(): bool=>filled($this->mainRec->LastKsm))->columnSpan(2),
 
-            TextEntry::make('over_count')->label('اقساط بالفائض')->color('danger')
+            TextEntry::make('over_count')                    ->state(function (){
+                return $this->mainRec->over_count;
+            })
+                ->label('اقساط بالفائض')->color('danger')
                 ->weight(FontWeight::ExtraBold)
                 ->visible(fn(): bool=>$this->mainRec->overkstable()->exists())->columnSpan(2),
-            TextEntry::make('over_kst')->label('قيمتها')
+            TextEntry::make('over_kst')                    ->state(function (){
+                return $this->mainRec->over_kst;
+            })
+                ->label('قيمتها')
                 ->visible(fn(): bool=>$this->mainRec->overkstable()->exists())->columnSpan(2),
-            TextEntry::make('tar_count')->label('اقساط مرجعة')->color('danger')
+            TextEntry::make('tar_count')                    ->state(function (){
+                return $this->mainRec->tar_count;
+            })
+                ->label('اقساط مرجعة')->color('danger')
                 ->weight(FontWeight::ExtraBold)
                 ->visible(fn(): bool=>$this->mainRec->tarkst()->exists())->columnSpan(2),
-            TextEntry::make('tar_kst')->label('قيمتها')
+            TextEntry::make('tar_kst')                    ->state(function (){
+                return $this->mainRec->tar_kst;
+            })
+                ->label('قيمتها')
                 ->visible(fn(): bool=>$this->mainRec->tarkst()->exists())->columnSpan(2),
-            TextEntry::make('notes')->label('ملاحظات')
+            TextEntry::make('notes')                    ->state(function (){
+                return $this->mainRec->notes;
+            })
+                ->label('ملاحظات')
                 ->visible(fn(): bool=>filled($this->mainRec->notes))->columnSpanFull(),
 
-        ])->columns(8);
+
+        ])->columns(8)->columns(8);
   }
 
   public function table(Table $table):Table

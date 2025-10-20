@@ -32,9 +32,14 @@
                 @endif
             </div>
         </div>
+        <x-filament::modal id="mymainModal" slide-over width="6xl" sticky-header>
+
+            @livewire(\App\livewire\Reports\MainArcInfo::class)
+        </x-filament::modal>
     </div>
 
 </x-filament-panels::page>
+
 
 
 
