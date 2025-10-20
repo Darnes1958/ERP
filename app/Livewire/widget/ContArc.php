@@ -57,7 +57,8 @@ class ContArc extends BaseWidget
                     ->action(function (Main_arc $record){$this->Do($record->id);})
                     ->tooltip('انقر للعرض')
                     ->size(TextSize::ExtraSmall)
-                    ->label(new HtmlString('<span style="font-size: smaller;color: #00bb00">عقود سابقة&nbsp;&nbsp;</span>')),
+            ->label('عقود سابقة')->color('info'),
+                    //->label(new HtmlString('<span style="font-size: smaller;color: #00bb00">عقود سابقة&nbsp;&nbsp;</span>')),
                 TextColumn::make('sul_begin')
                     ->action(function (Main_arc $record){$this->Do($record->id);})
                     ->tooltip('انقر للعرض')
