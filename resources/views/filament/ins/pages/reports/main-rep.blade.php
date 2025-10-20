@@ -7,7 +7,7 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <div class="w-1/2 text-xs ">
+            <div class="w-1/2  ">
                 <div >
                     {{ $this->mainInfolist }}
                 </div>
@@ -31,27 +31,11 @@
                     @livewire(\App\Livewire\widgets\TarWidget::class,['main_id'=>$main_id])
                 @endif
             </div>
-
-
         </div>
-
-        <x-filament::modal id="mymainModal" slide-over width="6xl" sticky-header>
-
-            <x-slot name="heading">
-
-
-            </x-slot>
-
-            @livewire(\App\livewire\Reports\MainArcInfo::class)        {{-- Modal content --}}
-        </x-filament::modal>
-
-
     </div>
 
-
-
-
-
 </x-filament-panels::page>
+
+
 
 
