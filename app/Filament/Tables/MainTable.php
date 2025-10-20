@@ -17,10 +17,10 @@ class MainTable
             ->query(fn (): Builder => Main::query())
 
             ->columns([
-                TextColumn::make('id'),
-                TextColumn::make('Customer.name'),
-                TextColumn::make('sul'),
-                TextColumn::make('sul_begin')
+                TextColumn::make('id')->searchable()->sortable(),
+                TextColumn::make('Customer.name')->searchable()->sortable(),
+                TextColumn::make('sul')->searchable(),
+                TextColumn::make('sul_begin')->searchable()->sortable()
             ])
 
             ->filters([
