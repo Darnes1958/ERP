@@ -13,7 +13,7 @@ enum UserStatus: int implements HasLabel,HasColor,HasIcon
 
   public function getLabel(): ?string
   {
-    return $this->name;
+      return str_replace('_',' ',$this->name);
   }
   public function getColor(): string | array | null
   {

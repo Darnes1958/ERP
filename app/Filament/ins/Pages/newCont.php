@@ -20,9 +20,8 @@ use App\Models\Place_stock;
 use App\Models\Price_sell;
 use App\Models\Sell;
 use App\Models\Sell_tran;
-use Awcodes\TableRepeater\Components\TableRepeater;
-use Awcodes\TableRepeater\Header;
-use Filament\Forms\Components\Component;
+
+
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -30,7 +29,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
@@ -38,9 +37,6 @@ use Filament\Support\Enums\VerticalAlignment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\On;
-use Closure;
 
 class newCont extends Page implements HasForms
 {
