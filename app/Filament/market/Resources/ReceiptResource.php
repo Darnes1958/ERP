@@ -396,11 +396,11 @@ class ReceiptResource extends Resource
               EditAction::make()->iconButton()
                   ->color('blue')
                   ->visible(fn(Receipt $record): bool =>
-                      $record->rec_who->value<7
+                      $record->rec_who->value<5
                       || !Auth::user()->can('االغاء ايصالات زبائن')),
               DeleteAction::make()->iconButton()
                   ->visible(fn(Receipt $record): bool =>
-                      $record->rec_who->value<7
+                      $record->rec_who->value<5
                        || !Auth::user()->can('االغاء ايصالات زبائن'))
                 ->modalHeading('حذف الإيصال')
                 ->after(function (Receipt $record) {

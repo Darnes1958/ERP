@@ -378,12 +378,12 @@ class RecsuppResource extends Resource
       ->recordActions([
         EditAction::make()->iconButton()
             ->visible(fn(Recsupp $record): bool =>
-                $record->rec_who->value<7
+                $record->rec_who->value<5
                 || Auth::user()->can('الغاء ايصالات موردين')
             ),
         DeleteAction::make()->iconButton()
             ->visible(fn(Recsupp $record): bool =>
-            $record->rec_who->value<7
+            $record->rec_who->value<5
             || Auth::user()->can('الغاء ايصالات موردين')
         )
           ->modalHeading('حذف الإيصال')
