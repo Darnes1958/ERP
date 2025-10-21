@@ -13,6 +13,7 @@ use App\Models\Main_arc;
 use App\Models\Taj;
 use App\Models\Tran;
 use App\Models\User;
+
 use EightyNine\ExcelImport\ExcelImportAction;
 use Exception;
 use Filament\Actions;
@@ -145,6 +146,8 @@ class ListFromexcels extends ListRecords
                             'taj_id'=>Auth::user()->taj,
                             'from_date'=>$fromexcel->min('ksm_date'),
                             'to_date'=>$fromexcel->max('ksm_date'),
+                            'auto'=>1,
+                            'status'=>1,
                         ]);
                     } else return;
 

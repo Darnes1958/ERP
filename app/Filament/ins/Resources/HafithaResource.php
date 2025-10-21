@@ -2,9 +2,11 @@
 
 namespace App\Filament\ins\Resources;
 
+use App\Enums\Morahela;
 use App\Filament\ins\Resources\HafithaResource\Pages\CreateHafitha;
 use App\Filament\ins\Resources\HafithaResource\Pages\EditHafitha;
 use App\Filament\ins\Resources\HafithaResource\Pages\ListHafithas;
+use App\Filament\Ins\Resources\HafithaResource\Pages\ManageHafithaTrans;
 use App\Filament\Resources\HafithaResource\Pages;
 use App\Filament\Resources\HafithaResource\RelationManagers;
 use App\Livewire\Traits\AksatTrait;
@@ -15,12 +17,21 @@ use App\Models\Tran;
 use App\Models\Trans_arc;
 use App\Models\Wrongkst;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class HafithaResource extends Resource
@@ -37,7 +48,13 @@ class HafithaResource extends Resource
     {
         return $schema
             ->components([
-                //
+                Select::make('taj_id')
+                 ->relationship('Taj', 'TajName')
+                 ->searchable()
+                 ->preload(),
+                Hidden::make('status')->default(0),
+                Hidden::make('auto')->default(0),
+
             ]);
     }
 
@@ -45,6 +62,7 @@ class HafithaResource extends Resource
     {
         return $table
             ->columns([
+                IconColumn::make('status'),
                 TextColumn::make('id')->label('الرقم الألي')->sortable()->searchable(),
                 TextColumn::make('Taj.TajName')->label('رقم الحساب')->searchable()->sortable(),
                 TextColumn::make('from_date')->label('تاريخ بداية الحافظ')->searchable()->sortable(),
@@ -58,7 +76,7 @@ class HafithaResource extends Resource
 
             ])
             ->filters([
-                //
+                SelectFilter::make('status')->options(Morahela::class)->label('الحالة'),
             ])
             ->recordActions([
                 Action::make('Delete Hafitha')
@@ -80,14 +98,13 @@ class HafithaResource extends Resource
                                     ->title('تم حذف الحافظة')
                                     ->success()
                                     ->send();
-
-
-
-
                     })
                     ->requiresConfirmation()
-                    ->visible(Auth::id()==1)
-
+                    ->visible(Auth::id()==1),
+                Action::make('Hafitha_tran')
+                 ->label('ادخال اقساط')
+                 ->icon(Heroicon::Plus)
+                 ->url(fn(Hafitha $record): string=> HafithaResource::getUrl('hafitha_trans',['record'=>$record->id,]))
             ])
             ->toolbarActions([
                //
@@ -107,6 +124,7 @@ class HafithaResource extends Resource
             'index' => ListHafithas::route('/'),
             'create' => CreateHafitha::route('/create'),
             'edit' => EditHafitha::route('/{record}/edit'),
+            'hafitha_trans'=>ManageHafithaTrans::route('/{record}/hafitha_trans')
         ];
     }
 }
