@@ -20,6 +20,7 @@ return new class extends Migration
                         Schema::connection($key)->create('dbo.hafitha_trans', function (Blueprint $table) {
                             $table->id();
                             $table->foreignIdFor(\App\Models\Hafitha::class)->constrained();
+                            $table->morphs('hafithaable');
                             $table->string('acc');
                             $table->decimal('kst',12,3);
                             $table->date('ksm_date');

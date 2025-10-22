@@ -6,9 +6,7 @@ use App\Enums\Morahela;
 use App\Filament\ins\Resources\HafithaResource\Pages\CreateHafitha;
 use App\Filament\ins\Resources\HafithaResource\Pages\EditHafitha;
 use App\Filament\ins\Resources\HafithaResource\Pages\ListHafithas;
-use App\Filament\Ins\Resources\HafithaResource\Pages\ManageHafithaTrans;
-use App\Filament\Resources\HafithaResource\Pages;
-use App\Filament\Resources\HafithaResource\RelationManagers;
+
 use App\Livewire\Traits\AksatTrait;
 use App\Models\Hafitha;
 use App\Models\Main;
@@ -32,6 +30,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class HafithaResource extends Resource
@@ -64,9 +63,10 @@ class HafithaResource extends Resource
             ->columns([
                 IconColumn::make('status'),
                 TextColumn::make('id')->label('الرقم الألي')->sortable()->searchable(),
-                TextColumn::make('Taj.TajName')->label('رقم الحساب')->searchable()->sortable(),
-                TextColumn::make('from_date')->label('تاريخ بداية الحافظ')->searchable()->sortable(),
-                TextColumn::make('to_date')->label('تاريخ نهاية الحافظة')->searchable()->sortable(),
+                TextColumn::make('Taj.TajName')->label('المصرف')->searchable()->sortable(),
+                TextColumn::make('acc')->label('رقم الحساب')->searchable()->sortable(),
+                TextColumn::make('from_date')->label('تاريخ بداية الحافظ')->toggleable()->toggledHiddenByDefault()->searchable()->sortable(),
+                TextColumn::make('to_date')->label('تاريخ نهاية الحافظة')->toggleable()->toggledHiddenByDefault()->searchable()->sortable(),
                 TextColumn::make('tot')->label('الاجمالي')->searchable()->sortable(),
                 TextColumn::make('morahel')->label('المرحل')->sortable(),
                 TextColumn::make('over_kst')->label('الفائض')->sortable(),
@@ -78,6 +78,10 @@ class HafithaResource extends Resource
             ->filters([
                 SelectFilter::make('status')->options(Morahela::class)->label('الحالة'),
             ])
+            ->defaultSort(function (Builder $query): Builder {
+                return $query->orderBy('status')->orderBy('id');
+            })
+            ->defaultKeySort(false)
             ->recordActions([
                 Action::make('Delete Hafitha')
                     ->color('danger')
@@ -101,10 +105,8 @@ class HafithaResource extends Resource
                     })
                     ->requiresConfirmation()
                     ->visible(Auth::id()==1),
-                Action::make('Hafitha_tran')
-                 ->label('ادخال اقساط')
-                 ->icon(Heroicon::Plus)
-                 ->url(fn(Hafitha $record): string=> HafithaResource::getUrl('hafitha_trans',['record'=>$record->id,]))
+                Action::make('see')
+                    ->url(fn ($record) => route('filament.ins.pages.inp-hafitha-tran.{record}', ['record' => $record->id]))
             ])
             ->toolbarActions([
                //
@@ -124,7 +126,7 @@ class HafithaResource extends Resource
             'index' => ListHafithas::route('/'),
             'create' => CreateHafitha::route('/create'),
             'edit' => EditHafitha::route('/{record}/edit'),
-            'hafitha_trans'=>ManageHafithaTrans::route('/{record}/hafitha_trans')
+
         ];
     }
 }

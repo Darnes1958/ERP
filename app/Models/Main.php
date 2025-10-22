@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Auth;
 use mysql_xdevapi\Table;
 
@@ -24,6 +25,10 @@ class Main extends Model
     public function overkstable()
     {
         return $this->morphMany(Overkst::class, 'overkstable');
+    }
+    public function hafitha(): MorphMany
+    {
+      return $this->morphMany(HafithaTran::class, 'hafithaable');
     }
   public function Bank(){
     return $this->belongsTo(Bank::class);

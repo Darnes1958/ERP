@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Filament\Ins\Pages\InpHafithaTran;
 use App\Filament\ins\Pages\KsmKst;
 use App\Filament\ins\Pages\newCont;
 use App\Filament\ins\Resources\MainResource;
@@ -100,6 +101,7 @@ class AppServiceProvider extends ServiceProvider
             KsmKst::class,
             MainResource::class,
             newCont::class,
+            InpHafithaTran::class,
             ]
       );
 
