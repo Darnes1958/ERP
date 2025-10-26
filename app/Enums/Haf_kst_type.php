@@ -21,8 +21,8 @@ enum Haf_kst_type: int implements HasLabel,HasColor
   {
     return match ($this) {
       self::قائم => 'info',
-      self::ارشيف => 'primary',
-        self::بالخطأ => 'danger',
+      self::ارشيف => 'danger',
+        self::بالخطأ => 'warning',
         self::ملغي => 'warning',
 
 

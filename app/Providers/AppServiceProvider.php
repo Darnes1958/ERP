@@ -65,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
 
         Table::configureUsing(fn(Table $table) => $table
             ->defaultNumberLocale('nl')
+            ->pluralModelLabel('الصفحات')
             ->emptyStateHeading('لا توجد بيانات')
             ->defaultKeySort(false)
         );

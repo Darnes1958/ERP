@@ -20,6 +20,16 @@
                 $("#ksm").focus();
                 $("#ksm").select();
             }
+            if (postid == 'ksm_date2') {
+
+                $("#ksm_date2").focus();
+                $("#ksm_date2").select();
+            }
+            if (postid == 'ksm2') {
+
+                $("#ksm2").focus();
+                $("#ksm2").select();
+            }
 
             if (postid == 'kst_count') {
 
