@@ -40,6 +40,7 @@ class HafithaResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='حوافظ';
+
     protected static ?int $navigationSort=9;
 
 
@@ -64,7 +65,7 @@ class HafithaResource extends Resource
                 IconColumn::make('status'),
                 TextColumn::make('id')->label('الرقم الألي')->sortable()->searchable(),
                 TextColumn::make('Taj.TajName')->label('المصرف')->searchable()->sortable(),
-                TextColumn::make('acc')->label('رقم الحساب')->searchable()->sortable(),
+
                 TextColumn::make('from_date')->label('تاريخ بداية الحافظ')->toggleable()->toggledHiddenByDefault()->searchable()->sortable(),
                 TextColumn::make('to_date')->label('تاريخ نهاية الحافظة')->toggleable()->toggledHiddenByDefault()->searchable()->sortable(),
                 TextColumn::make('tot')->label('الاجمالي')->searchable()->sortable(),
@@ -106,6 +107,8 @@ class HafithaResource extends Resource
                     ->requiresConfirmation()
                     ->visible(Auth::id()==1),
                 Action::make('see')
+                    ->label('ادخال أقساط')
+                    ->visible(fn(Model $record): bool=>$record->status->value==0)
                     ->url(fn ($record) => route('filament.ins.pages.inp-hafitha-tran.{record}', ['record' => $record->id]))
             ])
             ->toolbarActions([

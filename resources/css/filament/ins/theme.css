@@ -4,6 +4,7 @@
 @source '../../../../resources/views/filament/ins/**/*';
 @source '../../../../app/Livewire/**/*';
 @source '../../../../resources/views/livewire/**/*';
+@source '../../../../vendor/defstudio/filament-searchable-input/resources/**/*.blade.php';
 
 
 .fi-ta-ctn .py-4 {

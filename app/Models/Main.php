@@ -44,7 +44,8 @@ class Main extends Model
     return $this->belongsTo(Customer::class);
   }
     public function getNameAttribute(){
-        return $this->Customer->name;
+        if ($this->Customer)
+        return $this->Customer->name; else return null;
     }
 
   public function Sell(){

@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.2",
         "cerbero/laravel-enum": "^1.3",
+        "defstudio/filament-searchable-input": "^4.0",
         "eightynine/filament-excel-import": "^4.0",
         "filament/filament": "^4.0",
         "guzzlehttp/guzzle": "^7.2",

@@ -9,5 +9,5 @@ class EditHafitha extends EditRecord
 {
     protected static string $resource = HafithaResource::class;
 
-
+    protected ?string $heading='';
 }

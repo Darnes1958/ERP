@@ -22,9 +22,10 @@ return new class extends Migration
                             $table->foreignIdFor(\App\Models\Hafitha::class)->constrained();
                             $table->morphs('hafithaable');
                             $table->string('acc');
-                            $table->decimal('kst',12,3);
+                            $table->decimal('ksm',12,3);
                             $table->date('ksm_date');
                             $table->string('ksm_notes')->nullable();
+                            $table->integer('haf_kst_type');
                             $table->timestamps();
                         });
 

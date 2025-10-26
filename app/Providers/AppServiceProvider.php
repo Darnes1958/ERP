@@ -12,6 +12,7 @@ use App\Filament\market\Resources\SellResource;
 use App\Filament\market\Resources\SellWorkResource;
 use App\Models\GlobalSetting;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -76,6 +77,10 @@ class AppServiceProvider extends ServiceProvider
         TextInput::configureUsing(function (TextInput $input): void {
             $input->translateLabel();
         });
+        DatePicker::configureUsing(function (DatePicker $input): void {
+            $input->translateLabel();
+        });
+
         TextColumn::configureUsing(function (TextColumn $column): void {
             $column->translateLabel();
         });
