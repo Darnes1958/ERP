@@ -2,6 +2,9 @@
 
 namespace App\Filament\ins\Pages;
 
+use App\Enums\Haf_kst_type;
+use DefStudio\SearchableInput\DTO\SearchResult;
+use DefStudio\SearchableInput\Forms\Components\SearchableInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Schemas\Components\Section;
@@ -175,22 +178,34 @@ class KsmKst extends Page implements HasTable,HasForms
                             ->hiddenLabel()
                             ->columnSpanFull()
                             ->required(),
-                        TextInput::make('acc')->label('رقم الحساب')
-                            ->live(debounce:400)
-                            ->columnSpan(3)
-                            ->autocomplete('off')
-                            ->datalist(function (?string $state , TextInput $component,?Model $record ,
-                                                         $modelsearch='\App\Models\Main' , $fieldsearch='acc') {
-                                $options =[];
-                                if($state!=null  and Str::length($state)>=3){
-                                    $options= $modelsearch::whereRaw($fieldsearch.
-                                        ' like \'%'.$state.'%\'')
-                                        ->limit(20)
-                                        ->pluck('acc')
-                                        ->toarray();
-                                }
-                                return $options;
+                        SearchableInput::make('acc')
+                            ->placeholder('بحث برقم الحساب او الاسم')
+                            ->searchUsing(function(string $search){
+                                return Main::query()
+                                    ->join('customers','customers.id','=','mains.customer_id',)
+                                    ->where('acc', 'like', "%$search%")
+                                    ->orWhere('customers.name', 'like', "%$search%")
+                                    ->limit(15)
+                                    ->select('mains.*','customers.name')
+                                    ->get()
+                                    ->map(fn(Main $main) => SearchResult::make($main->acc, "[$main->name]  $main->acc")
+                                        ->withData('id', $main->id)
+                                        ->withData('acc',$main->acc)
+                                        ->withData('ksm',$main->kst)
+                                    )
+                                    ->toArray();})
+                            ->onItemSelected(function(SearchResult $item, \Filament\Schemas\Components\Utilities\Set $set){
+
+
+                                $this->acc=$item->get('acc');
+
+
+                                $this->chkacc();
                             })
+                            ->live()
+                            ->autocomplete('off')
+                            ->autofocus()
+                            ->columnSpan(3)
                             ->afterStateUpdated(function ($state){
                                 $this->acc=$state;
                                 $this->main_id=null;
@@ -198,7 +213,9 @@ class KsmKst extends Page implements HasTable,HasForms
                             ->extraAttributes([
                                 'wire:keydown.enter'=>'chkacc',
                             ])
-                            ->id('acc'),
+                            ->id('acc')
+                            ,
+
                         Select::make('main_id')
                             ->columnSpan(3)
                             ->live()
@@ -273,7 +290,7 @@ class KsmKst extends Page implements HasTable,HasForms
                             ->validationMessages([
                                 'required' => 'يجب ادخال التاريخ بشكل صحيح',
                             ])
-                            ->extraAttributes(['wire:keydown.enter'=>'$dispatch("gotoitem", {test: "ksm"})'])
+                            ->extraAttributes(['wire:keydown.enter'=>"\$dispatch('gotoitem', {test: 'ksm'})"])
                             ->id('ksm_date'),
                         TextInput::make('ksm')
                             ->label('القسط')

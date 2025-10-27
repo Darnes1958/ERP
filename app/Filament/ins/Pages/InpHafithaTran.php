@@ -3,7 +3,10 @@
 namespace App\Filament\Ins\Pages;
 
 use App\Enums\Haf_kst_type;
+use App\Filament\ins\Resources\HafithaResource;
+use App\Filament\Tables\MainArcTable;
 use App\Filament\Tables\MainTable;
+use App\Livewire\Traits\AksatTrait;
 use App\Models\Fromexcel;
 use App\Models\Hafitha;
 use App\Models\HafithaTran;
@@ -53,6 +56,7 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
 {
 
     use InteractsWithSchemas,InteractsWithTable,InteractsWithActions;
+    use AksatTrait;
 
     protected static bool $shouldRegisterNavigation=false;
 
@@ -193,7 +197,7 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                 $this->ksm=$this->main->kst;
                 $this->acc=$this->main->acc;
                 $this->go('ksm');
-            }
+            } else  Notification::make()->title('هذا الرقم غير مخزون')->danger()->send();
         }
     }
     public function form(Schema $schema): Schema
@@ -210,13 +214,14 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                          ->columnSpan(3)
                      ->state($this->hafitha->created_at)->date('ال'.'D d-m-Y'),
                      TextEntry::make('taj_name')
-                         ->columnSpan(4)
+                         ->columnSpan(5)
 
                          ->color('primary')
                          ->weight(FontWeight::ExtraBold)
                          ->size(TextSize::Large)
                      ->state($this->hafitha->Taj->TajName),
                      Action::make('tarheel')
+                      ->visible(fn()=>HafithaTran::where('hafitha_id',$this->hafitha->id)->exists())
                       ->label('ترحيل')
                          ->action(function (){
                              DB::connection(Auth()->user()->company)->beginTransaction();
@@ -229,50 +234,44 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                                  } else return;
 
                                  foreach ($hafitha_trans as $item){
-                                     if ($item->haf_kst_type=Haf_kst_type::قائم)
-                                     $mains=Main::where('taj_id',$item->taj_id)->where('acc',$item->acc)->get();
-                                     if ($mains->count()>0){
-                                         if ($mains->count()==1)
-                                             $main=$mains->first();
-                                         else
+                                     if ($item->haf_kst_type==Haf_kst_type::قائم)
+                                         if (!Main::find($item->hafithaable_id))
                                          {
-                                             $main=$mains->where('kst',$item->ksm)->first();
-                                             if (!$main) $main=$mains->first();
+                                             Notification::make()->title('العقد رقم '.$item->hafithaable_id.' غير موجود فالعقود القائمة .. يرجي المراجعة')
+                                                 ->send()->danger();
+                                             DB::connection(Auth()->user()->company)->rollback();
+                                             return;
+                                             break;
+
                                          }
-                                         $type=$this->Fill_From_Excel($main->id,$item->ksm,$item->ksm_date,$haf->id,$item->id);
-                                         $item->main_id=$main->id;
-                                         $item->main_name=$main->Customer->name;
-                                         $item->kst_type=$type;
-                                         $item->save();
-                                     } else
-                                     {
-                                         $mainArc=Main_arc::where('taj_id',$item->taj_id)->where('acc',$item->acc)->first();
-                                         if ($mainArc)
+                                     if ($item->haf_kst_type==Haf_kst_type::ارشيف)
+                                         if (!Main_arc::find($item->hafithaable_id))
                                          {
-                                             self::StoreOver2($mainArc,$item->ksm_date,$item->ksm,$haf->id);
-                                             $item->kst_type='over_arc';
-                                             $item->save();
+                                             Notification::make()->title('العقد رقم '.$item->hafithaable_id.' غير موجود فالارشيف .. يرجي المراجعة')
+                                                 ->send()->danger();
+                                             DB::connection(Auth()->user()->company)->rollback();
+                                             return;
+                                             break;
 
-
-                                         } else
-                                         {
-                                             $this->StoreWrong($item->taj_id,$item->acc,$item->name,$item->ksm_date,$item->ksm,$haf->id);
-                                             $item->kst_type='wrong';
-                                             $item->save();
                                          }
 
-                                     }
+                                     $type=$this->Fill_From_Tran($item);
+                                     $item->haf_kst_type=$type;
+                                     $item->save();
+
                                  }
 
-                                 Fromexcel::where('haf_id',null)->update(['haf_id'=>$haf->id]);
 
-                                 $haf->tot=Fromexcel::where('haf_id',$haf->id)->sum('ksm');
-                                 $haf->morahel=Fromexcel::where('haf_id',$haf->id)->where('kst_type','normal')->sum('ksm');
-                                 $haf->over_kst=Fromexcel::where('haf_id',$haf->id)->where('kst_type','over')->sum('ksm');
-                                 $haf->over_kst_arc=Fromexcel::where('haf_id',$haf->id)->where('kst_type','over_arc')->sum('ksm');
-                                 $haf->wrong_kst=Fromexcel::where('haf_id',$haf->id)->where('kst_type','wrong')->sum('ksm');
-                                 $haf->half=Fromexcel::where('haf_id',$haf->id)->where('kst_type','half')->sum('ksm');
-                                 $haf->save();
+
+                                 $this->hafitha->tot=$hafitha_trans->sum('ksm');
+                                 $this->hafitha->morahel=$hafitha_trans->where('haf_kst_type',1)->sum('ksm');
+                                 $this->hafitha->over_kst_arc=$hafitha_trans->where('haf_kst_type',2)->sum('ksm');
+                                 $this->hafitha->over_kst=$hafitha_trans->where('haf_kst_type',3)->sum('ksm');
+                                 $this->hafitha->half=$hafitha_trans->where('haf_kst_type',4)->sum('ksm');
+                                 $this->hafitha->wrong_kst=$hafitha_trans->where('haf_kst_type',5)->sum('ksm');
+
+                                 $this->hafitha->status=1;
+                                 $this->hafitha->save();
 
                                  DB::connection(Auth()->user()->company)->commit();
                                  Notification::make()
@@ -281,6 +280,7 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                                      ->icon('heroicon-o-check-circle')
                                      ->success()
                                      ->send();
+                                 redirect()->to(HafithaResource::getUrl('index'));
                              }
                              catch (Exception $e) {
                                  Notification::make()
@@ -298,7 +298,7 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                 Section::make()
                  ->schema([
                      SearchableInput::make('acc')
-
+                         ->placeholder('بحث برقم الحساب او الاسم')
                          ->searchUsing(function(string $search){
                             return Main::query()
                                 ->join('customers','customers.id','=','mains.customer_id',)
@@ -331,6 +331,7 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                          ->id('acc')
                          ->required(),
                      TextInput::make('hafithaable_id')
+                         ->placeholder('او رقم العقد ثم انتر')
                          ->belowContent(function () {
                              if ($this->main)
                                  return Schema::start([
@@ -346,10 +347,8 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
 
                      ModalTableSelect::make('mainId')
                          ->hiddenLabel()
-
                          ->id('mainId')
                          ->relationship('Main','id')
-
                          ->selectAction(
                              fn (Action $action) => $action
                                  ->label('بحث متقدم')
@@ -363,9 +362,33 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                             $this->ksm=$this->main->kst;
                             $this->acc=$this->main->acc;
                             $this->hafithaable_id=$this->main->id;
+                            $this->haf_kst_type=1;
                             $this->go('ksm');
                          })
-                         ->columnSpan('full'),
+                         ->columnSpan(3),
+                     ModalTableSelect::make('mainId2')
+                         ->hiddenLabel()
+
+                         ->id('mainId2')
+                         ->relationship('Main_arc','id')
+
+                         ->selectAction(
+                             fn (Action $action) => $action
+                                 ->label('بحث متقدم فالأرشيف')
+                                 ->modalHeading('البحث عن عقد lمن الأرشيف')
+                                 ->modalSubmitActionLabel('تأكيد الإختيار'),
+                         )
+                         ->tableConfiguration(MainArcTable::class)
+                         ->getOptionLabelFromRecordUsing(fn (Main_arc $record) => "{$record->Customer->name} ({$record->acc})")
+                         ->afterStateUpdated(function ($state,Set $set) {
+                             $this->main=Main_arc::where('id',$state)->first();
+                             $this->ksm=$this->main->kst;
+                             $this->acc=$this->main->acc;
+                             $this->hafithaable_id=$this->main->id;
+                             $this->haf_kst_type=2;
+                             $this->go('ksm');
+                         })
+                         ->columnSpan(3),
                      TextEntry::make('sul')->columnSpan(2)
                          ->state(fn()=> $this->main ? $this->main->sul : null)
                          ->visible(fn()=>$this->main)

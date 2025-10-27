@@ -17,6 +17,9 @@ class Tran extends Model
     public function Main(){
         return $this->belongsTo(Main::class);
     }
+    public function Main_arc(){
+        return $this->belongsTo(Main_arc::class);
+    }
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

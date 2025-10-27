@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class Main_arc extends Model
 {
     protected $appends =['name'];
-    public function getNameAttribute(){
-        return $this->Customer->name;
-    }
+
 
     public function tarkst()
     {
@@ -40,7 +38,10 @@ class Main_arc extends Model
   public function Customer(){
     return $this->belongsTo(Customer::class);
   }
-
+    public function getNameAttribute(){
+        if ($this->Customer)
+            return $this->Customer->name; else return null;
+    }
   public function Sell(){
     return $this->belongsTo(Sell::class);
   }

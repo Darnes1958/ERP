@@ -31,6 +31,7 @@ trait AksatTrait {
 
         if ($main->raseed>0){
             $over_id=null;
+            $baky=0;
             if ($main->raseed<$ksm)
             {
                 $over_id= self::StoreOver2($main,$ksm_date,$ksm-$main->raseed,$haf);
@@ -41,6 +42,10 @@ trait AksatTrait {
             } else $wtype='normal';
 
            $res= $this->StoreTran($main_id,$ksm_date,$ksm,$haf);
+            if ($baky!=0) {
+                $res->baky=$baky;
+                $res->save();
+            }
             Fromexcel::find($from_id)->update(['kst'=>$ksm]);
             if ($over_id)
                Overkst::where('id',$over_id->id)->update(['tran_id'=>$res->id]);
@@ -52,24 +57,31 @@ trait AksatTrait {
     public function Fill_From_Tran($hafitha_tran)
     {
 
-        if ($hafitha_tran->haf_kst_type=Haf_kst_type::قائم)
+        if ($hafitha_tran->haf_kst_type==Haf_kst_type::قائم)
         {
             $main=$hafitha_tran->hafithaable;
             if ($main->raseed<=0) {
                 self::StoreOver2($main,$hafitha_tran->ksm_date,$hafitha_tran->ksm,$hafitha_tran->hafitha_id);
+                $wtype=3;
             }
 
             if ($main->raseed>0){
                 $over_id=null;
+                $baky=0;
                 if ($main->raseed<$hafitha_tran->ksm)
                 {
                     $over_id= self::StoreOver2($main,$hafitha_tran->ksm_date,$hafitha_tran->ksm-$main->raseed,$hafitha_tran->haf);
                     $baky=$hafitha_tran->ksm-$main->raseed;
                     $ksm=$main->raseed;
+                    $wtype=4;
 
-                }
+                } else $wtype=1;
 
                 $res= $this->StoreTran($main->id,$hafitha_tran->ksm_date,$hafitha_tran->ksm,$hafitha_tran->hafitha_id);
+                if ($baky!=0) {
+                    $res->baky=$baky;
+                    $res->save();
+                }
 
                 if ($over_id)
                     Overkst::where('id',$over_id->id)->update(['tran_id'=>$res->id]);
@@ -77,20 +89,24 @@ trait AksatTrait {
             }
 
         }
-        if ($hafitha_tran->haf_kst_type=Haf_kst_type::ارشيف)
+        if ($hafitha_tran->haf_kst_type==Haf_kst_type::ارشيف)
         {
             $main=$hafitha_tran->hafithaable;
             self::StoreOver2($main,$hafitha_tran->ksm_date,$hafitha_tran->ksm,$hafitha_tran->hafitha_id);
+            $wtype=2;
         }
-        if ($hafitha_tran->haf_kst_type=Haf_kst_type::بالخطأ)
+        if ($hafitha_tran->haf_kst_type==Haf_kst_type::بالخطأ)
         {
+
             self::StoreWrong($hafitha_tran->Hafitha->taj_id,$hafitha_tran->acc,
                 $hafitha_tran->hafithaable->name,$hafitha_tran->ksm_date,$hafitha_tran->ksm,
                 $hafitha_tran->hafitha_id);
+            $wtype=5;
+
         }
 
 
-        return true;
+        return $wtype;
     }
     public function StoreTran($main_id,$ksm_date,$ksm,$haf,$ksm_type_id=2,$notes=null)
     {
@@ -259,7 +275,7 @@ trait AksatTrait {
     public static function StoreKst($main_id,$ksm_date,$ksm,$haf=0,$ksm_type_id=2,$notes=null){
         $main=Main::find($main_id);
         if ($main->raseed>0 && $main->raseed>=$ksm)
-            self::StoreTran2($main_id,$ksm_date,$ksm,0,$ksm_type_id,$notes);
+            self::StoreTran2($main_id,$ksm_date,$ksm,$haf,$ksm_type_id,$notes);
         if ($main->raseed>0 && $main->raseed<$ksm)
         {
             $tran= self::StoreTran2($main_id,$ksm_date,$main->raseed,$haf,$ksm_type_id,$notes);

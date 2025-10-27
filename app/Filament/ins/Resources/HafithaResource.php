@@ -9,6 +9,7 @@ use App\Filament\ins\Resources\HafithaResource\Pages\ListHafithas;
 
 use App\Livewire\Traits\AksatTrait;
 use App\Models\Hafitha;
+use App\Models\HafithaTran;
 use App\Models\Main;
 use App\Models\Overkst;
 use App\Models\Tran;
@@ -32,6 +33,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class HafithaResource extends Resource
 {
@@ -87,22 +89,39 @@ class HafithaResource extends Resource
                 Action::make('Delete Hafitha')
                     ->color('danger')
                     ->action(function ($record){
+                        DB::connection(Auth()->user()->company)->beginTransaction();
+                        try {
                                 Tran::where('haf_id',$record->id)->delete();
                                 Trans_arc::where('haf_id',$record->id)->delete();
                                 Overkst::where('haf_id',$record->id)->delete();
                                 Wrongkst::where('haf_id',$record->id)->delete();
-
+                                HafithaTran::where('hafitha_id',$record->id)->delete();
                                 $mains=Main::where('taj_id',$record->taj_id)->get();
                                 foreach ($mains as $main){
                                     self::MainTarseed2($main->id);
                                 }
 
+
                                 $record->delete();
 
+
+                            DB::connection(Auth()->user()->company)->commit();
                                 Notification::make()
                                     ->title('تم حذف الحافظة')
                                     ->success()
                                     ->send();
+
+                        }
+                        catch (\Exception $e) {
+                            Notification::make()
+                                ->title('حدث خطأ !!')
+                                ->color('danger')
+                                ->icon('heroicon-o-x-circle')
+                                ->danger()
+                                ->send();
+                            info($e);
+                            DB::connection(Auth()->user()->company)->rollback();
+                        }
                     })
                     ->requiresConfirmation()
                     ->visible(Auth::id()==1),
@@ -111,6 +130,7 @@ class HafithaResource extends Resource
                     ->visible(fn(Model $record): bool=>$record->status->value==0)
                     ->url(fn ($record) => route('filament.ins.pages.inp-hafitha-tran.{record}', ['record' => $record->id]))
             ])
+            ->recordUrl(false)
             ->toolbarActions([
                //
             ]);
