@@ -123,6 +123,7 @@ class SellEdit extends Page implements HasTable,HasForms
                         ->relationship('Customer','name')
                         ->hiddenLabel()
                         ->searchable()
+                        ->preload()
                         ->prefix('الزبون')
                         ->prefixIcon('heroicon-m-user')
                         ->prefixIconColor('info')
