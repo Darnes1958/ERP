@@ -1,6 +1,7 @@
 <?php
 namespace App\Livewire\Traits;
 
+use App\Enums\Haf_kst_type;
 use App\Livewire\Forms\TransForm;
 use App\Models\Fromexcel;
 use App\Models\Main;
@@ -47,6 +48,49 @@ trait AksatTrait {
         }
 
       return $wtype;
+    }
+    public function Fill_From_Tran($hafitha_tran)
+    {
+
+        if ($hafitha_tran->haf_kst_type=Haf_kst_type::قائم)
+        {
+            $main=$hafitha_tran->hafithaable;
+            if ($main->raseed<=0) {
+                self::StoreOver2($main,$hafitha_tran->ksm_date,$hafitha_tran->ksm,$hafitha_tran->hafitha_id);
+            }
+
+            if ($main->raseed>0){
+                $over_id=null;
+                if ($main->raseed<$hafitha_tran->ksm)
+                {
+                    $over_id= self::StoreOver2($main,$hafitha_tran->ksm_date,$hafitha_tran->ksm-$main->raseed,$hafitha_tran->haf);
+                    $baky=$hafitha_tran->ksm-$main->raseed;
+                    $ksm=$main->raseed;
+
+                }
+
+                $res= $this->StoreTran($main->id,$hafitha_tran->ksm_date,$hafitha_tran->ksm,$hafitha_tran->hafitha_id);
+
+                if ($over_id)
+                    Overkst::where('id',$over_id->id)->update(['tran_id'=>$res->id]);
+
+            }
+
+        }
+        if ($hafitha_tran->haf_kst_type=Haf_kst_type::ارشيف)
+        {
+            $main=$hafitha_tran->hafithaable;
+            self::StoreOver2($main,$hafitha_tran->ksm_date,$hafitha_tran->ksm,$hafitha_tran->hafitha_id);
+        }
+        if ($hafitha_tran->haf_kst_type=Haf_kst_type::بالخطأ)
+        {
+            self::StoreWrong($hafitha_tran->Hafitha->taj_id,$hafitha_tran->acc,
+                $hafitha_tran->hafithaable->name,$hafitha_tran->ksm_date,$hafitha_tran->ksm,
+                $hafitha_tran->hafitha_id);
+        }
+
+
+        return true;
     }
     public function StoreTran($main_id,$ksm_date,$ksm,$haf,$ksm_type_id=2,$notes=null)
     {

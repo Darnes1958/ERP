@@ -20,6 +20,9 @@ class Hafitha extends Model
     public function Taj(){
         return $this->belongsTo(Taj::class);
     }
+    public function User(){
+        return $this->belongsTo(User::class);
+    }
 
 
     public function __construct(array $attributes = [])

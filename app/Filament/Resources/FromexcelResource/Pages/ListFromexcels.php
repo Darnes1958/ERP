@@ -148,6 +148,7 @@ class ListFromexcels extends ListRecords
                             'to_date'=>$fromexcel->max('ksm_date'),
                             'auto'=>1,
                             'status'=>1,
+                            'user_id'=>Auth()->id(),
                         ]);
                     } else return;
 

@@ -17,6 +17,10 @@ class WrongName extends Model
     {
         return $this->morphMany(HafithaTran::class, 'hafithaable');
     }
+    public function User(){
+        return $this->belongsTo(User::class);
+    }
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

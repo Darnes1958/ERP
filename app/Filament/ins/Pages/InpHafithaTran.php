@@ -4,6 +4,7 @@ namespace App\Filament\Ins\Pages;
 
 use App\Enums\Haf_kst_type;
 use App\Filament\Tables\MainTable;
+use App\Models\Fromexcel;
 use App\Models\Hafitha;
 use App\Models\HafithaTran;
 
@@ -13,6 +14,7 @@ use App\Models\Tran;
 use App\Models\WrongName;
 use DefStudio\SearchableInput\DTO\SearchResult;
 use DefStudio\SearchableInput\Forms\Components\SearchableInput;
+use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -41,7 +43,10 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
@@ -107,11 +112,14 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                                 $this->ksm=$state;
                             }) ,
                     ])->columns(2)
-
             ])
             ->action(function (array $data): void {
                 if (!$this->wrong_name)
-                    $this->wrong_name=WrongName::create(['name'=>$data['name'],'acc'=>$this->acc,'taj_id'=>$this->hafitha->taj_id,]);
+                    $this->wrong_name=WrongName::create([
+                        'name'=>$data['name'],
+                        'acc'=>$this->acc,
+                        'taj_id'=>$this->hafitha->taj_id,
+                        'user_id'=>Auth::id(),]);
                 $this->wrong_name->hafitha()->create([
                     'hafitha_id'=>$this->hafitha->id,
                     'ksm'=>$this->ksm,
@@ -119,11 +127,9 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                     'acc'=>$this->acc,
                     'ksm_notes'=>'بالخطأ',
                     'haf_kst_type' => Haf_kst_type::بالخطأ->value ,
-
+                    'user_id'=>Auth::id(),
                 ]);
-
             });
-
     }
     public function store()
     {
@@ -134,6 +140,7 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                  'acc'=>$this->acc,
                  'ksm_notes'=>$this->ksm_notes,
                  'haf_kst_type' =>$this->haf_kst_type  ,
+                 'user_id'=>Auth::id(),
 
             ]);
 
@@ -197,17 +204,97 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                 Section::make()
                  ->schema([
                      TextEntry::make('hafitha_id')->color('info')
+                      ->columnSpan(3)
                       ->state($this->hafitha->id),
                      TextEntry::make('created_at')
+                         ->columnSpan(3)
                      ->state($this->hafitha->created_at)->date('ال'.'D d-m-Y'),
                      TextEntry::make('taj_name')
-                         ->columnSpanFull()
+                         ->columnSpan(4)
 
                          ->color('primary')
                          ->weight(FontWeight::ExtraBold)
                          ->size(TextSize::Large)
                      ->state($this->hafitha->Taj->TajName),
-                 ])->columns(2),
+                     Action::make('tarheel')
+                      ->label('ترحيل')
+                         ->action(function (){
+                             DB::connection(Auth()->user()->company)->beginTransaction();
+                             try {
+                                 $hafitha_trans=HafithaTran::query()->where('hafitha_id',$this->hafitha->id)->get();
+                                 if ($hafitha_trans->count()>0){
+                                     $this->hafitha->from_date=$hafitha_trans->min('ksm_date');
+                                     $this->hafitha->to_date=$hafitha_trans->max('ksm_date');
+                                     $this->hafitha->status=1;
+                                 } else return;
+
+                                 foreach ($hafitha_trans as $item){
+                                     if ($item->haf_kst_type=Haf_kst_type::قائم)
+                                     $mains=Main::where('taj_id',$item->taj_id)->where('acc',$item->acc)->get();
+                                     if ($mains->count()>0){
+                                         if ($mains->count()==1)
+                                             $main=$mains->first();
+                                         else
+                                         {
+                                             $main=$mains->where('kst',$item->ksm)->first();
+                                             if (!$main) $main=$mains->first();
+                                         }
+                                         $type=$this->Fill_From_Excel($main->id,$item->ksm,$item->ksm_date,$haf->id,$item->id);
+                                         $item->main_id=$main->id;
+                                         $item->main_name=$main->Customer->name;
+                                         $item->kst_type=$type;
+                                         $item->save();
+                                     } else
+                                     {
+                                         $mainArc=Main_arc::where('taj_id',$item->taj_id)->where('acc',$item->acc)->first();
+                                         if ($mainArc)
+                                         {
+                                             self::StoreOver2($mainArc,$item->ksm_date,$item->ksm,$haf->id);
+                                             $item->kst_type='over_arc';
+                                             $item->save();
+
+
+                                         } else
+                                         {
+                                             $this->StoreWrong($item->taj_id,$item->acc,$item->name,$item->ksm_date,$item->ksm,$haf->id);
+                                             $item->kst_type='wrong';
+                                             $item->save();
+                                         }
+
+                                     }
+                                 }
+
+                                 Fromexcel::where('haf_id',null)->update(['haf_id'=>$haf->id]);
+
+                                 $haf->tot=Fromexcel::where('haf_id',$haf->id)->sum('ksm');
+                                 $haf->morahel=Fromexcel::where('haf_id',$haf->id)->where('kst_type','normal')->sum('ksm');
+                                 $haf->over_kst=Fromexcel::where('haf_id',$haf->id)->where('kst_type','over')->sum('ksm');
+                                 $haf->over_kst_arc=Fromexcel::where('haf_id',$haf->id)->where('kst_type','over_arc')->sum('ksm');
+                                 $haf->wrong_kst=Fromexcel::where('haf_id',$haf->id)->where('kst_type','wrong')->sum('ksm');
+                                 $haf->half=Fromexcel::where('haf_id',$haf->id)->where('kst_type','half')->sum('ksm');
+                                 $haf->save();
+
+                                 DB::connection(Auth()->user()->company)->commit();
+                                 Notification::make()
+                                     ->title('تم الترحيل بنجاح')
+                                     ->color('success')
+                                     ->icon('heroicon-o-check-circle')
+                                     ->success()
+                                     ->send();
+                             }
+                             catch (Exception $e) {
+                                 Notification::make()
+                                     ->title('حدث خطأ !!')
+                                     ->color('danger')
+                                     ->icon('heroicon-o-x-circle')
+                                     ->danger()
+                                     ->send();
+                                 info($e);
+                                 DB::connection(Auth()->user()->company)->rollback();
+                             }
+
+                         })
+                 ])->columns(6),
                 Section::make()
                  ->schema([
                      SearchableInput::make('acc')
@@ -293,13 +380,13 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                          ->afterStateUpdated(function ($state,Set $set) {
                              $this->ksm_notes=$state;
                          })->columnSpanFull(),
-                     DatePicker::make('ksm_date')->columnSpan(2)
+                     DatePicker::make('ksm_date')->columnSpan(3)
                          ->afterStateUpdated(function ($state,Set $set) {
                              $this->ksm_date=$state;
                          })
                          ->required(),
                      TextInput::make('ksm')
-                         ->columnSpan(2)
+                         ->columnSpan(3)
                          ->required()
                          ->id('ksm')
                          ->numeric()
@@ -322,15 +409,15 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
 
             ->columns([
                     TextColumn::make('hafithaable_id')
+                        ->sortable()
                         ->searchable(),
-                    TextColumn::make('hafithaable.name'),
+                    TextColumn::make('hafithaable.name')->searchable(),
                     TextColumn::make('acc')
+                        ->sortable()
                         ->searchable(),
                     TextColumn::make('ksm')
                         ->numeric()
-
-                        ->summarize(Sum::make()->numeric('2','.',',')->label(' '))
-                        ->sortable(),
+                        ->summarize(Sum::make()->numeric('2','.',',')->label(' ')),
                     TextColumn::make('ksm_date')
                         ->date('Y-m-d')
                         ->sortable(),
@@ -348,7 +435,14 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
                         ->sortable()
                         ->toggleable(isToggledHiddenByDefault: true),
                 ])
+
             ->defaultSort('updated_at','desc')
+            ->filters([
+                SelectFilter::make('haf_kst_type')
+                 ->options(Haf_kst_type::class)
+                 ->searchable()
+                 ->preload()
+            ])
             ->recordActions([
                 DeleteAction::make()->iconButton(),
             ]);

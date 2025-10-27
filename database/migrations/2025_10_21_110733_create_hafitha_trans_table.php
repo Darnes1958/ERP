@@ -26,15 +26,18 @@ return new class extends Migration
                             $table->date('ksm_date');
                             $table->string('ksm_notes')->nullable();
                             $table->integer('haf_kst_type');
+                            $table->foreignIdFor(\App\Models\User::class);
                             $table->timestamps();
                         });
 
                         Schema::connection($key)->table('hafithas', function($table) {
                             $table->boolean('status')->nullable();
                             $table->boolean('auto')->nullable();
+                            $table->boolean('user_id')->nullable();
 
                         });
-                        DB::connection($key)->table('hafithas')->update(['status'=>1,'auto'=>1]);
+
+                        DB::connection($key)->table('hafithas')->update(['status'=>1,'auto'=>1,'user_id'=>1]);
                     }
 
                 } catch (\Exception $e) {

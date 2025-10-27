@@ -19,10 +19,10 @@ return new class extends Migration
                         $table->string('name');
                         $table->string('acc');
                         $table->foreignIdFor(\App\Models\Taj::class);
+                        $table->foreignIdFor(\App\Models\User::class);
                         $table->timestamps();
                     });
                 } catch (\Exception $e) {
-
                     info($e);
                 }
             }

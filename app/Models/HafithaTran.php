@@ -19,6 +19,10 @@ class HafithaTran extends Model
     {
         return $this->morphTo();
     }
+    public function User(){
+        return $this->belongsTo(User::class);
+    }
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
