@@ -31,6 +31,8 @@ class InpSell extends Page implements HasSchemas,HasTable
 
     public $sellData,$tranData;
 
+    protected static bool $shouldRegisterNavigation=false;
+
     public function sellForm(Schema $schema): Schema
     {
         return $schema
