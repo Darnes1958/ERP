@@ -50,6 +50,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Validate;
 
 
 class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
@@ -137,6 +138,7 @@ class InpHafithaTran extends Page implements HasSchemas,HasTable,HasActions
     }
     public function store()
     {
+
             $this->main->hafitha()->create([
                 'hafitha_id'=>$this->hafitha->id,
                  'ksm'=>$this->ksm,
