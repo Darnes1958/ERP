@@ -61,7 +61,6 @@ class CreateSell extends Page  implements HasTable,HasForms
 
     public function mount()
     {
-
         $this->sell = Sell_work::find(auth()->id());
         if (!$this->sell) {
             if (Auth::user()->hasRole('admin'))

@@ -23,6 +23,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Validate;
 
 class InpSell extends Page implements HasSchemas,HasTable
 {
@@ -31,6 +32,10 @@ class InpSell extends Page implements HasSchemas,HasTable
 
     public $sellData,$tranData;
 
+    public function updateSells()
+    {
+        $this->validateOnly('customer_id');
+    }
     public function sellForm(Schema $schema): Schema
     {
         return $schema
@@ -142,7 +147,6 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->prefix('طريقة الدفع')
                             ->columnSpan(2)
                             ->live()
-
                             ->relationship('Price_type','name')
                             ->required()
                             ->extraAttributes(['x-on:change' => "\$wire.updatePriceType"])
@@ -215,14 +219,13 @@ class InpSell extends Page implements HasSchemas,HasTable
 
                     ])
                     ->columns(10)
-            ]);;
+            ]);
     }
     public function tranForm(Schema $schema): Schema
     {
         return $schema
             ->model(Sell_tran::class)
             ->components([
-
             ]);
     }
 
