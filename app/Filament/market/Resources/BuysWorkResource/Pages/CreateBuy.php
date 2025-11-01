@@ -354,11 +354,11 @@ class CreateBuy extends Page implements HasTable,HasForms
                                                           ->label('الاسم'),
                                                   ])->columns(2)
                                           ])
-                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
                                       TextInput::make('count')
                                           ->label('العدد')
                                           ->required()
-                                          ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
+                                          ->hidden(fn(Get $get): bool =>  ! $get('two_unit')->value),
                                       TextInput::make('price_buy')
                                           ->label('سعر الشراء')
                                           ->required()
@@ -369,7 +369,7 @@ class CreateBuy extends Page implements HasTable,HasForms
                                       TextInput::make('price2')
                                           ->label('سعر الصغري قطاعي')
                                           ->required()
-                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
                                       TextInput::make('pricej1')
                                           ->label('سعر البيع جملة')
                                           ->hidden(!Setting::find(Auth::user()->company)->jomla)
@@ -377,7 +377,7 @@ class CreateBuy extends Page implements HasTable,HasForms
                                       TextInput::make('pricej2')
                                           ->label('سعر الصغري جملة')
                                           ->required()
-                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
 
                                       Select::make('item_type_id')
                                           ->label('التصنيف')
@@ -426,10 +426,7 @@ class CreateBuy extends Page implements HasTable,HasForms
                                                           ->label('الاسم'),
                                                   ])
                                           ]),
-                                      TextInput::make('user_id')
-                                          ->label('رقم المستخدم')
-                                          ->extraAttributes(['bg-blue-500'])
-                                          ->readOnly()
+                                      Hidden::make('user_id')
                                           ->default(Auth::id()),
                                   ])
                                   ->columns(4)

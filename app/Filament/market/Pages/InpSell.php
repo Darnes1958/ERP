@@ -32,10 +32,15 @@ class InpSell extends Page implements HasSchemas,HasTable
 
     public $sellData,$tranData;
 
+
     public function updateSells()
     {
         $this->validateOnly('customer_id');
     }
+
+    protected static bool $shouldRegisterNavigation=false;
+
+
     public function sellForm(Schema $schema): Schema
     {
         return $schema
