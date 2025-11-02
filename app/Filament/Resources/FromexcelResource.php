@@ -6,6 +6,7 @@ use App\Filament\Resources\FromexcelResource\Pages\CreateFromexcel;
 use App\Filament\Resources\FromexcelResource\Pages\EditFromexcel;
 use App\Filament\Resources\FromexcelResource\Pages\ListFromexcels;
 use App\Filament\Resources\FromexcelResource\RelationManagers;
+use App\Filament\Resources\FromExcelResource\Widgets\FromExcelWidget;
 use App\Models\Fromexcel;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -61,7 +62,12 @@ class FromexcelResource extends Resource
             //
         ];
     }
-
+    public static function getWidgets(): array
+    {
+        return [
+            FromExcelWidget::class,
+        ];
+    }
     public static function getPages(): array
     {
         return [
