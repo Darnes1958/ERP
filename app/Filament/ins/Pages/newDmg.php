@@ -168,8 +168,10 @@ class newDmg extends Page implements HasInfolists,HasForms
                             $query->WhereDoesntHave('Main')
                                 ->WhereDoesntHave('Main_arc')
                                 ->whereIn('customer_id',Main::query()->pluck('customer_id'))
-                                  ->where('price_type_id','=',3),)
+                                ->where('price_type_id','=',3),
+                            )
                             ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->Customer->name} {$record->total}")
+                            ->searchable()
                             ->preload()
                             ->live()
                             ->afterStateUpdated(function ($state){

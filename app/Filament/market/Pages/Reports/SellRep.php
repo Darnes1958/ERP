@@ -67,7 +67,6 @@ class SellRep extends Page implements HasForms,HasTable
                ->label('طباعة')
                ->action(function (){
                    $filters=$this->table->getFilters();
-
                    $res=$this->getTableQueryForExport()->get();
                    if ($res->count()==0) return ;
 
