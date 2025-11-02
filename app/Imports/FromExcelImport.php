@@ -18,8 +18,8 @@ class FromExcelImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
 
-      if (!isset($row['ksm'])  || !isset($row['acc'])
-        || !isset($row['ksm_date'])) {
+      if ($row['ksm']==null  || $row['acc']==null
+        || $row['ksm_date']==null  || $row['ksm']==null) {
         return null;
       }
 
@@ -30,11 +30,8 @@ class FromExcelImport implements ToModel, WithHeadingRow
           'name' => $row['name'],
           'acc' => $row['acc'],
           'ksm' => $row['ksm'],
-
           'ksm_date' => Date::excelToDateTimeObject($row['ksm_date']),
-
           'taj_id' => Auth::user()->taj,
-
         ]
       );
 

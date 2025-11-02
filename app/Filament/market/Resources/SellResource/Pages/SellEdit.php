@@ -137,7 +137,6 @@ class SellEdit extends Page implements HasTable,HasForms
                                 ->send();
                         })
                         ->columnSpan(4),
-
                     Select::make('place_id')
                         ->relationship('Place','name')
                         ->hiddenLabel()
@@ -161,7 +160,6 @@ class SellEdit extends Page implements HasTable,HasForms
                         ->options(Acc::all()->pluck('name','id'))
                         ->hiddenLabel()
                         ->prefix('الحساب المصرفي')
-
                         ->prefixIcon('heroicon-m-currency-dollar')
                         ->prefixIconColor('warning')
                         ->columnSpan(2)

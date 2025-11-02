@@ -45,11 +45,9 @@ class ListFromexcels extends ListRecords
                              $this->SortKstDate($main->id);
                              self::MainTarseed2($main->id);
                          }
-
-
                     Notification::make('ok')->title('Ok')->success()->send();
                 })
-                ->visible(true)
+                ->visible(false)
              ->label('tarseed'),
             Actions\Action::make('Convert')
                 ->action(function (){
@@ -86,7 +84,7 @@ class ListFromexcels extends ListRecords
                     }
                     Notification::make('ok')->title('Ok')->success()->send();
                 })
-                ->visible(true)
+                ->visible(false)
                 ->label('over kst'),
             Actions\Action::make('Do')
                 ->color('success')
@@ -112,29 +110,30 @@ class ListFromexcels extends ListRecords
             ExcelImportAction::make()
                 ->slideOver()
                 ->color('danger')
-                ->use(FromExcelImport::class),
-            Actions\Action::make('check')
-                ->action(function (array $data){
-                    $beginDate=Fromexcel::min('ksm_date');
-                    $endDate=Fromexcel::max('ksm_date');
-                    $res=Dateofexcel::where('taj_id',Auth::user()->taj)
+                ->before(function (){
+                    FromExcel::truncate();
+                })
+                ->after(function (){
+                    $beginDate=FromExcel::min('ksm_date');
+                    $endDate=FromExcel::max('ksm_date');
+                    $res=Dateofexcel::where('taj_id',Auth::user()->IsAdmin)
                         ->whereBetween('date_begin',[$beginDate,$endDate])->first();
                     if ($res){
-                        Fromexcel::truncate();
+                        FromExcel::truncate();
                         Notification::make()
                             ->title('يوجد تداخل في تاريخ الحافظة مع حافظة سابقة لنفس المصرف ')
                             ->send();
                         return false;
-
                     }
-
                     Dateofexcel::create([
-                            'taj_id'=>Auth::user()->taj,
-                            'date_begin'=>Fromexcel::min('ksm_date'),
-                            'date_end'=>Fromexcel::max('ksm_date'),
+                            'taj_id'=>Auth::user()->IsAdmin,
+                            'date_begin'=>FromExcel::min('ksm_date'),
+                            'date_end'=>FromExcel::max('ksm_date'),
                         ]
                     );
-                }),
+                })
+                ->use(FromExcelImport::class),
+
             Actions\Action::make('link')
              ->label('ربط بالعقود')
             ->action(function (){
