@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FromexcelResource\Pages;
 
 use App\Filament\Resources\FromexcelResource;
+use App\Filament\Resources\FromExcelResource\Widgets\FromExcelWidget;
 use App\Imports\FromExcelImport;
 use App\Livewire\Traits\AksatTrait;
 use App\Models\Dateofexcel;
@@ -220,6 +221,13 @@ class ListFromexcels extends ListRecords
 
 
         ];
+    }
+    protected function getFooterWidgets(): array
+    {
+        return [
+            \App\Livewire\FromExcelWidget::class,
+        ];
+
     }
 
 }
