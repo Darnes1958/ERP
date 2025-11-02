@@ -1,3 +1,4 @@
 <x-filament-panels::page>
-    {{-- Page content --}}
+    {{$this->sellForm}}
+    {{$this->tranForm}}
 </x-filament-panels::page>

@@ -32,13 +32,21 @@ class InpSell extends Page implements HasSchemas,HasTable
 
     public $sellData,$tranData;
 
+    public $sell;
+
+    public function mount(){
+        $this->sell=Sell_work::first();
+        $this->sellForm->fill([]) ;   }
 
     public function updateSells()
     {
-        $this->validateOnly('customer_id');
+      info($this->sellData);
+      $this->validateOnly($this->sellData['customer_id']);
+
+    //    $this->validate(['customer_id' => 'required']);
     }
 
-    protected static bool $shouldRegisterNavigation=false;
+    protected static bool $shouldRegisterNavigation=true;
 
 
     public function sellForm(Schema $schema): Schema
@@ -121,6 +129,9 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->required()
                             ->columnSpan(4)
                             ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
+                            ->afterStateUpdated(function (){
+                                $this->updateSells();
+                            })
                             ->createOptionForm([
                                 Section::make('ادخال مكان تخزين')
                                     ->schema([
