@@ -116,7 +116,7 @@ class ListFromexcels extends ListRecords
                 ->after(function (){
                     $beginDate=FromExcel::min('ksm_date');
                     $endDate=FromExcel::max('ksm_date');
-                    $res=Dateofexcel::where('taj_id',Auth::user()->IsAdmin)
+                    $res=Dateofexcel::where('taj_id',Auth::user()->taj)
                         ->whereBetween('date_begin',[$beginDate,$endDate])->first();
                     if ($res){
                         FromExcel::truncate();
@@ -126,7 +126,7 @@ class ListFromexcels extends ListRecords
                         return false;
                     }
                     Dateofexcel::create([
-                            'taj_id'=>Auth::user()->IsAdmin,
+                            'taj_id'=>Auth::user()->taj,
                             'date_begin'=>FromExcel::min('ksm_date'),
                             'date_end'=>FromExcel::max('ksm_date'),
                         ]
