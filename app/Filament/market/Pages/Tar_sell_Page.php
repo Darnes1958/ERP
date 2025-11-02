@@ -18,8 +18,8 @@ class Tar_sell_Page extends Page implements HasTable
     use InteractsWithTable;
     use Raseed;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
-    protected ?string $heading='ترجيع المبيعات';
-    protected static ?string $navigationLabel='ترجيع المبيعات';
+    protected ?string $heading='فواتير مرجعة';
+    protected static ?string $navigationLabel='فواتير مرجعة';
     protected static string | \UnitEnum | null $navigationGroup='فواتير مبيعات';
     protected static ?int $navigationSort=6;
     protected string $view = 'filament.market.pages.tar_sell_-page';

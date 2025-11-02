@@ -5,7 +5,7 @@ namespace App\Filament\market\Resources;
 use App\Filament\market\Resources\CustomerResource\Pages\CreateCustomer;
 use App\Filament\market\Resources\CustomerResource\Pages\EditCustomer;
 use App\Filament\market\Resources\CustomerResource\Pages\ListCustomers;
-use App\Filament\ins\Resources\CustomerResource\Pages;
+use App\Filament\market\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
 use App\Models\Receipt;

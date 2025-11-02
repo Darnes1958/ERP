@@ -5,11 +5,11 @@ namespace App\Filament\market\Resources;
 use App\Filament\market\Resources\CustomerTypeResource\Pages\CreateCustomerType;
 use App\Filament\market\Resources\CustomerTypeResource\Pages\EditCustomerType;
 use App\Filament\market\Resources\CustomerTypeResource\Pages\ListCustomerTypes;
-use App\Filament\Resources\CustomerTypeResource\Pages;
+use App\Filament\market\Resources\CustomerTypeResource\Pages;
 use App\Filament\Resources\CustomerTypeResource\RelationManagers;
 use App\Models\Customer;
 use App\Models\Customer_type;
-use App\Models\CustomerType;
+
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;

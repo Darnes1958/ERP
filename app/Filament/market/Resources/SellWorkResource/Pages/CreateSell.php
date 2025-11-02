@@ -46,19 +46,17 @@ class CreateSell extends Page  implements HasTable,HasForms
     use Raseed;
 
     protected static string $resource = SellWorkResource::class;
-
     protected string $view = 'filament.market.resources.sell-work-resource.pages.create-sell';
     protected ?string $heading="";
+
+    protected static bool $shouldRegisterNavigation=false;
 
     public $sell;
     public $selltran;
     public $sellData;
     public $selltranData;
     public $sellStoreData;
-
     public $id_to_print='';
-
-
     public function mount()
     {
         $this->sell = Sell_work::find(auth()->id());
@@ -84,7 +82,6 @@ class CreateSell extends Page  implements HasTable,HasForms
         $this->sellTranForm->fill([]);
         $this->sellStoreForm->fill(['print'=>true,]);
     }
-
     public function PrintOrder($id){
 
       $RepDate=date('Y-m-d');
@@ -111,8 +108,6 @@ class CreateSell extends Page  implements HasTable,HasForms
       );
 
     }
-
-
     public function updatePriceType(){
       $this->sell->price_type_id=$this->sellData['price_type_id'] ;
         if ($this->sell->price_type_id==2)
@@ -150,7 +145,6 @@ class CreateSell extends Page  implements HasTable,HasForms
         ->success()
         ->send();
     }
-
     public function updateNonDiffer(){
       $this->sell->rate=0;
       $this->sell->differ=0;
@@ -173,7 +167,6 @@ class CreateSell extends Page  implements HasTable,HasForms
         ->success()
         ->send();
     }
-
     public function sellForm(Schema $schema): Schema
     {
         return $schema
@@ -360,7 +353,6 @@ class CreateSell extends Page  implements HasTable,HasForms
                     ->columns(10)
             ]);
     }
-
     public function sellTranForm(Schema $schema): Schema
     {
         return $schema
@@ -645,7 +637,6 @@ class CreateSell extends Page  implements HasTable,HasForms
                     ->columns(2),
             ]);
     }
-
     public function sellStoreForm(Schema $schema): Schema
     {
         return $schema
@@ -861,8 +852,6 @@ class CreateSell extends Page  implements HasTable,HasForms
                     ])
             ]);
     }
-
-
     public function sub_tot(){
         $this->selltran->sub_tot=$this->selltran->q1*$this->selltran->price1;
         $this->selltran->save();
@@ -1031,7 +1020,6 @@ class CreateSell extends Page  implements HasTable,HasForms
             return Setting::find(Auth::user()->company)->has_two && Item::find($this->selltranData['item_id'])->two_unit==1;}
         else return false;
     }
-
     public function table(Table $table):Table
     {
         return $table

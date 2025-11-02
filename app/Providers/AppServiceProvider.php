@@ -6,6 +6,8 @@ use App\Filament\Ins\Pages\InpHafithaTran;
 use App\Filament\ins\Pages\KsmKst;
 use App\Filament\ins\Pages\newCont;
 use App\Filament\ins\Resources\MainResource;
+use App\Filament\market\Pages\InpBuy;
+use App\Filament\market\Pages\InpSell;
 use App\Filament\market\Resources\BuyResource;
 use App\Filament\market\Resources\BuysWorkResource;
 use App\Filament\market\Resources\SellResource;
@@ -108,6 +110,8 @@ class AppServiceProvider extends ServiceProvider
             MainResource::class,
             newCont::class,
             InpHafithaTran::class,
+            InpSell::class,
+            InpBuy::class,
             ]
       );
 

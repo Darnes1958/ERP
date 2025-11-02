@@ -108,7 +108,7 @@ public function buyForm(Schema $schema): Schema
                         ->relationship('Supplier','name')
                         ->hiddenLabel()
                         ->searchable()
-
+                        ->preload()
                         ->prefix('المورد')
                         ->prefixIcon('heroicon-m-user')
                         ->prefixIconColor('info')

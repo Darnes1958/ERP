@@ -34,7 +34,7 @@ class SellResource extends Resource
     protected static ?string $model = Sell::class;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel='تعديل فاتورة مبيعات';
+    protected static ?string $navigationLabel='عرض و تعديل والغاء وترجيع';
     protected static string | \UnitEnum | null $navigationGroup='فواتير مبيعات';
     protected static ?int $navigationSort=2;
 
@@ -169,16 +169,19 @@ class SellResource extends Resource
             ->recordActions([
                 Action::make('selltran')
                     ->iconButton()
+                    ->tooltip('تعديل')
                     ->icon('heroicon-m-pencil')
                     ->color('info')
                     ->url(fn(Model $record) => self::getUrl('selledit', ['record' => $record])),
                 Action::make('tarsell')
                     ->iconButton()
+                    ->tooltip('ترجيع')
                     ->icon('heroicon-m-arrows-right-left')
                     ->color('primary')
                     ->url(fn(Model $record) => self::getUrl('tarsell', ['record' => $record])),
                 DeleteAction::make()
                     ->iconButton()
+                    ->tooltip('الغاء')
                     ->visible( function (Sell $record) {
                         return
                             Auth::user()->can('الغاء مبيعات')

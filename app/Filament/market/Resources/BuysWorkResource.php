@@ -38,7 +38,8 @@ protected static string | \UnitEnum | null $navigationGroup='فواتير شرا
 protected static ?int $navigationSort=1;
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('ادخال مشتريات');
+        return false;
+        //return Auth::user()->can('ادخال مشتريات');
     }
 
     public static function form(Schema $schema): Schema

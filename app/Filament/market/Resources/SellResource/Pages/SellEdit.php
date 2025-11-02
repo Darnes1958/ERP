@@ -33,6 +33,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class SellEdit extends Page implements HasTable,HasForms
@@ -146,7 +147,7 @@ class SellEdit extends Page implements HasTable,HasForms
                         ->columnSpan(3)
                         ->inlineLabel()
                         ->disabled()
-                        ->visible(Setting::find(Auth::user()->company)->many_place),
+                       ->visible(Setting::find(Auth::user()->company)->many_place),
                     Select::make('price_type_id')
                         ->relationship('Price_type','name')
                         ->hiddenLabel()
@@ -343,8 +344,16 @@ class SellEdit extends Page implements HasTable,HasForms
                             ->prefix('الصنف')
                             ->searchable()
                             ->preload()
-                            ->options(Item::where('stock1','>',0)->pluck('name','id'))
-                            ->relationship('Item','name')
+                            ->relationship('Item','name',
+                                modifyQueryUsing: fn (Builder $query) =>
+                                $query->whereIn('id',Place_stock::where('place_id',$this->sellData['place_id'])
+                                    ->where('stock1','>',0)->pluck('item_id'))
+                            )
+                   //        ->options(function (){
+                   //            return Item::whereIn('id',Place_stock::where('place_id',$this->sellData['place_id'])
+                   //                ->where('stock1','>',0)->pluck('item_id'))->pluck('name','id');
+                   //        })
+
                             ->live()
                             ->required()
                             ->afterStateUpdated(function (){
@@ -426,6 +435,7 @@ class SellEdit extends Page implements HasTable,HasForms
         else $this->add_rec();
     }
     public function itemFill($item,$barcode,$stock1){
+
 
         $rec=$this->retPrice($item,$this->sell->single,$this->sell->price_type_id);
         $p1=$rec['price1'];
