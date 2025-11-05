@@ -124,6 +124,7 @@ class AppServiceProvider extends ServiceProvider
 
       FilamentAsset::register([
         Js::make('example-external-script', 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
+        Js::make('custom-script', __DIR__.'/../../resources/js/custom.js'),
 
       ]);
         FilamentView::registerRenderHook(

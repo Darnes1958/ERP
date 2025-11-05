@@ -10,11 +10,11 @@ class EditPer extends EditRecord
 {
     protected static string $resource = PerResource::class;
 
-    protected function getSaveFormAction(): Action
-    {
-        return parent::getSaveFormAction()
+ //  protected function getSaveFormAction(): Action
+ //  {
+ //      return parent::getSaveFormAction()
 
-            ->extraAttributes(['type' => 'button', 'wire:click' => 'save'])
-            ;
-    }
+ //          ->extraAttributes(['type' => 'button', 'wire:click' => 'save'])
+ //          ;
+ //  }
 }
