@@ -23,10 +23,10 @@
             <div class="w-1/2">
                 {{ $this->table }}
                 @if($mainRec->overkstable->count()>0)
-                @livewire(\App\Livewire\widgets\OverWidget::class,['main_id'=>$main_id])
+                @livewire(\App\Livewire\widget\OverWidget::class,['main_id'=>$main_id])
                 @endif
                 @if($mainRec->tarkst->count()>0)
-                    @livewire(\App\Livewire\widgets\TarWidget::class,['main_id'=>$main_id])
+                    @livewire(\App\Livewire\widget\TarWidget::class,['main_id'=>$main_id])
                 @endif
             </div>
 

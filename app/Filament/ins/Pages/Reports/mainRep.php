@@ -3,34 +3,25 @@
 namespace App\Filament\ins\Pages\Reports;
 
 use App\Filament\Tables\MainTable;
-use App\Filament\Tables\SellTable;
-use App\Livewire\Forms\MainForm;
-use App\Livewire\Forms\OverForm;
-use App\Livewire\Forms\TransForm;
+
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Bank;
 use App\Models\Main;
 use App\Models\Main_arc;
 use App\Models\Overkst;
-use App\Models\Sell;
+
 use App\Models\Taj;
 use App\Models\Tran;
 use Carbon\Carbon;
 use Filament\Actions\Action;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\ModalTableSelect;
-use Filament\Forms\Components\Select;
+
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Concerns\InteractsWithInfolists;
-use Filament\Infolists\Contracts\HasInfolists;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
-use Filament\Schemas\Components\Utilities\Get;
+
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
@@ -42,7 +33,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;

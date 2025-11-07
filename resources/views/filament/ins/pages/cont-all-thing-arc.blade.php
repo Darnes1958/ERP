@@ -8,7 +8,7 @@
 
         </div>
         <div class="w-1/2">
-            @livewire(\App\Livewire\widgets\TranArcWidget::class,['main_id'=>$main_id])
+            @livewire(\App\Livewire\widget\TranArcWidget::class,['main_id'=>$main_id])
         </div>
     </div>
 

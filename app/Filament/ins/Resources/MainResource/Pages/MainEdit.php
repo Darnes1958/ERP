@@ -17,6 +17,7 @@ use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,6 +30,7 @@ class MainEdit extends Page
     protected ?string $heading="";
 
     public $main_id;
+    public $sell_id;
     public $main_id_edited;
 
     public $main;
@@ -38,27 +40,20 @@ class MainEdit extends Page
     {
         $this->record = $this->resolveRecord($record);
         $this->main_id=$this->record->id;
+        $this->sell_id=$this->record->sell_id;
         $this->main_id_edited=$this->main_id;
         $this->main=Main::with('Sell')->find($this->main_id);
         $arr=$this->main->toArray();
 
        // Arr::add($arr,'total',$this->main->Sell->total);
-        info($arr);
+
         $this->contForm->fill($arr);
-    }
-    protected function getForms(): array
-    {
-        return array_merge(parent::getForms(),[
-            'contForm'=> $this->makeForm()
-                ->model(Main::class)
-                ->components($this->getContFormSchema(),'')
-                ->statePath('contData'),
-        ]);
     }
     public function go($who){
         $this->dispatch('gotoitem', test: $who);
     }
     public function store(){
+
         $this->validate();
       //  info($this->contData);
         Main::find($this->main_id)->update(collect($this->contData)->except(['total','pay','baky','sell','customer','name'])->toArray());
@@ -68,19 +63,24 @@ class MainEdit extends Page
             ->send();
         redirect()->to(MainResource::getUrl('index'));
     }
-    protected function getContFormSchema(): array
+    protected function contForm(Schema $schema): Schema
     {
-        return [
+        return $schema
+            ->model(Main::class)
+            ->statePath('contData')
+         ->components([
             Section::make()
                 ->schema([
                     Select::make('sell_id')
                         ->label('فاتورة المبيعات')
-                        ->relationship('Sell','name',modifyQueryUsing: fn (Builder $query) => $query->WhereDoesntHave('Main'),)
-                        ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->Customer->name} {$record->total}")
+                        ->relationship('Sell','name',
+                            modifyQueryUsing: fn (Builder $query) => $query->WhereDoesntHave('Main')->orWhere('id',$this->sell_id),)
+                        ->getOptionLabelFromRecordUsing(fn (Model $record) =>
+                            "{$record->id} {$record->Customer->name} {$record->total}")
                         ->searchable()
                         ->preload()
-                        ->live()
                         ->required()
+                        ->live()
                         ->columnSpan(2)
                         ->afterStateUpdated(function ($state,Set $set){
                             $this->Sell=Sell::find($state);
@@ -227,6 +227,6 @@ class MainEdit extends Page
                 ])
                 ->columns(4),
 
-        ];
+        ]);
     }
 }

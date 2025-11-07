@@ -144,7 +144,6 @@ class KsmKst extends Page implements HasTable,HasForms
                 $this->acc=$this->main->acc;
                 $this->ksm=$this->main->kst;
                 $this->accTaken=true;
-
                 $this->has_baki=Tran::where('main_id',$this->main_id)->sum('baky')>0;
                 $this->fillcontForm();
                 $this->go('ksm_date');
@@ -152,8 +151,6 @@ class KsmKst extends Page implements HasTable,HasForms
                 $this->acc=null;
                 $this->ksm=null;
                 $this->accTaken=false;
-
-
             }
 
     }
@@ -381,7 +378,7 @@ class KsmKst extends Page implements HasTable,HasForms
                 ->recordActions([
                     Action::make('del')
                         ->iconButton()
-                        ->visible(fn($record)=> !$this->has_baki && !$this->is_arc)
+                        ->visible(fn($record)=> $record->baki==0 && !$this->is_arc)
                         ->icon('heroicon-o-trash')
                         ->iconSize(IconSize::Small)
                         ->color('danger')
