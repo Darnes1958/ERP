@@ -176,6 +176,7 @@ class OverkstResource extends Resource
                             );
                     }),
             ])
+            ->recordUrl(false)
             ->recordActions([
                 EditAction::make()
                  ->visible(function (Model $record) {
