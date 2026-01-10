@@ -18,7 +18,9 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -48,6 +50,9 @@ class CustTran extends Page implements HasForms,HasTable
     return Auth::user()->hasRole('admin') || Auth::user()->can('تقارير زبائن');
   }
 
+  public $mden1=0;
+    public $daen1=0;
+    public $raseed1=0;
 
   public $cust_id;
   public $repDate;
@@ -59,7 +64,7 @@ class CustTran extends Page implements HasForms,HasTable
   public function mount(){
     $this->repDate=now();
 
-    $this->myForm->fill(['repDate'=>$this->repDate,'raseed'=>0,'mden'=>0,'daen'=>0]);
+    $this->myForm->fill(['repDate'=>$this->repDate,'raseed'=>0,'mden'=>0,'daen'=>0,'raseed1'=>$this->raseed1,'mden1'=>$this->mden1,'daen1'=>$this->daen1]);
   }
 
 
@@ -155,75 +160,104 @@ class CustTran extends Page implements HasForms,HasTable
           ->components([
               Section::make()
                   ->schema([
-                      Select::make('cust_id')
-                          ->options(Customer::all()->pluck('name','id'))
-                          ->searchable()
-                          ->preload()
-                          ->live()
-                          ->afterStateUpdated(function ($state,Set $set){
-                              $this->cust_id=$state;
-                              if ($this->repDate) {
-                                  $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
-                                  $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
-                                  $set('mden',number_format($mden, 2, '.', ','));
-                                  $set('daen',number_format($daen, 2, '.', ','));
-                                  $set('raseed',number_format($mden-$daen, 2, '.', ','));
+                      Grid::make()
+                       ->schema([
+                           Select::make('cust_id')
+                               ->options(Customer::all()->pluck('name','id'))
+                               ->searchable()
+                               ->preload()
+                               ->live()
+                               ->afterStateUpdated(function ($state,Set $set){
+                                   $this->cust_id=$state;
+                                   $this->mden1=Cust_tran2::where('customer_id',$this->cust_id)->sum('mden');
+                                   $this->daen1=Cust_tran2::where('customer_id',$this->cust_id)->sum('daen');
+                                   $this->raseed1=$this->mden1-$this->daen1;
+                                   $set('mden1',number_format($this->mden1, 2, '.', ','));
+                                   $set('daen1',number_format($this->daen1, 2, '.', ','));
+                                   $set('raseed1',number_format($this->raseed1, 2, '.', ','));
+
+                                   if ($this->repDate) {
+                                       $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                                       $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                                       $set('mden',number_format($mden, 2, '.', ','));
+                                       $set('daen',number_format($daen, 2, '.', ','));
+                                       $set('raseed',number_format($mden-$daen, 2, '.', ','));
 
 
-                              }
-                          })
-                          ->label('الزبون'),
-                      DatePicker::make('repDate')
-                          ->live()
-                          ->afterStateUpdated(function ($state,Set $set){
-                              $this->repDate=$state;
-                              if ($this->repDate && $this->cust_id) {
-                                  $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
-                                  $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
-                                  $set('mden',number_format($mden, 2, '.', ','));
-                                  $set('daen',number_format($daen, 2, '.', ','));
-                                  $set('raseed',number_format($mden-$daen, 2, '.', ','));
+                                   }
+                               })
+                               ->label('الزبون')->columnSpan(2),
+                           DatePicker::make('repDate')
+                               ->live()
+                               ->afterStateUpdated(function ($state,Set $set){
+                                   $this->repDate=$state;
+                                   if ($this->repDate && $this->cust_id) {
+                                       $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                                       $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                                       $set('mden',number_format($mden, 2, '.', ','));
+                                       $set('daen',number_format($daen, 2, '.', ','));
+                                       $set('raseed',number_format($mden-$daen, 2, '.', ','));
 
 
-                              }
-                          })
-                          ->label('من تاريخ'),
+                                   }
+                               })
+                               ->label('من تاريخ')->columnSpan(2),
 
-                      TextInput::make('mden')
-                          ->readOnly()
-                          ->label('مدين'),
-                      TextInput::make('daen')
-                          ->readOnly()
-                          ->label('دائن'),
-                      TextInput::make('raseed')
-                          ->readOnly()
-                          ->label('الرصيد'),
-                      Actions::make([
-                          Action::make('printorder')
-                              ->label('طباعة')
-                              ->visible(function (){return $this->chkDate($this->repDate) && $this->cust_id;})
-                              ->button()
-                              ->icon('heroicon-m-printer')
-                              ->color('info')
-                              ->action(function (Get $get){
-                                  $res=$this->getTableQueryForExport()->get();
-                                  $RepDate=date('Y-m-d');
-                                  return Response::download(self::ret_spatie($res,
-                                      'PDF.pdf-jeha-tran',['RepDate'=>$RepDate,'tran_date'=>$this->repDate,
-                                          'mden'=>$get('mden'),'daen'=>$get('daen'),'raseed'=>$get('raseed')],
 
-                                  ), 'filename.pdf', self::ret_spatie_header());
+                           Actions::make([
+                               Action::make('printorder')
+                                   ->label('طباعة')
+                                   ->visible(function (){return $this->chkDate($this->repDate) && $this->cust_id;})
+                                   ->button()
+                                   ->icon('heroicon-m-printer')
+                                   ->color('info')
+                                   ->action(function (Get $get){
+                                       $res=$this->getTableQueryForExport()->get();
+                                       $RepDate=date('Y-m-d');
+                                       return Response::download(self::ret_spatie($res,
+                                           'PDF.pdf-jeha-tran',['RepDate'=>$RepDate,'tran_date'=>$this->repDate,
+                                               'mden'=>$get('mden'),'daen'=>$get('daen'),'raseed'=>$get('raseed')],
 
-                              }),
-                          Action::make('Exl')
-                              ->label('Excel')
-                              ->visible(function (){
-                                  return $this->chkDate($this->repDate) && $this->cust_id;
-                              })
-                              ->button()
-                              ->color('success')
-                              ->url(fn (): string => route('custtranexl', ['repDate'=>$this->repDate,'cust_id'=>$this->cust_id,]))
-                      ])->verticalAlignment(VerticalAlignment::End),
+                                       ), 'filename.pdf', self::ret_spatie_header());
+
+                                   }),
+                               Action::make('Exl')
+                                   ->label('Excel')
+                                   ->visible(function (){
+                                       return $this->chkDate($this->repDate) && $this->cust_id;
+                                   })
+                                   ->button()
+                                   ->color('success')
+                                   ->url(fn (): string => route('custtranexl', ['repDate'=>$this->repDate,'cust_id'=>$this->cust_id,]))
+                           ])->verticalAlignment(VerticalAlignment::End)->columnSpan(2),
+
+
+                       ])->columnSpan(2),
+                      Section::make()
+                       ->schema([
+                           Text::make('الرصيد من بداية المدة')->color('info'),
+                           TextInput::make('mden1')
+                               ->readOnly()
+                               ->label('مدين'),
+                           TextInput::make('daen1')
+                               ->readOnly()
+                               ->label('دائن'),
+                           TextInput::make('raseed1')
+                               ->readOnly()
+                               ->label('الرصيد'),
+
+                           Text::make('الرصيد خلال الفترة')->color('info'),
+                           TextInput::make('mden')
+                               ->readOnly()
+                               ->label('مدين'),
+                           TextInput::make('daen')
+                               ->readOnly()
+                               ->label('دائن'),
+                           TextInput::make('raseed')
+                               ->readOnly()
+                               ->label('الرصيد'),
+
+                       ])->columns(4)->columnSpan(4),
                   ])
                   ->columns(6)
           ]);

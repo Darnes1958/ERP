@@ -150,7 +150,7 @@ class CustRaseed extends Page implements HasForms,HasTable
                     ->color(function($state){
                         if($state>=0) return 'green'; else return 'danger';
                     })
-                    ->searchable()
+
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
