@@ -171,9 +171,6 @@ class RepMakzoon extends Page implements HasTable
                     ->label('حسب المكان')
                     ->searchable()
 
-
-
-
             ], layout: FiltersLayout::AboveContent)
 
             ->striped();

@@ -2,6 +2,7 @@
 
 namespace App\Filament\market\Pages\Reports;
 
+use App\Exports\ItemTranExport;
 use App\Models\Item;
 use App\Models\Item_tran;
 use App\Models\Place;
@@ -18,6 +19,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ItemTran extends Page implements HasForms,HasTable
 {
@@ -94,8 +96,13 @@ class ItemTran extends Page implements HasForms,HasTable
       ->color('danger')
       ->icon('heroicon-m-printer')
       ->color('info')
-
-      ->url(fn (): string => route('itemtranexl', ['item_id'=>$this->item_id,'repDate'=>$this->repDate,]));
+      ->action(function (){
+          $data=$this->getTableQueryForExport()->get();
+          $place=null;
+          if ($this->place_id) $place=Place::find($this->place_id)->name;
+          return Excel::download(new ItemTranExport($this->item_id,$this->repDate,$data,$place),'item_tran.xlsx');
+      });
+   //   ->url(fn (): string => route('itemtranexl', ['item_id'=>$this->item_id,'repDate'=>$this->repDate,]));
   }
 
     public function getTableRecordKey(Model|array $record): string

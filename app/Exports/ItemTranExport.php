@@ -27,14 +27,18 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
   public $item_id;
   public $repDate;
   public $item_name;
+  public $data;
+  public $place;
 
   /**
    * @return array
    */
-  public function __construct(int $item_id,string $repDate)
+  public function __construct(int $item_id,string $repDate,$data,$place=null)
   {
     $this->item_id=$item_id;
     $this->repDate=$repDate;
+    $this->data=$data;
+    $this->place=$place;
 
   }
 
@@ -91,6 +95,7 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
           ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $event->sheet->setCellValue('D6', 'حركة الصنف :  '.$this->item_name.'      من تاريخ  '.$this->repDate);
+        if($this->place) $event->sheet->setCellValue('H6', 'المكان :  '.$this->place);
         $event->sheet->getDelegate()->setRightToLeft(true);
 
       },
@@ -136,12 +141,12 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
   }
     public function collection()
   {
-    $rec=Item_tran::where('item_id',$this->item_id)
-      ->where('order_date','>=',$this->repDate)->get()
-    ;
+ //   $rec=Item_tran::where('item_id',$this->item_id)
+   //   ->where('order_date','>=',$this->repDate)->get()
+   // ;
     $this->item_name=Item::find($this->item_id)->name;
 
-    return $rec;
+    return $this->data;
   }
 
   }
