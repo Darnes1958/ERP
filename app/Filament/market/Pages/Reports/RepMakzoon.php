@@ -163,7 +163,7 @@ class RepMakzoon extends Page implements HasTable
                 return $query
                     ->when(
                         ! $data['showZero'],
-                        fn (Builder $query, $date): Builder => $query->where('stock1','!=',0),
+                        fn (Builder $query, $date): Builder => $query->where('place_stocks.stock1','!=',0),
                     );
                 }),
              SelectFilter::make('place_id')
