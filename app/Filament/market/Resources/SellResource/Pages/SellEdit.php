@@ -231,6 +231,7 @@ class SellEdit extends Page implements HasTable,HasForms
                         ->numeric()
                         ->gte(0),
                     TextInput::make('pay')
+                        ->disabled()
                         ->hiddenLabel()
                         ->prefix('المدفوع')
                         ->prefixIcon('heroicon-m-hand-thumb-up')

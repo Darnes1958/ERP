@@ -8,9 +8,11 @@ use App\Filament\market\Resources\ReceiptResource\Pages\EditReceipt;
 use App\Filament\market\Resources\ReceiptResource\Pages\ListReceipts;
 
 use App\Filament\Tables\SellTable;
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Acc;
 use App\Models\Customer;
 use App\Models\Kazena;
+
 use App\Models\Place;
 use App\Models\Receipt;
 use App\Models\Sell;
@@ -30,6 +32,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -37,9 +40,12 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
+
 
 class ReceiptResource extends Resource
 {
+    use PublicTrait;
     protected static ?string $model = Receipt::class;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -396,12 +402,10 @@ class ReceiptResource extends Resource
               EditAction::make()->iconButton()
                   ->color('blue')
                   ->visible(fn(Receipt $record): bool =>
-                      $record->rec_who->value<5
-                      || !Auth::user()->can('االغاء ايصالات زبائن')),
+                       Auth::user()->can('تعديل ايصالات زبائن')),
               DeleteAction::make()->iconButton()
                   ->visible(fn(Receipt $record): bool =>
-                      $record->rec_who->value<5
-                       || !Auth::user()->can('االغاء ايصالات زبائن'))
+                      Auth::user()->can('االغاء ايصالات زبائن'))
                 ->modalHeading('حذف الإيصال')
                 ->after(function (Receipt $record) {
                   if ($record->rec_who->value==3 || $record->rec_who->value==4 || $record->rec_who->value==5 || $record->rec_who->value==6) {
@@ -413,6 +417,19 @@ class ReceiptResource extends Resource
                     $sell->save();
                   }
                 }),
+              Action::make('prn')
+               ->iconButton()
+               ->icon(Heroicon::Printer)
+               ->color('blue')
+               ->action(function (Receipt $record) {
+
+                   return Response::download(self::ret_spatie($record,
+                       'PrnView.pdf-Ical',[
+
+                       ]
+                   ), 'filename.pdf', self::ret_spatie_header());
+
+               })
             ])
             ->toolbarActions([
                //

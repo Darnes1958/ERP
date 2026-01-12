@@ -7,6 +7,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
   <style>
       .order-td {
           border-left: none;
@@ -117,6 +118,10 @@
       }
       .page-break {
           page-break-after: always;
+      }
+      #mainlabel  {
+          display:inline-block;border-style: dotted;border-top: none;border-right: none;
+          border-left: none;padding-left: 4px;padding-right: 4px;text-align: center;
       }
 
   </style>
