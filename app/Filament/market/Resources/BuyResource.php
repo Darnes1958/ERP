@@ -49,6 +49,7 @@ class BuyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(false)
             ->defaultKeySort(false)
             ->defaultSort('id','desc')
             ->columns([
