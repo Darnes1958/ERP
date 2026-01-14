@@ -191,6 +191,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
             ->send();
     }
 
+
     public function sellForm(Schema $schema): Schema
     {
         return $schema
@@ -338,16 +339,12 @@ class QueckSell extends Page implements HasSchemas,HasTable
                             ->required()
                             ->gte(0)
                             ->afterStateUpdated(function (Set $set,Get $get,$state){
-
                                 if ($get('item_id')==null) return;
-
                                 if ($get('q1')==null) $set('q1',0);
-
                                 $set('sub_tot',($get('q1')*$get('price1') ));
                             })
-                            ->extraAttributes(['wire:keydown.enter' => "chkQuant",])
+                            ->extraAttributes(['wire:keydown.enter' => "add_rec",])
                             ->id('q1'),
-
                     ])
                     ->columns(2),
             ]);
@@ -459,11 +456,10 @@ class QueckSell extends Page implements HasSchemas,HasTable
                                     $selltran=Sell_tran_work::with('Item')->where('sell_id',Auth::id())->get();
                                     $minus=false;
                                     foreach ($selltran as $tran) {
-                                        $placeRaseed=$this->retRaseedPlace($tran->item_id,$this->sell->place_id);
-                                        if (
-                                            $this->TwoToOne($tran->item->count,$tran->q1,0) >
-                                            $this->TwoToOne($tran->item->count,$placeRaseed['q1'],0)
-                                        ){
+                                        $placeRaseed=Place_stock::where('item_id',$tran->item_id)
+                                            ->where('place_id',$this->sell->place_id)->first();
+
+                                        if ($tran->q1 > $placeRaseed->stock1                                        ){
                                             Notification::make()
                                                 ->title('الصنف : ('.$tran->item->name.') رصيده لا يسمح !!')
                                                 ->icon('heroicon-o-exclamation-triangle')
@@ -475,6 +471,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
                                         }
                                     }
                                     if ($minus) return;
+
                                     if ($this->sell->pay>0 && $this->sell->price_type_id==2) {
                                         if (!$this->sellStoreData['acc_id'])
                                         {
@@ -493,13 +490,14 @@ class QueckSell extends Page implements HasSchemas,HasTable
                                     else $kaz=null;
                                     unset($this->sell['id'],$this->sell['created_at'],$this->sell['updated_at']);
                                     $id=Sell::create($this->sell->toArray());
+
                                     $selltran=Sell_tran_work::where('sell_id',Auth::id())->get();
                                     foreach ($selltran as $tran) {
                                         $tran->sell_id=$id->id;
                                         unset($tran['id'],$tran['created_at'],$tran['updated_at']);
                                         $tran_id=Sell_tran::create($tran->toArray());
 
-                                        $this->decAll($tran_id->id,$id->id,$tran->item_id,$id->place_id,$tran->q1,$tran->q2);
+                                        $this->decAll($tran_id->id,$id->id,$tran->item_id,$id->place_id,$tran->q1,0);
                                         if (! Price_sell::where('item_id',$tran->item_id)->where('price_type_id',$this->sell->price_type_id)->first())
                                             Price_sell::create(['item_id'=>$tran->item_id,'price_type_id'=>$this->sell->price_type_id
                                                 ,'price1'=>$tran->price1,'price2'=>$tran->price2,'pricej1'=>$tran->price1,'pricej2'=>$tran->price2,]);
