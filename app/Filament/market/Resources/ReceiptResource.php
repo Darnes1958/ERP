@@ -135,7 +135,7 @@ class ReceiptResource extends Resource
                       ];
                   })
                   ->requiredIf('rec_who',[3,4])
-                  ->visible(fn(Get $get): bool =>($get('rec_who')->value==3 || $get('rec_who')->value ==4)),
+                  ->visible(fn(Get $get): bool =>in_array($get('rec_who')->value,[3,4,5,6]) ),
                 Select::make('price_type_id')
                     ->label('طريقة الدفع')
                     ->relationship('Price_type','name')
