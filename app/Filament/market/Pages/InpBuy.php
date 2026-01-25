@@ -118,6 +118,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                          ->columnSpan(2)
                          ->inlineLabel()
                          ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
+
                          ->required(),
                      Select::make('supplier_id')
                          ->label('المورد')
@@ -542,6 +543,34 @@ class InpBuy extends Page implements HasTable,HasSchemas
                               ->color('success')
                               ->requiresConfirmation()
                               ->action(function () {
+                                  if ($this->buy->supplier_id==null)
+                                  {
+                                      Notification::make()
+                                          ->title('يجب ادخال المورد')
+                                          ->icon('heroicon-o-exclamation-triangle')
+                                          ->iconColor('warning')
+                                          ->send();
+                                      return false;
+
+                                  }
+                                  if ($this->buy->order_date==null)
+                                  {
+                                      Notification::make()
+                                          ->title('يجب ادخال التاريخ')
+                                          ->icon('heroicon-o-exclamation-triangle')
+                                          ->iconColor('warning')
+                                          ->send();
+                                      return false;
+                                  }
+                                  if ($this->buy->price_type_id==null)
+                                  {
+                                      Notification::make()
+                                          ->title('يجب ادخال طريقة الدفع')
+                                          ->icon('heroicon-o-exclamation-triangle')
+                                          ->iconColor('warning')
+                                          ->send();
+                                      return false;
+                                  }
                                   $buytran=Buy_tran_work::where('buy_id',Auth::id())->get();
                                   if ($this->buy->pay>0 && $this->buy->price_type_id!=1) {
                                       if (!$this->buyStoreData['acc_id'])
@@ -591,6 +620,9 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                   }
                                   $this->buy=Buys_work::find(Auth::id());
                                   $this->buy->tot=0;  $this->buy->pay=0; $this->buy->baky=0;
+                                  $this->buy->customer_id=null;
+                                  $this->buy->order_date=null;
+                                  $this->buy->price_type_id=null;
                                   $this->buy->notes='';
                                   $this->buy->save();
                                   $this->buyForm->fill($this->buy->toArray());
@@ -607,6 +639,9 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                   $this->buy->tot = 0;
                                   $this->buy->pay = 0;
                                   $this->buy->baky = 0;
+                                  $this->buy->customer_id=null;
+                                  $this->buy->order_date=null;
+                                  $this->buy->price_type_id=null;
                                   $this->buy->notes='';
                                   $this->buy->save();
                                   $this->buyForm->fill($this->buy->toArray());
