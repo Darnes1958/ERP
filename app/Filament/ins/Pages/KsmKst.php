@@ -3,6 +3,7 @@
 namespace App\Filament\ins\Pages;
 
 use App\Enums\Haf_kst_type;
+use App\Models\Customer;
 use DefStudio\SearchableInput\DTO\SearchResult;
 use DefStudio\SearchableInput\Forms\Components\SearchableInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -216,12 +217,14 @@ class KsmKst extends Page implements HasTable,HasForms
                         Select::make('main_id')
                             ->columnSpan(3)
                             ->live()
-                            ->relationship('Main','name',modifyQueryUsing: fn ($query) =>
+                            ->relationship('Main',modifyQueryUsing: fn ($query) =>
                             $query->when($this->accTaken && $this->acc,function ($q){
                                 $q->where('acc',$this->acc);
-                            }),)
+                            })
+                            )
 
                             ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->Customer->name} {$record->sul} {$record->kst}")
+
                             ->afterStateUpdated(function ($state){
                                 $this->main_id=null;
                                 $this->main_id=$state;
