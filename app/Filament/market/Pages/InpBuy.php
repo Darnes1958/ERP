@@ -620,7 +620,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                   }
                                   $this->buy=Buys_work::find(Auth::id());
                                   $this->buy->tot=0;  $this->buy->pay=0; $this->buy->baky=0;
-                                  $this->buy->customer_id=null;
+                                  $this->buy->supplier_id=null;
                                   $this->buy->order_date=null;
                                   $this->buy->price_type_id=null;
                                   $this->buy->notes='';

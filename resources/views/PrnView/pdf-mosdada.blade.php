@@ -19,6 +19,7 @@
                 <th style="width: 10%">رقم العقد</th>
                 <th style="width: 18%">رقم الحساب</th>
                 <th style="width: 12%">اجمالي العقد</th>
+                <th style="width: 10%">القسط</th>
                 <th style="width: 10%">المسدد</th>
                 <th style="width: 12%">الرصيد</th>
             </tr>
@@ -31,6 +32,7 @@
                     <td style="text-align: center"> {{ $item->id }} </td>
                     <td style="text-align: center"> {{ $item->acc }} </td>
                     <td> {{ number_format($item->sul,2, '.', ',') }} </td>
+                    <td> {{ number_format($item->kst,2, '.', ',') }} </td>
                     <td> {{ number_format($item->pay,2, '.', ',') }} </td>
                     <td> {{ number_format($item->raseed,2, '.', ',') }} </td>
                 </tr>
@@ -42,6 +44,7 @@
                 <td> </td>
                 <td> </td>
                 <td> {{number_format($sumsul, 2, '.', ',')}}  </td>
+                <td> </td>
                 <td> {{number_format($sumpay, 2, '.', ',')}}  </td>
                 <td> {{number_format($sumraseed, 2, '.', ',')}}  </td>
             </tr>
