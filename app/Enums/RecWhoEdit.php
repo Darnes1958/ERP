@@ -5,13 +5,14 @@ use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasColor;
 
-enum RecWho: int implements HasLabel,HasColor,HasIcon
+enum RecWhoEdit: int implements HasLabel,HasColor,HasIcon
 {
   case قبض = 1;
   case دفع = 2;
   case قبض_فاتورة = 3;
   case دفع_فاتورة = 4;
-
+    case دفـع_مع_فاتورة = 5;
+    case قبـض_مع_فاتورة = 6;
 
 
 

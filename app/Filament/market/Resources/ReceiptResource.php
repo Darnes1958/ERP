@@ -3,6 +3,7 @@
 namespace App\Filament\market\Resources;
 
 use App\Enums\RecWho;
+use App\Enums\RecWhoEdit;
 use App\Filament\market\Resources\ReceiptResource\Pages\CreateReceipt;
 use App\Filament\market\Resources\ReceiptResource\Pages\EditReceipt;
 use App\Filament\market\Resources\ReceiptResource\Pages\ListReceipts;
@@ -69,7 +70,12 @@ class ReceiptResource extends Resource
                 ->default(1)
                 ->live()
                 ->columnSpan(2)
-                ->options(RecWho::class),
+                ->options(function ($operation){
+                    info($operation);
+                    if ($operation=='create')
+                    return RecWho::class;
+                    else return RecWhoEdit::class;
+}),
                Select::make('customer_id')
                 ->label('الزبون')
                 ->relationship('Customer','name')
@@ -134,8 +140,11 @@ class ReceiptResource extends Resource
                           'customer_id' => $get('customer_id'),
                       ];
                   })
-                  ->requiredIf('rec_who',[3,4])
-                  ->visible(fn(Get $get): bool =>in_array($get('rec_who')->value,[3,4,5,6]) ),
+                  ->requiredIf('rec_who',[3,4,5,6])
+                  ->visible(function (Get $get) {
+
+                      return in_array($get('rec_who'),[3,4,5,6]);
+                  } ),
                 Select::make('price_type_id')
                     ->label('طريقة الدفع')
                     ->relationship('Price_type','name')
