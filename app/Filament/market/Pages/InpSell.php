@@ -155,6 +155,7 @@ class InpSell extends Page implements HasSchemas,HasTable
         $this->sell->total=$this->sell->tot+$this->sell->cost;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
+
         $this->sellForm->fill($this->sell->toArray());
 
     }
@@ -166,10 +167,6 @@ class InpSell extends Page implements HasSchemas,HasTable
 
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
-        Notification::make()
-            ->title('تم تحزين البيانات بنجاح')
-            ->success()
-            ->send();
     }
     public function sellForm(Schema $schema): Schema
     {
@@ -185,14 +182,22 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->hiddenLabel()
                             ->prefix('التاريخ')
                             ->columnSpan(2)
-                            ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
+                            ->afterStateUpdated(function ($state){
+                                $this->sell->order_date=$state;
+                                $this->sell->save();
+                            })
+                       //     ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
                             ->required(),
                         Select::make('customer_id')
                             ->searchable()
                             ->preload()
                             ->hiddenLabel()
                             ->prefix('الزبون')
-                            ->afterStateUpdated(fn() =>$this->updateSells())
+                          //  ->afterStateUpdated(fn() =>$this->updateSells())
+                          ->afterStateUpdated(function ($state){
+                              $this->sell->customer_id=$state;
+                              $this->sell->save();
+                          })
                             ->relationship('Customer','name')
                             ->live()
                             ->required()
@@ -250,7 +255,11 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->live()
                             ->required()
                             ->columnSpan(4)
-                            ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
+                           // ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
+                           ->afterStateUpdated(function ($state){
+                               $this->sell->place_id=$state;
+                               $this->sell->save();
+                           })
                             ->createOptionForm([
                                 Section::make('ادخال مكان تخزين')
                                     ->schema([
@@ -284,7 +293,13 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->live()
                             ->relationship('Price_type','name')
                             ->required()
-                            ->extraAttributes(['x-on:change' => "\$wire.updatePriceType"])
+                        //    ->extraAttributes(['x-on:change' => "\$wire.updatePriceType"])
+                        ->afterStateUpdated(function ($state){
+                            $this->sell->price_type_id=$state;
+                            $this->sell->save();
+                            if ($this->sell->price_type_id==2) $this->updateDiffer();
+                            else $this->updateNonDiffer();
+                        })
                             ->id('price_type_id'),
                         TextInput::make('tot')
                             ->hiddenLabel()

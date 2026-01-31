@@ -62,7 +62,7 @@ class UserResource extends Resource
                     ->multiple()
                     ->relationship('roles', 'name', fn (Builder $query) => $query
                         ->when(Auth::id()!=1,function ($q) {$q->where('name','!=','Admin');})
-                        ->where('for_who','sell')
+
                     )
 
                     ->preload(),

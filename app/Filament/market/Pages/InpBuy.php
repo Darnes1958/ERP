@@ -117,7 +117,11 @@ class InpBuy extends Page implements HasTable,HasSchemas
                          ->label('التاريخ')
                          ->columnSpan(2)
                          ->inlineLabel()
-                         ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
+                         ->afterStateUpdated(function ($state){
+                             $this->buy->order_date=$state;
+                             $this->buy->save();
+                         })
+                   //      ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
 
                          ->required(),
                      Select::make('supplier_id')
@@ -125,7 +129,11 @@ class InpBuy extends Page implements HasTable,HasSchemas
                          ->searchable()
                          ->preload()
                //          ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
-                         ->afterStateUpdated(fn()=>$this->updateBuys())
+                      //   ->afterStateUpdated(fn()=>$this->updateBuys())
+                         ->afterStateUpdated(function ($state){
+                               $this->buy->supplier_id=$state;
+                   $this->buy->save();
+                           })
                          ->relationship('Supplier','name')
                          ->live()
                          ->required()
@@ -173,7 +181,11 @@ class InpBuy extends Page implements HasTable,HasSchemas
                          ->required()
                          ->inlineLabel()
                          ->columnSpan(3)
-                         ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
+                     //    ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
+                         ->afterStateUpdated(function ($state){
+                             $this->buy->place_id=$state;
+                         $this->buy->save();
+                         })
                          ->createOptionForm([
                              Section::make('ادخال مكان تخزين')
                                  ->schema([
@@ -208,7 +220,11 @@ class InpBuy extends Page implements HasTable,HasSchemas
                          ->default(1)
                          ->relationship('Price_type','name')
                          ->required()
-                         ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
+                         ->afterStateUpdated(function ($state){
+                             $this->buy->price_type_id=$state;
+                             $this->buy->save();
+                         })
+                 //        ->extraAttributes(['x-on:change' => "\$wire.updateBuys"])
                          ->id('price_type_id'),
                      TextInput::make('tot')
                          ->label('إجمالي الفاتورة')
