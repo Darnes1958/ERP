@@ -8,17 +8,23 @@ use App\Filament\Market\Resources\Inventories\Pages\ListInventories;
 use App\Filament\Market\Resources\Inventories\Schemas\InventoryForm;
 use App\Filament\Market\Resources\Inventories\Tables\InventoriesTable;
 use App\Models\Inventory;
+use App\Models\InventoryData;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class InventoryResource extends Resource
 {
     protected static ?string $model = Inventory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::id()==1 ;
+    }
 
     public static function form(Schema $schema): Schema
     {

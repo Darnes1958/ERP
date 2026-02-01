@@ -22,7 +22,7 @@ class CreateReceipt extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
 
-        $data['rec_who']=$data['rec_who']->value;
+
         switch ($data['rec_who']) {
             case 1: $data['imp_exp']=0;break;
             case 2: $data['imp_exp']=1;break;
