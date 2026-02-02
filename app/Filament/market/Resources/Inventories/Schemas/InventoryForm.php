@@ -40,15 +40,18 @@ class InventoryForm
                     ->preload()
                     ->afterStateUpdated(function ($state,Set $set,Get $get) {
                         if ($state){
-                            $set('book_balance',Place_stock::where('place_id', $get('place_id'))
+                            $res=Place_stock::where('place_id', $get('place_id'))
                                 ->where('item_id', $get('item_id'))
-                                ->first()
-                                ->stock1);
+                                ->first();
+                            $set('book_balance',$res->stock1);
+                            $set('place_stock_id',$res->id);
                         }
                     })
                     ->searchable(),
 
                 TextInput::make('actual_balance')
+                 ->readOnly(fn(Get $get) => ! $get('item_id'))
+                 ->minValue(0)
                  ->belowContent(function (Get $get){
                    if ($get('item_id'))
                        return 'الرصيد الدفتري : '.
@@ -59,21 +62,22 @@ class InventoryForm
                    else return null;
                  })
                     ->afterStateUpdated(function (Set $set,Get $get,$state) {
-                        if ($state) {
-                            $set('difference',
-                            $state-Place_stock::where('place_id', $get('place_id'))
+                        if ($state && $get('item_id')) {
+                            $res=Place_stock::where('place_id', $get('place_id'))
                                 ->where('item_id', $get('item_id'))
-                                ->first()
-                                ->stock1);
+                                ->first();
+
+                            $set('difference',$state-$res->stock1);
+                            $set('its_value',($state-$res->stock1)*Item::find($get('item_id'))->price_buy);
                         }
                     })
                  ->required()
                  ->numeric(),
+                Hidden::make('place_stock_id'),
                 Hidden::make('book_balance'),
                 Hidden::make('difference'),
+                Hidden::make('its_value'),
                 Hidden::make('user_id')->default(Auth::id())
-
-
             ]);
     }
 }

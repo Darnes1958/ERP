@@ -25,6 +25,9 @@ protected $appends =['place_buy_cost','place_sell_cost'];
   public function Item(){
     return $this->belongsTo(Item::class);
   }
+  public function Inventory(){
+        return $this->hasMany(Inventory::class);
+  }
 
   public function __construct(array $attributes = [])
   {

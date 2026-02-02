@@ -8,6 +8,10 @@ use Illuminate\Validation\Rules\In;
 
 class Inventory extends Model
 {
+    public function Place_stock()
+    {
+        return $this->belongsTo(Place_stock::class);
+    }
     public function InventoryData()
     {
         return $this->belongsTo(InventoryData::class);

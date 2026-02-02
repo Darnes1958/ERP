@@ -7,5 +7,7 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateInventory extends CreateRecord
 {
+    protected ?string $heading='';
     protected static string $resource = InventoryResource::class;
+
 }
