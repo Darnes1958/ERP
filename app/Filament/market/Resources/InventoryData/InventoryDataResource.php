@@ -26,7 +26,7 @@ class InventoryDataResource extends Resource
     protected static string | UnitEnum | null $navigationGroup='اعدادت';
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::id()==1 && !InventoryData::where('active',1)->exists();
+        return Auth::id()==1;
     }
 
     public static function form(Schema $schema): Schema

@@ -11,6 +11,7 @@ use App\Filament\market\Pages\InpSell;
 use App\Filament\market\Pages\QueckSell;
 use App\Filament\market\Resources\BuyResource;
 use App\Filament\market\Resources\BuysWorkResource;
+use App\Filament\Market\Resources\Inventories\Schemas\InventoryForm;
 use App\Filament\market\Resources\SellResource;
 use App\Filament\market\Resources\SellWorkResource;
 use App\Models\GlobalSetting;
@@ -114,6 +115,7 @@ class AppServiceProvider extends ServiceProvider
             InpSell::class,
             InpBuy::class,
             QueckSell::class,
+            InventoryForm::class,
             ]
       );
 

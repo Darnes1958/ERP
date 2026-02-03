@@ -15,15 +15,20 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class InventoryResource extends Resource
 {
     protected static ?string $model = Inventory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $navigationLabel='جرد';
+    protected static string | UnitEnum | null $navigationGroup='اعدادات';
+
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::id()==1 ;
+        return Auth::user()->can('جرد') && !InventoryData::where('active',1)->exists();
     }
 
     public static function form(Schema $schema): Schema
