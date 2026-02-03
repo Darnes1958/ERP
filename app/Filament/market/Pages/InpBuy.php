@@ -316,7 +316,10 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                           ->required()
                                           ->readOnly(!Setting::find(Auth::user()->company)->barcode)
                                           ->live()
-                                          ->default(Barcode::max('id')+1)
+                                          ->default(function (){
+                                              if (!Setting::find(Auth::user()->company)->barcode)
+                                                  Barcode::max('id')+1;
+                                          })
                                           ->unique(ignoreRecord: true)
                                           ->validationMessages([
                                               'unique' => 'هذا الـ :attribute مخزون مسبقا',
