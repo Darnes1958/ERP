@@ -113,31 +113,31 @@ class ItemResource extends Resource
                             ])->columns(2)
                     ]),
 
-                Select::make('unitb_id')
-                    ->label('الوحدة الصغري')
-                    ->relationship('Unitb','name')
-                    ->required()
-                    ->columnSpan(2)
-                    ->createOptionForm([
-                        Section::make('ادخال وحدات صغري')
-                            ->description('ادخال وحدة صغري (قطعة,علبة .... الخ)')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->required()
-                                    ->unique()
-                                    ->label('الاسم'),
-                            ])->columns(2)
-                    ])
-                    ->editOptionForm([
-                        Section::make('تعديل وحدات صغري')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->required()
-                                    ->unique()
-                                    ->label('الاسم'),
-                            ])->columns(2)
-                    ])
-                    ->hidden(),
+             //   Select::make('unitb_id')
+             //       ->label('الوحدة الصغري')
+             //       ->relationship('Unitb','name')
+             //    //   ->required()
+             //       ->columnSpan(2)
+             //      ->createOptionForm([
+             //           Section::make('ادخال وحدات صغري')
+             //               ->description('ادخال وحدة صغري (قطعة,علبة .... الخ)')
+             //               ->schema([
+             //                   TextInput::make('name')
+             //                       ->required()
+             //                       ->unique()
+             //                       ->label('الاسم'),
+             //               ])->columns(2)
+             //       ])
+             //        ->editOptionForm([
+             //           Section::make('تعديل وحدات صغري')
+             //               ->schema([
+             //                   TextInput::make('name')
+             //                       ->required()
+             //                       ->unique()
+             //                       ->label('الاسم'),
+             //               ])->columns(2)
+             //       ])
+             //       ->hidden(),
                  //   ->hidden(fn(Get $get): bool => ! $get('two_unit')),
               TextInput::make('count')
                     ->label('العدد')
