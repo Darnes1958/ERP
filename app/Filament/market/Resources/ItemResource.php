@@ -8,6 +8,7 @@ use App\Filament\market\Resources\ItemResource\Pages\EditItem;
 use App\Filament\market\Resources\ItemResource\Pages\ListItems;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
+use App\Models\Buy_tran;
 use App\Models\Item;
 use App\Models\Price_buy;
 use App\Models\Price_sell;
@@ -66,7 +67,9 @@ class ItemResource extends Resource
                     ->label('الباركود')
                     ->required()
                     ->hidden(!Setting::find(Auth::user()->company)->barcode)
-                    ->disabled(fn(string $operation)=>$operation=='edit')
+                    ->disabled(fn(string $operation,Get $get)=>
+                        $operation=='edit' && !Buy_tran::where('item_id',$get('id'))->exist()
+                    )
                     ->live()
                     ->unique(ignoreRecord: true)
                   ->validationMessages([
