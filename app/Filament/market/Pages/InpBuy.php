@@ -17,6 +17,7 @@ use App\Models\Price_sell;
 use App\Models\Recsupp;
 use App\Models\Sell_tran;
 use App\Models\Setting;
+use App\Models\Unita;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -343,6 +344,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                           ->label('الوحدة')
                                           ->relationship('Unita','name')
                                           ->required()
+                                          ->default(Unita::min('id'))
                                           ->columnSpan(2)
                                           ->createOptionForm([
                                               Section::make('ادخال وحدات كبري')
