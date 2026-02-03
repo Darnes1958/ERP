@@ -137,7 +137,8 @@ class ItemResource extends Resource
                                     ->label('الاسم'),
                             ])->columns(2)
                     ])
-                    ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+                    ->hidden(),
+                 //   ->hidden(fn(Get $get): bool => ! $get('two_unit')),
               TextInput::make('count')
                     ->label('العدد')
                     ->required()
