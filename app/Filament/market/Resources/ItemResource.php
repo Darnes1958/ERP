@@ -68,7 +68,7 @@ class ItemResource extends Resource
                     ->required()
                     ->hidden(!Setting::find(Auth::user()->company)->barcode)
                     ->disabled(fn(string $operation,Get $get)=>
-                        $operation=='edit' && !Buy_tran::where('item_id',$get('id'))->exist()
+                        $operation=='edit' && !Buy_tran::where('item_id',$get('id'))->exists()
                     )
                     ->live()
                     ->unique(ignoreRecord: true)
