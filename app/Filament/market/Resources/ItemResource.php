@@ -139,10 +139,10 @@ class ItemResource extends Resource
              //       ])
              //       ->hidden(),
                  //   ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-              TextInput::make('count')
-                    ->label('العدد')
-                    ->required()
-                    ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
+        //      TextInput::make('count')
+        //            ->label('العدد')
+        //            ->required()
+        //            ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
               TextInput::make('price_buy')
                 ->label('سعر الشراء')
                 ->required()
@@ -156,18 +156,18 @@ class ItemResource extends Resource
                 TextInput::make('price1')
                     ->label('سعر البيع قطاعي')
                     ->required(),
-                TextInput::make('price2')
-                    ->label('سعر الصغري قطاعي')
-                    ->required()
-                    ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-              TextInput::make('pricej1')
-                ->label('سعر البيع جملة')
-                ->hidden(!Setting::find(Auth::user()->company)->jomla)
-                ->required(),
-              TextInput::make('pricej2')
-                ->label('سعر الصغري جملة')
-                ->required()
-                ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+           //     TextInput::make('price2')
+           //         ->label('سعر الصغري قطاعي')
+           //         ->required()
+           //         ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+            //  TextInput::make('pricej1')
+            //    ->label('سعر البيع جملة')
+            //    ->hidden(!Setting::find(Auth::user()->company)->jomla)
+            //    ->required(),
+           //   TextInput::make('pricej2')
+           //     ->label('سعر الصغري جملة')
+           //     ->required()
+           //     ->hidden(fn(Get $get): bool => ! $get('two_unit')),
 
                 Select::make('item_type_id')
                     ->label('التصنيف')
@@ -193,29 +193,29 @@ class ItemResource extends Resource
                                     ->label('الاسم'),
                             ])->columns(2)
                     ]),
-                Select::make('company_id')
-                    ->label('الشركة المصنعة')
-                    ->relationship('Company','name')
-                    ->default(1)
-                    ->columnSpan(2)
-                    ->createOptionForm([
-                        Section::make('ادخال شركات مصنع')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->required()
-                                    ->unique()
-                                    ->label('الاسم'),
-                            ])
-                    ])
-                    ->editOptionForm([
-                        Section::make('تعديل شركات مصنعة')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->required()
-                                    ->unique()
-                                    ->label('الاسم'),
-                            ])
-                    ]),
+           //elect::make('company_id')
+           //   ->label('الشركة المصنعة')
+           //   ->relationship('Company','name')
+           //   ->default(1)
+           //   ->columnSpan(2)
+           //   ->createOptionForm([
+           //       Section::make('ادخال شركات مصنع')
+           //           ->schema([
+           //               TextInput::make('name')
+           //                   ->required()
+           //                   ->unique()
+           //                   ->label('الاسم'),
+           //           ])
+           //   ])
+           //   ->editOptionForm([
+           //       Section::make('تعديل شركات مصنعة')
+           //           ->schema([
+           //               TextInput::make('name')
+           //                   ->required()
+           //                   ->unique()
+           //                   ->label('الاسم'),
+           //           ])
+           //   ]),
             ])
             ->columns(4);
     }
