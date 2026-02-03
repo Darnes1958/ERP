@@ -67,9 +67,7 @@ class ItemResource extends Resource
                     ->label('الباركود')
                     ->required()
                     ->hidden(!Setting::find(Auth::user()->company)->barcode)
-                    ->disabled(fn(string $operation,Get $get)=>
-                        $operation=='edit' && !Buy_tran::where('item_id',$get('id'))->exists()
-                    )
+                    //->disabled(fn(string $operation,Get $get)=>$operation=='edit' && Buy_tran::where('item_id',$get('id'))->exists())
                     ->live()
                     ->unique(ignoreRecord: true)
                   ->validationMessages([
