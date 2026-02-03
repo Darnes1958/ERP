@@ -28,7 +28,7 @@ class InventoryResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()->can('جرد') && !InventoryData::where('active',1)->exists();
+        return Auth::user()->can('جرد') && InventoryData::where('active',1)->exists();
     }
 
     public static function form(Schema $schema): Schema
