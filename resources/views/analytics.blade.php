@@ -5,7 +5,7 @@
         document.addEventListener('livewire:initialized', () => {
         @this.on('gotoitem', (event) => {
             postid = (event.test);
-            alert(postid);
+
             if (postid == 'actual_balance') {
 
                 $("#actual_balance").focus();
