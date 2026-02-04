@@ -297,10 +297,6 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->createOptionForm([
                               Section::make('ادخال صنف')
                                   ->schema([
-                                      TextInput::make('id')
-                                          ->hidden(fn(string $operation)=>$operation=='create')
-                                          ->disabled()
-                                          ->label('الرقم الألي'),
                                       TextInput::make('name')
                                           ->label('اسم الصنف')
                                           ->autocomplete(false)
@@ -465,6 +461,13 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                   ])
                                   ->columns(4)
                           ])
+                          ->createOptionUsing(function (array $data): int {
+                              $item=Item::create($data)->getkey();
+                              $item_id=Item::max('id');
+                              info($item_id);
+                             // info($item);
+                              return $item_id;
+                          })
                           ->id('item_id'),
                       DatePicker::make('exp_date')
                           ->label('تاريخ الصلاحية')
