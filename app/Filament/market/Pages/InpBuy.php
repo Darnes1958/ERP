@@ -365,35 +365,35 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                           ->label('الاسم'),
                                                   ])->columns(2)
                                           ]),
-                                      Select::make('unitb_id')
-                                          ->label('الوحدة الصغري')
-                                          ->relationship('Unitb','name')
-                                          ->required()
-                                          ->columnSpan(2)
-                                          ->createOptionForm([
-                                              Section::make('ادخال وحدات صغري')
-                                                  ->description('ادخال وحدة صغري (قطعة,علبة .... الخ)')
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])->columns(2)
-                                          ])
-                                          ->editOptionForm([
-                                              Section::make('تعديل وحدات صغري')
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])->columns(2)
-                                          ])
-                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
-                                      TextInput::make('count')
-                                          ->label('العدد')
-                                          ->required()
-                                          ->hidden(fn(Get $get): bool =>  ! $get('two_unit')->value),
+                                    // Select::make('unitb_id')
+                                    //     ->label('الوحدة الصغري')
+                                    //     ->relationship('Unitb','name')
+                                    //     ->required()
+                                    //     ->columnSpan(2)
+                                    //     ->createOptionForm([
+                                    //         Section::make('ادخال وحدات صغري')
+                                    //             ->description('ادخال وحدة صغري (قطعة,علبة .... الخ)')
+                                    //             ->schema([
+                                    //                 TextInput::make('name')
+                                    //                     ->required()
+                                    //                     ->unique()
+                                    //                     ->label('الاسم'),
+                                    //             ])->columns(2)
+                                    //     ])
+                                    //     ->editOptionForm([
+                                    //         Section::make('تعديل وحدات صغري')
+                                    //             ->schema([
+                                    //                 TextInput::make('name')
+                                    //                     ->required()
+                                    //                     ->unique()
+                                    //                     ->label('الاسم'),
+                                    //             ])->columns(2)
+                                    //     ])
+                                    //     ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
+                                    // TextInput::make('count')
+                                    //     ->label('العدد')
+                                    //     ->required()
+                                    //     ->hidden(fn(Get $get): bool =>  ! $get('two_unit')->value),
                                       TextInput::make('price_buy')
                                           ->label('سعر الشراء')
                                           ->required()
@@ -401,18 +401,18 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                       TextInput::make('price1')
                                           ->label('سعر البيع قطاعي')
                                           ->required(),
-                                      TextInput::make('price2')
-                                          ->label('سعر الصغري قطاعي')
-                                          ->required()
-                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
-                                      TextInput::make('pricej1')
-                                          ->label('سعر البيع جملة')
-                                          ->hidden(!Setting::find(Auth::user()->company)->jomla)
-                                          ->required(),
-                                      TextInput::make('pricej2')
-                                          ->label('سعر الصغري جملة')
-                                          ->required()
-                                          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
+                              //       TextInput::make('price2')
+                              //           ->label('سعر الصغري قطاعي')
+                              //           ->required()
+                              //           ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
+                               //      TextInput::make('pricej1')
+                               //          ->label('سعر البيع جملة')
+                               //          ->hidden(!Setting::find(Auth::user()->company)->jomla)
+                               //          ->required(),
+                               //      TextInput::make('pricej2')
+                               //          ->label('سعر الصغري جملة')
+                               //          ->required()
+                               //          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
 
                                       Select::make('item_type_id')
                                           ->label('التصنيف')
@@ -438,29 +438,29 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                           ->label('الاسم'),
                                                   ])->columns(2)
                                           ]),
-                                      Select::make('company_id')
-                                          ->label('الشركة المصنعة')
-                                          ->relationship('Company','name')
-                                          ->default(1)
-                                          ->columnSpan(2)
-                                          ->createOptionForm([
-                                              Section::make('ادخال شركات مصنع')
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])
-                                          ])
-                                          ->editOptionForm([
-                                              Section::make('تعديل شركات مصنعة')
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])
-                                          ]),
+                                   //Select::make('company_id')
+                                   //    ->label('الشركة المصنعة')
+                                   //    ->relationship('Company','name')
+                                   //    ->default(1)
+                                   //    ->columnSpan(2)
+                                   //    ->createOptionForm([
+                                   //        Section::make('ادخال شركات مصنع')
+                                   //            ->schema([
+                                   //                TextInput::make('name')
+                                   //                    ->required()
+                                   //                    ->unique()
+                                   //                    ->label('الاسم'),
+                                   //            ])
+                                   //    ])
+                                   //    ->editOptionForm([
+                                   //        Section::make('تعديل شركات مصنعة')
+                                   //            ->schema([
+                                   //                TextInput::make('name')
+                                   //                    ->required()
+                                   //                    ->unique()
+                                   //                    ->label('الاسم'),
+                                   //            ])
+                                   //    ]),
                                       Hidden::make('user_id')
                                           ->default(Auth::id()),
                                   ])
