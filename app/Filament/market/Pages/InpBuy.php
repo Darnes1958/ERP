@@ -290,9 +290,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->preload()
                           ->relationship('Item','name')
                           ->live(onBlur: true)
-                          ->reactive()
                           ->required()
-                          ->afterStateUpdated(function ($state,Set $set){
+                          ->afterStateUpdated(function ($state){
                               $this->ChkItem($state);
                           })
                           ->createOptionForm([
@@ -326,20 +325,20 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                               'unique' => 'هذا الـ :attribute مخزون مسبقا',
                                           ]),
 
-                                      Radio::make('two_unit')
-                                          ->label('مستوي الوحدات')
-                                          ->inline()
-                                          ->inlineLabel(false)
-                                          ->options(TwoUnit::class)
-                                          ->default(0)
-                                          ->required()
-                                          ->disabled(function ($operation,$state, Get $get){
-                                              return
-                                                  $operation=='edit'
-                                                  && $state
-                                                  && Sell_tran::where('item_id',$get('id'))->where('q2','>',0)->exists();
-                                          })
-                                          ->visible(Setting::find(Auth::user()->company)->has_two),
+                                   //  Radio::make('two_unit')
+                                   //      ->label('مستوي الوحدات')
+                                   //      ->inline()
+                                   //      ->inlineLabel(false)
+                                   //      ->options(TwoUnit::class)
+                                   //      ->default(0)
+                                   //      ->required()
+                                   //      ->disabled(function ($operation,$state, Get $get){
+                                   //          return
+                                   //              $operation=='edit'
+                                   //              && $state
+                                   //              && Sell_tran::where('item_id',$get('id'))->where('q2','>',0)->exists();
+                                   //      })
+                                   //      ->visible(Setting::find(Auth::user()->company)->has_two),
                                       Select::make('unita_id')
                                           ->label('الوحدة')
                                           ->relationship('Unita','name')
@@ -438,29 +437,29 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                           ->label('الاسم'),
                                                   ])->columns(2)
                                           ]),
-                                   //Select::make('company_id')
-                                   //    ->label('الشركة المصنعة')
-                                   //    ->relationship('Company','name')
-                                   //    ->default(1)
-                                   //    ->columnSpan(2)
-                                   //    ->createOptionForm([
-                                   //        Section::make('ادخال شركات مصنع')
-                                   //            ->schema([
-                                   //                TextInput::make('name')
-                                   //                    ->required()
-                                   //                    ->unique()
-                                   //                    ->label('الاسم'),
-                                   //            ])
-                                   //    ])
-                                   //    ->editOptionForm([
-                                   //        Section::make('تعديل شركات مصنعة')
-                                   //            ->schema([
-                                   //                TextInput::make('name')
-                                   //                    ->required()
-                                   //                    ->unique()
-                                   //                    ->label('الاسم'),
-                                   //            ])
-                                   //    ]),
+                                   Select::make('company_id')
+                                       ->label('الشركة المصنعة')
+                                       ->relationship('Company','name')
+                                       ->default(1)
+                                       ->columnSpan(2)
+                                       ->createOptionForm([
+                                           Section::make('ادخال شركات مصنع')
+                                               ->schema([
+                                                   TextInput::make('name')
+                                                       ->required()
+                                                       ->unique()
+                                                       ->label('الاسم'),
+                                               ])
+                                       ])
+                                       ->editOptionForm([
+                                           Section::make('تعديل شركات مصنعة')
+                                               ->schema([
+                                                   TextInput::make('name')
+                                                       ->required()
+                                                       ->unique()
+                                                       ->label('الاسم'),
+                                               ])
+                                       ]),
                                       Hidden::make('user_id')
                                           ->default(Auth::id()),
                                   ])
