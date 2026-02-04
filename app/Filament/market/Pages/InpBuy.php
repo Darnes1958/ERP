@@ -794,9 +794,11 @@ class InpBuy extends Page implements HasTable,HasSchemas
             ->sortable(),
           TextColumn::make('barcode_id')
             ->label('الباركود')
+              ->searchable()
             ->sortable(),
           TextColumn::make('Item.name')
             ->label('اسم الصنف')
+              ->searchable()
             ->color('info')
             ->sortable(),
           TextColumn::make('q1')
