@@ -27,7 +27,7 @@ class InventoryForm
             ->components([
                Section::make()
                 ->schema([
-                    Hidden::make('inventory_data_id')->default(InventoryData::where('active', true)->first()->id),
+                    Hidden::make('inventory_data_id')->default(InventoryData::where('active', 1)->first()->id),
                     Select::make('place_id')
                         ->label('المكان')
                         ->relationship('Place', 'name')
