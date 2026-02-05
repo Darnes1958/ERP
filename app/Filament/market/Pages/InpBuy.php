@@ -449,7 +449,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                        ->color('success')
                                                        ->iconButton()
                                                        ->action(function (Set $set){
-                                                           $set('barcode',Item::max('id')+1);
+                                                           $set('barcode',str(Item::max('id')+1));
                                                        })
 
                                                   )
