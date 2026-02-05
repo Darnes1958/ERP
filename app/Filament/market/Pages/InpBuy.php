@@ -443,6 +443,16 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                               TextInput::make('barcode')
                                                   ->label('الباركود')
                                                   ->required()
+                                                  ->afterContent(
+                                                      Action::make('gen_barcode')
+                                                       ->icon(Heroicon::Plus)
+                                                       ->color('success')
+                                                       ->iconButton()
+                                                       ->action(function (Set $set){
+                                                           $set('barcode',Item::max('id')+1);
+                                                       })
+
+                                                  )
                                                   ->readOnly(!Setting::find(Auth::user()->company)->barcode)
                                                   ->live()
                                                   ->default(function (){
@@ -457,6 +467,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
 
                                               Select::make('unita_id')
                                                   ->label('الوحدة')
+                                                  ->searchable()
+                                                  ->preload()
                                                   ->options(Unita::all()->pluck('name','id'))
                                                   ->required()
                                                   ->default(Unita::min('id'))
@@ -467,19 +479,15 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                           ->schema([
                                                               TextInput::make('name')
                                                                   ->required()
+                                                                  ->autofocus()
                                                                   ->unique()
                                                                   ->label('الاسم'),
                                                           ])
                                                   ])
-                                                  ->editOptionForm([
-                                                      Section::make('تعديل وحدات كبري')
-                                                          ->schema([
-                                                              TextInput::make('name')
-                                                                  ->required()
-                                                                  ->unique()
-                                                                  ->label('الاسم'),
-                                                          ])->columns(2)
-                                                  ]),
+                                                  ->createOptionUsing(function (array $data): int {
+                                                      return Unita::create($data)->getKey();
+
+                                                  }),
 
                                               TextInput::make('price_buy')
                                                   ->label('سعر الشراء')
@@ -492,6 +500,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
 
                                               Select::make('item_type_id')
                                                   ->label('التصنيف')
+                                                  ->searchable()
+                                                  ->preload()
                                                   ->options(Item_type::all()->pluck('name','id'))
                                                   ->required()
                                                   ->columnSpan(2)
@@ -501,21 +511,19 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                           ->schema([
                                                               TextInput::make('name')
                                                                   ->required()
+                                                                  ->autofocus()
                                                                   ->unique()
                                                                   ->label('الاسم'),
                                                           ])
                                                   ])
-                                                  ->editOptionForm([
-                                                      Section::make('تعديل تصنيف')
-                                                          ->schema([
-                                                              TextInput::make('name')
-                                                                  ->required()
-                                                                  ->unique()
-                                                                  ->label('الاسم'),
-                                                          ])->columns(2)
-                                                  ]),
+                                                  ->createOptionUsing(function (array $data): int {
+                                                      $item=Item_type::create($data)->getKey();
+                                                      return Item_type::max('id');
+                                                  }),
                                               Select::make('company_id')
                                                   ->label('الشركة المصنعة')
+                                                  ->searchable()
+                                                  ->preload()
                                                   ->options(Company::all()->pluck('name','id'))
                                                   ->default(1)
                                                   ->columnSpan(2)
@@ -524,19 +532,15 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                           ->schema([
                                                               TextInput::make('name')
                                                                   ->required()
+                                                                  ->autofocus()
                                                                   ->unique()
                                                                   ->label('الاسم'),
                                                           ])
                                                   ])
-                                                  ->editOptionForm([
-                                                      Section::make('تعديل شركات مصنعة')
-                                                          ->schema([
-                                                              TextInput::make('name')
-                                                                  ->required()
-                                                                  ->unique()
-                                                                  ->label('الاسم'),
-                                                          ])
-                                                  ]),
+                                                  ->createOptionUsing(function (array $data): int {
+                                                     return Company::create($data)->getKey();
+                                                  }),
+
                                               Hidden::make('user_id')
                                                   ->default(Auth::id()),
                                           ])
@@ -929,6 +933,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                      ->required(),
                                  Select::make('item_type_id')
                                      ->label('التصنيف')
+                                     ->searchable()
+                                     ->preload()
                                      ->options(Item_type::all()->pluck('name','id'))
                                      ->required()
                                      ->columnSpan(2)
@@ -950,7 +956,11 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                      ->unique()
                                                      ->label('الاسم'),
                                              ])->columns(2)
-                                     ]),
+                                     ])
+                                     ->createOptionUsing(function (array $data): int {
+                                         $item=Item_type::create($data)->getKey();
+                                         return Item_type::max('id');
+                                     }),
                                  Select::make('company_id')
                                      ->label('الشركة المصنعة')
                                      ->options(Company::all()->pluck('name','id'))
@@ -973,7 +983,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                      ->unique()
                                                      ->label('الاسم'),
                                              ])
-                                     ]),
+                                     ])
+                                     ,
                              ])
                              ->columns(4)
                      ]
