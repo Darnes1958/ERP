@@ -11,7 +11,9 @@ use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Buy_tran_work;
 use App\Models\Buys_work;
+use App\Models\Company;
 use App\Models\Item;
+use App\Models\Item_type;
 use App\Models\Price_buy;
 use App\Models\Price_sell;
 use App\Models\Recsupp;
@@ -19,6 +21,8 @@ use App\Models\Sell_tran;
 use App\Models\Setting;
 use App\Models\Unita;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
@@ -29,16 +33,19 @@ use Filament\Notifications\Notification;
 
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Html;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
@@ -321,20 +328,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                               'unique' => 'هذا الـ :attribute مخزون مسبقا',
                                           ]),
 
-                                   //  Radio::make('two_unit')
-                                   //      ->label('مستوي الوحدات')
-                                   //      ->inline()
-                                   //      ->inlineLabel(false)
-                                   //      ->options(TwoUnit::class)
-                                   //      ->default(0)
-                                   //      ->required()
-                                   //      ->disabled(function ($operation,$state, Get $get){
-                                   //          return
-                                   //              $operation=='edit'
-                                   //              && $state
-                                   //              && Sell_tran::where('item_id',$get('id'))->where('q2','>',0)->exists();
-                                   //      })
-                                   //      ->visible(Setting::find(Auth::user()->company)->has_two),
+
                                       Select::make('unita_id')
                                           ->label('الوحدة')
                                           ->relationship('Unita','name')
@@ -360,35 +354,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                           ->label('الاسم'),
                                                   ])->columns(2)
                                           ]),
-                                    // Select::make('unitb_id')
-                                    //     ->label('الوحدة الصغري')
-                                    //     ->relationship('Unitb','name')
-                                    //     ->required()
-                                    //     ->columnSpan(2)
-                                    //     ->createOptionForm([
-                                    //         Section::make('ادخال وحدات صغري')
-                                    //             ->description('ادخال وحدة صغري (قطعة,علبة .... الخ)')
-                                    //             ->schema([
-                                    //                 TextInput::make('name')
-                                    //                     ->required()
-                                    //                     ->unique()
-                                    //                     ->label('الاسم'),
-                                    //             ])->columns(2)
-                                    //     ])
-                                    //     ->editOptionForm([
-                                    //         Section::make('تعديل وحدات صغري')
-                                    //             ->schema([
-                                    //                 TextInput::make('name')
-                                    //                     ->required()
-                                    //                     ->unique()
-                                    //                     ->label('الاسم'),
-                                    //             ])->columns(2)
-                                    //     ])
-                                    //     ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
-                                    // TextInput::make('count')
-                                    //     ->label('العدد')
-                                    //     ->required()
-                                    //     ->hidden(fn(Get $get): bool =>  ! $get('two_unit')->value),
+
                                       TextInput::make('price_buy')
                                           ->label('سعر الشراء')
                                           ->required()
@@ -396,18 +362,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                       TextInput::make('price1')
                                           ->label('سعر البيع قطاعي')
                                           ->required(),
-                              //       TextInput::make('price2')
-                              //           ->label('سعر الصغري قطاعي')
-                              //           ->required()
-                              //           ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
-                               //      TextInput::make('pricej1')
-                               //          ->label('سعر البيع جملة')
-                               //          ->hidden(!Setting::find(Auth::user()->company)->jomla)
-                               //          ->required(),
-                               //      TextInput::make('pricej2')
-                               //          ->label('سعر الصغري جملة')
-                               //          ->required()
-                               //          ->hidden(fn(Get $get): bool => ! $get('two_unit')->value),
+
 
                                       Select::make('item_type_id')
                                           ->label('التصنيف')
@@ -464,10 +419,138 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->createOptionUsing(function (array $data): int {
                               $item=Item::create($data)->getkey();
                               $item_id=Item::max('id');
-                              info($item_id);
-                             // info($item);
                               return $item_id;
                           })
+                          ->afterContent(
+                              CreateAction::make()
+                                  ->modalHeading(Html::make('<span class="text-primary-600">إضافة صنف جديد</span>'))
+                                  ->icon(Heroicon::Plus)
+                                  ->color('success')
+                                  ->iconButton()
+                                  ->schema([
+                                      Section::make('')
+                                          ->schema([
+                                              TextInput::make('name')
+                                                  ->label('اسم الصنف')
+                                                  ->autocomplete(false)
+                                                  ->required()
+                                                  ->live()
+                                                  ->unique(ignoreRecord: true,table: Item::class)
+                                                  ->validationMessages([
+                                                      'unique' => ' :attribute مخزون مسبقا ',
+                                                  ])
+                                                  ->columnSpan(2),
+                                              TextInput::make('barcode')
+                                                  ->label('الباركود')
+                                                  ->required()
+                                                  ->readOnly(!Setting::find(Auth::user()->company)->barcode)
+                                                  ->live()
+                                                  ->default(function (){
+                                                      if (!Setting::find(Auth::user()->company)->barcode)
+                                                          Barcode::max('id')+1;
+                                                  })
+                                                  ->unique(ignoreRecord: true,table: Item::class)
+                                                  ->validationMessages([
+                                                      'unique' => 'هذا الـ :attribute مخزون مسبقا',
+                                                  ]),
+
+
+                                              Select::make('unita_id')
+                                                  ->label('الوحدة')
+                                                  ->options(Unita::all()->pluck('name','id'))
+                                                  ->required()
+                                                  ->default(Unita::min('id'))
+                                                  ->columnSpan(2)
+                                                  ->createOptionForm([
+                                                      Section::make('ادخال وحدات كبري')
+                                                          ->description('ادخال وحدة كبري (صندوق,دزينه,كيس .... الخ)')
+                                                          ->schema([
+                                                              TextInput::make('name')
+                                                                  ->required()
+                                                                  ->unique()
+                                                                  ->label('الاسم'),
+                                                          ])
+                                                  ])
+                                                  ->editOptionForm([
+                                                      Section::make('تعديل وحدات كبري')
+                                                          ->schema([
+                                                              TextInput::make('name')
+                                                                  ->required()
+                                                                  ->unique()
+                                                                  ->label('الاسم'),
+                                                          ])->columns(2)
+                                                  ]),
+
+                                              TextInput::make('price_buy')
+                                                  ->label('سعر الشراء')
+                                                  ->required()
+                                                  ->id('price_buy'),
+                                              TextInput::make('price1')
+                                                  ->label('سعر البيع قطاعي')
+                                                  ->required(),
+
+
+                                              Select::make('item_type_id')
+                                                  ->label('التصنيف')
+                                                  ->options(Item_type::all()->pluck('name','id'))
+                                                  ->required()
+                                                  ->columnSpan(2)
+                                                  ->createOptionForm([
+                                                      Section::make('ادخال تصنيف للأصناف')
+
+                                                          ->schema([
+                                                              TextInput::make('name')
+                                                                  ->required()
+                                                                  ->unique()
+                                                                  ->label('الاسم'),
+                                                          ])
+                                                  ])
+                                                  ->editOptionForm([
+                                                      Section::make('تعديل تصنيف')
+                                                          ->schema([
+                                                              TextInput::make('name')
+                                                                  ->required()
+                                                                  ->unique()
+                                                                  ->label('الاسم'),
+                                                          ])->columns(2)
+                                                  ]),
+                                              Select::make('company_id')
+                                                  ->label('الشركة المصنعة')
+                                                  ->options(Company::all()->pluck('name','id'))
+                                                  ->default(1)
+                                                  ->columnSpan(2)
+                                                  ->createOptionForm([
+                                                      Section::make('ادخال شركات مصنع')
+                                                          ->schema([
+                                                              TextInput::make('name')
+                                                                  ->required()
+                                                                  ->unique()
+                                                                  ->label('الاسم'),
+                                                          ])
+                                                  ])
+                                                  ->editOptionForm([
+                                                      Section::make('تعديل شركات مصنعة')
+                                                          ->schema([
+                                                              TextInput::make('name')
+                                                                  ->required()
+                                                                  ->unique()
+                                                                  ->label('الاسم'),
+                                                          ])
+                                                  ]),
+                                              Hidden::make('user_id')
+                                                  ->default(Auth::id()),
+                                          ])
+                                          ->columns(4)
+                                  ])
+                                  ->using(function (array $data): Model {
+                                      return Item::create($data);
+                                  })
+                                  ->after(function (Set $set) {
+                                     $set('item_id',Item::max('id'));
+                                     $this->ChkItem(Item::max('id'));
+                                      $this->dispatch('gotoitem',  test: 'q1' );
+                                  })
+                          )
                           ->id('item_id'),
                       DatePicker::make('exp_date')
                           ->label('تاريخ الصلاحية')
@@ -508,11 +591,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->prefixIcon('heroicon-m-pencil')
                           ->prefixIconColor('info')
                           ->numeric()
-
-
                           ->extraAttributes( [
                               'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'price_takseet' })",
-
                           ])
                           ->id('price_nakdy'),
                       TextInput::make('price_takseet')
@@ -521,11 +601,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->prefixIcon('heroicon-m-pencil')
                           ->prefixIconColor('info')
                           ->numeric()
-
-
                           ->extraAttributes( [
                               'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'price_nakdy' })",
-
                           ])
                           ->id('price_takseet'),
 
@@ -791,6 +868,154 @@ class InpBuy extends Page implements HasTable,HasSchemas
 
           TextColumn::make('item_id')
             ->label('رقم الصنف')
+            ->action(
+                Action::make('edit_item_from_table')
+                 ->schema(
+                     [
+                         Section::make('')
+                             ->schema([
+                                 Hidden::make('id'),
+                                 TextInput::make('name')
+                                     ->label('اسم الصنف')
+                                     ->autocomplete(false)
+                                     ->required()
+                                     ->live()
+                               //      ->unique(ignoreRecord: true,table: Item::class)
+                                     ->validationMessages([
+                                         'unique' => ' :attribute مخزون مسبقا ',
+                                     ])
+                                     ->columnSpan(2),
+                                 TextInput::make('barcode')
+                                     ->label('الباركود')
+                                     ->required()
+                                     ->live()
+                            //         ->unique(ignoreRecord: true,table: Item::class)
+                                     ->validationMessages([
+                                         'unique' => 'هذا الـ :attribute مخزون مسبقا',
+                                     ]),
+
+                                 Select::make('unita_id')
+                                     ->label('الوحدة')
+                                     ->options(Unita::all()->pluck('name','id'))
+                                     ->required()
+                                     ->default(Unita::min('id'))
+                                     ->columnSpan(2)
+                                     ->createOptionForm([
+                                         Section::make('ادخال وحدات كبري')
+                                             ->description('ادخال وحدة كبري (صندوق,دزينه,كيس .... الخ)')
+                                             ->schema([
+                                                 TextInput::make('name')
+                                                     ->required()
+                                                     ->unique()
+                                                     ->label('الاسم'),
+                                             ])
+                                     ])
+                                     ->editOptionForm([
+                                         Section::make('تعديل وحدات كبري')
+                                             ->schema([
+                                                 TextInput::make('name')
+                                                     ->required()
+                                                     ->unique()
+                                                     ->label('الاسم'),
+                                             ])->columns(2)
+                                     ]),
+
+                                 TextInput::make('price_buy')
+                                     ->label('سعر الشراء')
+                                     ->required()
+                                     ->id('price_buy'),
+                                 TextInput::make('price1')
+                                     ->label('سعر البيع قطاعي')
+                                     ->required(),
+                                 Select::make('item_type_id')
+                                     ->label('التصنيف')
+                                     ->options(Item_type::all()->pluck('name','id'))
+                                     ->required()
+                                     ->columnSpan(2)
+                                     ->createOptionForm([
+                                         Section::make('ادخال تصنيف للأصناف')
+
+                                             ->schema([
+                                                 TextInput::make('name')
+                                                     ->required()
+                                                     ->unique()
+                                                     ->label('الاسم'),
+                                             ])
+                                     ])
+                                     ->editOptionForm([
+                                         Section::make('تعديل تصنيف')
+                                             ->schema([
+                                                 TextInput::make('name')
+                                                     ->required()
+                                                     ->unique()
+                                                     ->label('الاسم'),
+                                             ])->columns(2)
+                                     ]),
+                                 Select::make('company_id')
+                                     ->label('الشركة المصنعة')
+                                     ->options(Company::all()->pluck('name','id'))
+                                     ->default(1)
+                                     ->columnSpan(2)
+                                     ->createOptionForm([
+                                         Section::make('ادخال شركات مصنع')
+                                             ->schema([
+                                                 TextInput::make('name')
+                                                     ->required()
+                                                     ->unique()
+                                                     ->label('الاسم'),
+                                             ])
+                                     ])
+                                     ->editOptionForm([
+                                         Section::make('تعديل شركات مصنعة')
+                                             ->schema([
+                                                 TextInput::make('name')
+                                                     ->required()
+                                                     ->unique()
+                                                     ->label('الاسم'),
+                                             ])
+                                     ]),
+                             ])
+                             ->columns(4)
+                     ]
+                 )
+                ->fillForm(function (Buy_tran_work $record){
+                    $item=Item::find($record->item_id);
+                    return ['id'=>$item->id,'name'=>$item->name,'barcode'=>$item->barcode,'unita_id'=>$item->unita_id,
+                        'price_buy'=>$item->price_buy,'price1'=>$item->price1,
+                        'item_type_id'=>$item->item_type_id,'company_id'=>$item->company_id,];
+                })
+                    ->modalCancelActionLabel('عودة')
+                    ->modalSubmitActionLabel('تحزين')
+                    ->modalHeading('تعديل الصنف')
+
+                    ->action(function (array $data){
+                        if (Item::where('name',$data['name'])->where('id','!=',$data['id'])->first()){
+                            Notification::make()
+                                ->title('اسم الصنف مخزون مسبقا')
+                                ->body('لم يتم تخزين التعديلات')
+                                ->send();
+                            return false;
+                        }
+                        if (Item::where('barcode',$data['barcode'])->where('id','!=',$data['id'])->first()){
+                            Notification::make()
+                                ->title('الباركود مخزون مسبقا')
+                                ->color('danger')
+                                ->body('لم يتم تخزين التعديلات')
+                                ->send();
+                            return false;
+                        }
+
+                        $item=Item::find($data['id']);
+                        $barcode=$item->barcode;
+
+                        $item->update([
+                            'name'=>$data['name'],'barcode'=>$data['barcode'],'unita_id'=>$data['unita_id'],'price_buy'=>$data['price_buy'],
+                            'price1'=>$data['price1'],'item_type_id'=>$data['item_type_id'],'company_id'=>$data['company_id'],
+                        ]);
+                        $item->save();
+                        Barcode::find($barcode)->update(['id'=>$data['barcode']]);
+                    })
+            )
             ->sortable(),
           TextColumn::make('barcode_id')
             ->label('الباركود')

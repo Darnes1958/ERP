@@ -18,6 +18,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -50,10 +51,10 @@ class ItemResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('id')
-                 ->hidden(fn(string $operation)=>$operation=='create')
-                 ->disabled()
-                 ->label('الرقم الألي'),
+                Hidden::make('id'),
+               //  ->hidden(fn(string $operation)=>$operation=='create')
+                // ->readonly()
+              //   ->label('الرقم الألي'),
                 TextInput::make('name')
                  ->label('اسم الصنف')
                  ->required()
