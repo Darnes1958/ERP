@@ -29,6 +29,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -229,9 +230,9 @@ public function buyForm(Schema $schema): Schema
                             $this->buyForm->fill($this->buy->toArray());
 
                             if (!$state || $state<=0)
-                                Recsupp::where('buy_id',$this->buy_id,'rec_who'==5)->delete();
+                                Recsupp::where('buy_id',$this->buy_id)->where('rec_who',5)->delete();
                             else {
-                                $receipt=Recsupp::where('buy_id',$this->buy_id,'rec_who'==5)->first();
+                                $receipt=Recsupp::where('buy_id',$this->buy_id)->where('rec_who',5)->first();
                                 if ($receipt)
                                     $receipt->update(['val'=>$this->buy->pay]);
                                 else {
@@ -336,28 +337,29 @@ public function buyTranForm(Schema $schema): Schema
                                 TextInput::make('barcode')
                                     ->label('الباركود')
                                     ->required()
+                                    ->afterContent(
+                                        Action::make('gen_barcode')
+                                            ->icon(Heroicon::Plus)
+                                            ->color('success')
+                                            ->iconButton()
+                                            ->action(function (Set $set){
+                                                $set('barcode',str(Item::max('id')+1));
+                                            })
+
+                                    )
                                     ->readOnly(!Setting::find(Auth::user()->company)->barcode)
                                     ->live()
-                                    ->default(Barcode::max('id')+1)
-                                    ->unique(ignoreRecord: true)
+                                    ->default(function (){
+                                        if (!Setting::find(Auth::user()->company)->barcode)
+                                            Barcode::max('id')+1;
+                                    })
+                                    ->unique(ignoreRecord: true,table: Item::class)
                                     ->validationMessages([
                                         'unique' => 'هذا الـ :attribute مخزون مسبقا',
                                     ]),
 
-                                Radio::make('two_unit')
-                                    ->label('مستوي الوحدات')
-                                    ->inline()
-                                    ->inlineLabel(false)
-                                    ->options(TwoUnit::class)
-                                    ->default(0)
-                                    ->required()
-                                    ->disabled(function ($operation,$state, Get $get){
-                                        return
-                                            $operation=='edit'
-                                            && $state
-                                            && Sell_tran::where('item_id',$get('id'))->where('q2','>',0)->exists();
-                                    })
-                                    ->visible(Setting::find(Auth::user()->company)->has_two),
+
+
                                 Select::make('unita_id')
                                     ->label('الوحدة')
                                     ->relationship('Unita','name')
@@ -382,35 +384,7 @@ public function buyTranForm(Schema $schema): Schema
                                                     ->label('الاسم'),
                                             ])->columns(2)
                                     ]),
-                                Select::make('unitb_id')
-                                    ->label('الوحدة الصغري')
-                                    ->relationship('Unitb','name')
-                                    ->required()
-                                    ->columnSpan(2)
-                                    ->createOptionForm([
-                                        Section::make('ادخال وحدات صغري')
-                                            ->description('ادخال وحدة صغري (قطعة,علبة .... الخ)')
-                                            ->schema([
-                                                TextInput::make('name')
-                                                    ->required()
-                                                    ->unique()
-                                                    ->label('الاسم'),
-                                            ])->columns(2)
-                                    ])
-                                    ->editOptionForm([
-                                        Section::make('تعديل وحدات صغري')
-                                            ->schema([
-                                                TextInput::make('name')
-                                                    ->required()
-                                                    ->unique()
-                                                    ->label('الاسم'),
-                                            ])->columns(2)
-                                    ])
-                                    ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-                                TextInput::make('count')
-                                    ->label('العدد')
-                                    ->required()
-                                    ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
+
                                 TextInput::make('price_buy')
                                     ->label('سعر الشراء')
                                     ->required()
@@ -418,18 +392,7 @@ public function buyTranForm(Schema $schema): Schema
                                 TextInput::make('price1')
                                     ->label('سعر البيع قطاعي')
                                     ->required(),
-                                TextInput::make('price2')
-                                    ->label('سعر الصغري قطاعي')
-                                    ->required()
-                                    ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-                                TextInput::make('pricej1')
-                                    ->label('سعر البيع جملة')
-                                    ->hidden(!Setting::find(Auth::user()->company)->jomla)
-                                    ->required(),
-                                TextInput::make('pricej2')
-                                    ->label('سعر الصغري جملة')
-                                    ->required()
-                                    ->hidden(fn(Get $get): bool => ! $get('two_unit')),
+
 
                                 Select::make('item_type_id')
                                     ->label('التصنيف')
