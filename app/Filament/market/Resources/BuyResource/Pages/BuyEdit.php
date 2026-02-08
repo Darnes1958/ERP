@@ -602,10 +602,12 @@ public function buyTranForm(Schema $schema): Schema
                     ->label('رقم الصنف')
                     ->sortable(),
                 TextColumn::make('barcode_id')
+                    ->searchable()
                     ->label('الباركود')
                     ->sortable(),
                 TextColumn::make('Item.name')
                     ->label('اسم الصنف')
+                    ->searchable()
                     ->color('info')
                     ->sortable(),
                 TextColumn::make('q1')
