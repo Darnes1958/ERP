@@ -2,7 +2,14 @@
 
 namespace App\Filament\ins\Pages\Reports;
 
+use App\Exports\ItemTranExport;
+use App\Exports\MotakraExl;
 use Filament\Actions\Action;
+use Filament\Support\Enums\Size;
+use Filament\Support\Icons\Heroicon;
+use Maatwebsite\Excel\Facades\Excel;
+use Schmeits\FilamentPhosphorIcons\Support\Icons\Phosphor;
+use Schmeits\FilamentPhosphorIcons\Support\Icons\PhosphorWeight;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
@@ -77,34 +84,7 @@ class AllReports extends Page implements HasTable, HasForms
         'raseed',
     ],
         ];
-protected function getHeaderActions(): array
-{
-    return [
-        Action::make('prinitem')
-            ->label('طباعة')
-            ->icon('heroicon-s-printer')
-            ->color('success')
-            ->action(function (){
-                $RepDate=date('Y-m-d');
-                $cus=OurCompany::where('Company',Auth::user()->company)->first();
 
-                Pdf::view('PrnView.pdf-all',
-                    ['res'=>$this->getTableQueryForExport()->get(),
-                        'cus'=>$cus,'RepDate'=>$RepDate,
-                    ])
-                    ->headerHtml('<div>My header</div>')
-                    ->footerView('PrnView.footer')
-                    ->margins(10, 10, 40, 10, Unit::Pixel)
-                    ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
-                $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
-
-                $headers = [
-                    'Content-Type' => 'application/pdf',
-                ];
-                return Response::download($file, 'filename.pdf', $headers);
-            }),
-    ];
-}
 
     public function form(Schema $schema): Schema
     {
@@ -203,7 +183,18 @@ protected function getHeaderActions(): array
 
 
 
-                 })
+                 }),
+                Action::make('motakra')
+                     ->iconButton()
+                    ->color('success')
+                    ->size(Size::ExtraLarge)
+                    ->visible(fn (Get $get): bool =>  $get('rep_name')=='Motakra')
+                    ->icon(Phosphor::MicrosoftExcelLogo->getIconForWeight(PhosphorWeight::Duotone))
+                    ->Action( function () {
+                            $data=$this->getTableQueryForExport()->get();
+                            $name=Taj::find($this->bank_id)->TajName;
+                            return Excel::download(new MotakraExl($this->Baky,$name,$data),'Motakra.xlsx');
+                        }),
 
                ])
 
@@ -296,12 +287,7 @@ protected function getHeaderActions(): array
                     )
                     ->label('الرصيد'),
                 TextColumn::make('Late')
-                    ->summarize(Sum::make()->label('')->numeric(
-                        decimalPlaces: 2,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    ))
-
+                    ->summarize(Sum::make()->label(''))
                     ->label('متأخرة')
                     ->visible(fn (Get $get): bool =>$this->rep_name =='Motakra')
                     ->color('danger'),

@@ -4,6 +4,7 @@ namespace App\Filament\market\Pages;
 
 use App\Enums\PlaceType;
 use App\Enums\TwoUnit;
+use App\Livewire\Traits\PublicTrait;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
 use App\Models\Item;
@@ -38,11 +39,13 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class InpSell extends Page implements HasSchemas,HasTable
 {
     use InteractsWithForms,InteractsWithTable;
     use Raseed;
+    use PublicTrait;
     protected string $view = 'filament.market.pages.inp-sell';
 
     protected static ?string $navigationLabel='فاتورة مبيعات جديدة';
@@ -831,6 +834,7 @@ class InpSell extends Page implements HasSchemas,HasTable
                                     $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
                                     $this->sellTranForm->fill([]);
                                     $this->id_to_print=$id->id;
+
                                 }),
 
 
@@ -859,11 +863,21 @@ class InpSell extends Page implements HasSchemas,HasTable
                                 }),
                             Action::make('print')
                                 ->icon('heroicon-o-printer')
-                                ->hidden($this->id_to_print=='')
+                                ->hidden(function ():bool {
+                                    return $this->id_to_print=='';
+                                })
                                 ->iconButton()
-
                                 ->color('blue')
-                                ->url(fn (): string => route('pdfsell', ['id' => $this->id_to_print]))
+                                ->action(function (){
+
+                                    $sell=Sell::find($this->id_to_print);
+                                    $res=Sell_tran::where('sell_id',$this->id_to_print)->get();
+
+
+                                    return Response::download(self::ret_spatie($res,
+                                        'PDF.rep-order-sell',['sell'=>$sell,]), 'filename.pdf', self::ret_spatie_header());
+                                })
+
 
                         ])->extraAttributes(['class' => 'items-center justify-between']),
 

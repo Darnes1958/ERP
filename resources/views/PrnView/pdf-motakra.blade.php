@@ -18,12 +18,13 @@
             <thead style="  margin-top: 8px;">
             <tr style="background: #9dc1d3;">
                 <th>اسم الزبون</th>
-                <th style="width: 10%">رقم العقد</th>
+                <th style="width: 8%">رقم العقد</th>
                 <th style="width: 16%">رقم الحساب</th>
-                <th style="width: 12%">اجمالي العقد</th>
+                <th style="width: 10%">اجمالي العقد</th>
+                <th style="width: 8%">القسط</th>
                 <th style="width: 10%">المسدد</th>
                 <th style="width: 8%">المتاخرة</th>
-                <th style="width: 14%">ت.اخر قسط</th>
+                <th style="width: 12%">ت.اخر قسط</th>
             </tr>
             </thead>
             <tbody id="addRow" class="addRow">
@@ -34,9 +35,10 @@
                 <tr >
                     <td> {{ $item->Customer->name }} </td>
                     <td style="text-align: center"> {{ $item->id }} </td>
-                    <td> {{ $item->acc }} </td>
-                    <td> {{ number_format($item->sul,2, '.', ',') }} </td>
-                    <td> {{ number_format($item->pay,2, '.', ',') }} </td>
+                    <td style="text-align: center"> {{ $item->acc }} </td>
+                    <td> {{ number_format($item->sul,0, '.', ',') }} </td>
+                    <td> {{ number_format($item->kst,2, '.', ',') }} </td>
+                    <td> {{ number_format($item->pay,0, '.', ',') }} </td>
                     <td style="text-align: center"> {{ $item->Late }} </td>
                     <td style="text-align: center"> {{ $item->LastKsm }} </td>
                 </tr>
@@ -46,8 +48,9 @@
                 <td style="font-weight:normal;">الإجمــــــــالي  </td>
                 <td> </td>
                 <td> </td>
-                <td> {{number_format($sumsul, 2, '.', ',')}}  </td>
-                <td> {{number_format($sumpay, 2, '.', ',')}}  </td>
+                <td> {{number_format($sumsul, 0, '.', ',')}}  </td>
+                <td> </td>
+                <td> {{number_format($sumpay, 0, '.', ',')}}  </td>
                 <td></td>
                 <td></td>
 
