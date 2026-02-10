@@ -12,6 +12,7 @@ use App\Filament\market\Pages\QueckSell;
 use App\Filament\market\Resources\BuyResource;
 use App\Filament\market\Resources\BuysWorkResource;
 use App\Filament\Market\Resources\Inventories\Schemas\InventoryForm;
+use App\Filament\market\Resources\PerResource;
 use App\Filament\market\Resources\SellResource;
 use App\Filament\market\Resources\SellWorkResource;
 use App\Models\GlobalSetting;
@@ -116,6 +117,7 @@ class AppServiceProvider extends ServiceProvider
             InpBuy::class,
             QueckSell::class,
             InventoryForm::class,
+            PerResource::class,
             ]
       );
 
@@ -129,6 +131,8 @@ class AppServiceProvider extends ServiceProvider
       FilamentAsset::register([
         Js::make('example-external-script', 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'),
         Js::make('custom-script', __DIR__.'/../../resources/js/custom.js'),
+        Js::make( 'alpine-focus','https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js'),
+
 
       ]);
         FilamentView::registerRenderHook(

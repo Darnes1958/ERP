@@ -64,7 +64,7 @@ use PublicTrait;
                                 ->relationship('Placefrom', 'name')
                                 ->searchable()
                                 ->afterStateUpdated(function ($livewire){
-                                   // $livewire->dispatch('hall1-submitted');
+                                 $livewire->dispatch('hall1-submitted');
                                 })
                                 ->required()
                                 ->preload()
@@ -82,7 +82,8 @@ use PublicTrait;
                                 )
                                 ->searchable()
                                 ->afterStateUpdated(function ($livewire){
-                                 //   $livewire->dispatch('hall2-submitted');
+
+                                 $livewire->dispatch('hall2-submitted');
                                 })
                                 ->required()
                                 ->preload()
@@ -121,10 +122,12 @@ use PublicTrait;
                                         ->searchable()
                                         ->required()
                                         ->preload()
-                                        ->afterStateUpdated(function ($state,Set $set,Get $get){
+                                        ->afterStateUpdated(function ($state,Set $set,Get $get,$livewire){
                                                 $set('stock',Place_stock::where('place_id', $get('../../place_from'))
                                                                                ->where('item_id', $get('item_id'))->first()->stock1
                                                 );
+                                         //   $livewire->dispatch('gotonext');
+                                            //$livewire->dispatch('gotoitem',  test: 'q1');
                                         })
                                         ->disableOptionWhen(function ($value, $state, Get $get) {
                                             return collect($get('../*.item_id'))
@@ -132,6 +135,7 @@ use PublicTrait;
                                                 ->filter()
                                                 ->contains($value);
                                         })
+
                                         ->live(),
 
 
@@ -175,8 +179,9 @@ use PublicTrait;
                 ])
 
                 ->extraAlpineAttributes([
-                        '@hall1-submitted.window' => "step='placeto'",
-                        '@hall2-submitted.window' => "step='quantity'",
+                        '@hall1-submitted.window' => "step='form.aly::data::wizard-step'",
+                        '@hall2-submitted.window' => "step='form.alasnaf-almnqwlt::data::wizard-step'",
+                        //'@gotonext.window'=>"\$focus.next()"
                     ])
                     ->columns(4)
                     ->columnSpanFull(),
