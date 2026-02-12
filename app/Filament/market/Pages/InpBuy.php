@@ -5,6 +5,7 @@ namespace App\Filament\market\Pages;
 use App\Enums\PlaceType;
 use App\Enums\TwoUnit;
 use App\Filament\market\Resources\BuysWorkResource;
+use App\Filament\Tables\ItemTable;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
 use App\Models\Buy;
@@ -27,6 +28,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TableSelect;
 use Filament\Forms\Components\TextInput;
 
 use Filament\Notifications\Notification;
@@ -293,6 +295,22 @@ class InpBuy extends Page implements HasTable,HasSchemas
                       Select::make('item_id')
                           ->hiddenLabel()
                           ->prefix('الصنف')
+                          ->suffixAction(
+                              Action::make('select_item')
+                               ->label('بحث عن الصنف')
+                               ->icon(Heroicon::MagnifyingGlass)
+                               ->schema([
+                                   TableSelect::make('item_id')
+                                    ->relationship('Item','name')
+                                    ->tableConfiguration(ItemTable::class)
+                                    ->columnSpanFull()
+                               ])
+                              ->action(function (array $data,Set $set){
+                                  $set('item_id',$data['item_id']);
+                                  $this->ChkItem($data['item_id']);
+                              })
+
+                          )
                           ->searchable()
                           ->preload()
                           ->relationship('Item','name')
@@ -301,126 +319,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->afterStateUpdated(function ($state){
                               $this->ChkItem($state);
                           })
-                          ->createOptionForm([
-                              Section::make('ادخال صنف')
-                                  ->schema([
-                                      TextInput::make('name')
-                                          ->label('اسم الصنف')
-                                          ->autocomplete(false)
-                                          ->required()
-                                          ->live()
-                                          ->unique(ignoreRecord: true)
-                                          ->validationMessages([
-                                              'unique' => ' :attribute مخزون مسبقا ',
-                                          ])
-                                          ->columnSpan(2),
-                                      TextInput::make('barcode')
-                                          ->label('الباركود')
-                                          ->required()
-                                          ->readOnly(!Setting::find(Auth::user()->company)->barcode)
-                                          ->live()
-                                          ->default(function (){
-                                              if (!Setting::find(Auth::user()->company)->barcode)
-                                                  Barcode::max('id')+1;
-                                          })
-                                          ->unique(ignoreRecord: true)
-                                          ->validationMessages([
-                                              'unique' => 'هذا الـ :attribute مخزون مسبقا',
-                                          ]),
 
-
-                                      Select::make('unita_id')
-                                          ->label('الوحدة')
-                                          ->relationship('Unita','name')
-                                          ->required()
-                                          ->default(Unita::min('id'))
-                                          ->columnSpan(2)
-                                          ->createOptionForm([
-                                              Section::make('ادخال وحدات كبري')
-                                                  ->description('ادخال وحدة كبري (صندوق,دزينه,كيس .... الخ)')
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])
-                                          ])
-                                          ->editOptionForm([
-                                              Section::make('تعديل وحدات كبري')
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])->columns(2)
-                                          ]),
-
-                                      TextInput::make('price_buy')
-                                          ->label('سعر الشراء')
-                                          ->required()
-                                          ->id('price_buy'),
-                                      TextInput::make('price1')
-                                          ->label('سعر البيع قطاعي')
-                                          ->required(),
-
-
-                                      Select::make('item_type_id')
-                                          ->label('التصنيف')
-                                          ->relationship('Item_type','name')
-                                          ->required()
-                                          ->columnSpan(2)
-                                          ->createOptionForm([
-                                              Section::make('ادخال تصنيف للأصناف')
-
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])
-                                          ])
-                                          ->editOptionForm([
-                                              Section::make('تعديل تصنيف')
-                                                  ->schema([
-                                                      TextInput::make('name')
-                                                          ->required()
-                                                          ->unique()
-                                                          ->label('الاسم'),
-                                                  ])->columns(2)
-                                          ]),
-                                   Select::make('company_id')
-                                       ->label('الشركة المصنعة')
-                                       ->relationship('Company','name')
-                                       ->default(1)
-                                       ->columnSpan(2)
-                                       ->createOptionForm([
-                                           Section::make('ادخال شركات مصنع')
-                                               ->schema([
-                                                   TextInput::make('name')
-                                                       ->required()
-                                                       ->unique()
-                                                       ->label('الاسم'),
-                                               ])
-                                       ])
-                                       ->editOptionForm([
-                                           Section::make('تعديل شركات مصنعة')
-                                               ->schema([
-                                                   TextInput::make('name')
-                                                       ->required()
-                                                       ->unique()
-                                                       ->label('الاسم'),
-                                               ])
-                                       ]),
-                                      Hidden::make('user_id')
-                                          ->default(Auth::id()),
-                                  ])
-                                  ->columns(4)
-                          ])
-                          ->createOptionUsing(function (array $data): int {
-                              $item=Item::create($data)->getkey();
-                              $item_id=Item::max('id');
-                              return $item_id;
-                          })
                           ->afterContent(
                               CreateAction::make()
                                   ->modalHeading(Html::make('<span class="text-primary-600">إضافة صنف جديد</span>'))

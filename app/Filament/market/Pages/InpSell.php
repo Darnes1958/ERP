@@ -4,6 +4,7 @@ namespace App\Filament\market\Pages;
 
 use App\Enums\PlaceType;
 use App\Enums\TwoUnit;
+use App\Filament\Tables\ItemTable;
 use App\Livewire\Traits\PublicTrait;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
@@ -23,6 +24,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TableSelect;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
@@ -33,6 +35,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -399,6 +402,29 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->columnSpan(2)
                             ->searchable()
                             ->preload()
+                            ->suffixAction(
+                                Action::make('select_item')
+                                    ->label('')
+                                    //->extraAttributes(['class'=>'text-xs text-blue-600',])
+                                        ->color('info')
+                                    ->icon(Heroicon::MagnifyingGlass)
+                                        ->button()
+                                    //  ->link()
+                                    ->schema([
+                                        TableSelect::make('item_id')
+                                            ->relationship('Item','name')
+                                            ->tableConfiguration(ItemTable::class)
+                                            ->columnSpanFull()
+                                    ])
+                                    ->action(function (array $data,Set $set){
+                                        $set('item_id',$data['item_id']);
+                                        $this->ChkItem($data['item_id']);
+                                    })
+
+                            )
+
+
+
                             ->relationship('Item','name',
                                 modifyQueryUsing: fn (Builder $query) =>
                                 $query->whereIn('id',Place_stock::where('place_id',$this->sellData['place_id'])
@@ -407,175 +433,6 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->live(onBlur: true)
                             ->required()
                             ->afterStateUpdated(function ($state){$this->ChkItem($state);})
-                            ->createOptionForm([
-                                Section::make('ادخال صنف')
-                                    ->schema([
-                                        TextInput::make('id')
-                                            ->hidden(fn(string $operation)=>$operation=='create')
-                                            ->disabled()
-                                            ->label('الرقم الألي'),
-                                        TextInput::make('name')
-                                            ->label('اسم الصنف')
-                                            ->required()
-                                            ->live()
-                                            ->unique(ignoreRecord: true)
-                                            ->validationMessages([
-                                                'unique' => ' :attribute مخزون مسبقا ',
-                                            ])
-                                            ->columnSpan(2),
-                                        TextInput::make('barcode')
-                                            ->label('الباركود')
-                                            ->required()
-                                            ->readOnly(!Setting::find(Auth::user()->company)->barcode)
-                                            ->live()
-                                            ->default(Barcode::max('id')+1)
-                                            ->unique(ignoreRecord: true)
-                                            ->validationMessages([
-                                                'unique' => 'هذا الـ :attribute مخزون مسبقا',
-                                            ]),
-
-                                        Radio::make('two_unit')
-                                            ->label('مستوي الوحدات')
-                                            ->inline()
-                                            ->inlineLabel(false)
-                                            ->options(TwoUnit::class)
-                                            ->default(0)
-                                            ->required()
-                                            ->disabled(function ($operation,$state, Get $get){
-                                                return
-                                                    $operation=='edit'
-                                                    && $state
-                                                    && Sell_tran::where('item_id',$get('id'))->where('q2','>',0)->exists();
-                                            })
-                                            ->visible(Setting::find(Auth::user()->company)->has_two),
-                                        Select::make('unita_id')
-                                            ->label('الوحدة')
-                                            ->relationship('Unita','name')
-                                            ->required()
-                                            ->columnSpan(2)
-                                            ->createOptionForm([
-                                                Section::make('ادخال وحدات كبري')
-                                                    ->description('ادخال وحدة كبري (صندوق,دزينه,كيس .... الخ)')
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])
-                                            ])
-                                            ->editOptionForm([
-                                                Section::make('تعديل وحدات كبري')
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])->columns(2)
-                                            ]),
-                                        Select::make('unitb_id')
-                                            ->label('الوحدة الصغري')
-                                            ->relationship('Unitb','name')
-                                            ->required()
-                                            ->columnSpan(2)
-                                            ->createOptionForm([
-                                                Section::make('ادخال وحدات صغري')
-                                                    ->description('ادخال وحدة صغري (قطعة,علبة .... الخ)')
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])->columns(2)
-                                            ])
-                                            ->editOptionForm([
-                                                Section::make('تعديل وحدات صغري')
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])->columns(2)
-                                            ])
-                                            ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-                                        TextInput::make('count')
-                                            ->label('العدد')
-                                            ->required()
-                                            ->hidden(fn(Get $get): bool =>  ! $get('two_unit')),
-                                        TextInput::make('price_sell')
-                                            ->label('سعر الشراء')
-                                            ->required()
-                                            ->id('price_sell'),
-                                        TextInput::make('price1')
-                                            ->label('سعر البيع قطاعي')
-                                            ->required(),
-                                        TextInput::make('price2')
-                                            ->label('سعر الصغري قطاعي')
-                                            ->required()
-                                            ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-                                        TextInput::make('pricej1')
-                                            ->label('سعر البيع جملة')
-                                            ->hidden(!Setting::find(Auth::user()->company)->jomla)
-                                            ->required(),
-                                        TextInput::make('pricej2')
-                                            ->label('سعر الصغري جملة')
-                                            ->required()
-                                            ->hidden(fn(Get $get): bool => ! $get('two_unit')),
-
-                                        Select::make('item_type_id')
-                                            ->label('التصنيف')
-                                            ->relationship('Item_type','name')
-                                            ->required()
-                                            ->columnSpan(2)
-                                            ->createOptionForm([
-                                                Section::make('ادخال تصنيف للأصناف')
-
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])
-                                            ])
-                                            ->editOptionForm([
-                                                Section::make('تعديل تصنيف')
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])->columns(2)
-                                            ]),
-                                        Select::make('company_id')
-                                            ->label('الشركة المصنعة')
-                                            ->relationship('Company','name')
-                                            ->default(1)
-                                            ->columnSpan(2)
-                                            ->createOptionForm([
-                                                Section::make('ادخال شركات مصنع')
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])
-                                            ])
-                                            ->editOptionForm([
-                                                Section::make('تعديل شركات مصنعة')
-                                                    ->schema([
-                                                        TextInput::make('name')
-                                                            ->required()
-                                                            ->unique()
-                                                            ->label('الاسم'),
-                                                    ])
-                                            ]),
-                                        TextInput::make('user_id')
-                                            ->label('رقم المستخدم')
-                                            ->extraAttributes(['bg-blue-500'])
-                                            ->readOnly()
-                                            ->default(Auth::id()),
-                                    ])
-                                    ->columns(4)
-                            ])
                             ->id('item_id'),
                         TextInput::make('raseed_all')
                             ->hiddenLabel()
