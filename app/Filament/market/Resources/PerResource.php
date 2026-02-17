@@ -7,16 +7,21 @@ use App\Filament\market\Resources\PerResource\Pages\EditPer;
 use App\Filament\market\Resources\PerResource\Pages\ListPers;
 use App\Filament\Resources\PerResource\Pages;
 use App\Filament\Resources\PerResource\RelationManagers;
+use App\Filament\Tables\ItemTable;
 use App\Livewire\Traits\PublicTrait;
+use App\Models\Barcode;
+use App\Models\Item;
 use App\Models\Per;
 use App\Models\PerTran;
 use App\Models\Place_stock;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\ModalTableSelect;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TableSelect;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -26,6 +31,7 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
@@ -50,7 +56,7 @@ use PublicTrait;
         return Auth::user()->can('نقل أصناف');
     }
 
-
+    static $from_pl;
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -63,7 +69,11 @@ use PublicTrait;
                                 ->label('مــــن')
                                 ->relationship('Placefrom', 'name')
                                 ->searchable()
-                                ->afterStateUpdated(function ($livewire){
+                                ->afterStateUpdated(function ($livewire,$state,Set $set){
+
+                                    self::$from_pl=$state;
+                                    info(self::$from_pl);
+
                                  $livewire->dispatch('hall1-submitted');
                                 })
                                 ->required()
@@ -104,15 +114,37 @@ use PublicTrait;
                                 ->relationship('Per_tran')
                                 ->table([
                                     TableColumn::make('الصنف')
-                                        ->width('50%'),
+                                        ->width('20%'),
+                                    TableColumn::make('بحث')
+                                        ->width('40%'),
                                     TableColumn::make('الكمية')
-                                        ->width('25%'),
+                                        ->width('20%'),
                                     TableColumn::make('الرصيد')
-                                        ->width('25%'),
+                                        ->width('20%'),
                                 ])
                                 ->addActionLabel('إضافة صنف')
 
                                 ->schema([
+                                    Hidden::make('place_id')
+
+                                     ->dehydrated(false),
+                                    TextInput::make('barcode')
+                                        ->afterStateUpdated(function ($state,Set $set,Get $get){
+
+                                            if ($state){
+                                                $res=Barcode::find($state);
+                                                if ($res) {
+                                                    $set('item_id',$res->item_id);
+                                                    $set('stock',Place_stock::where('place_id', $get('../../place_from'))
+                                                        ->where('item_id', $res->item_id)->first()->stock1
+                                                    );
+                                                }
+
+                                            }
+                                        })
+                                        ->live()
+
+                                        ->dehydrated(false),
                                     Select::make('item_id')
                                         ->relationship('Item', 'name',
                                             modifyQueryUsing: fn (Builder $query,Get $get) =>
@@ -120,12 +152,43 @@ use PublicTrait;
                                                 where('place_id', $get('../../place_from'))
                                                 ->where('stock1','>',0)->pluck('item_id')),)
                                         ->searchable()
+                                        ->suffixAction(
+                                            Action::make('select_item')
+                                                ->label('بحث عن الصنف')
+                                                ->icon(Heroicon::MagnifyingGlass)
+                                                ->schema([
+                                                    TableSelect::make('item_id')
+                                                        ->relationship('Item','name')
+                                                        ->tableConfiguration(ItemTable::class)
+                                                        ->columnSpanFull()
+                                                        ->tableArguments(function (Get $get,$livewire): array {
+                                                            info(self::$from_pl);
+                                                            return [
+                                                                'place_id' =>  self::$from_pl,
+                                                                'noZero' => 1,
+                                                            ];
+                                                        })
+                                                ])
+                                                ->action(function (array $data,Set $set,Get $get){
+                                                    $set('item_id',$data['item_id']);
+                                                    $set('barcode',Barcode::where('item_id', $data['item_id'])->first()->id);
+                                                    $set('stock',Place_stock::where('place_id', $get('../../place_from'))
+                                                        ->where('item_id', $data['item_id'])->first()->stock1
+                                                    );
+                                                })
+
+                                        )
                                         ->required()
+                                        ->distinct()
                                         ->preload()
                                         ->afterStateUpdated(function ($state,Set $set,Get $get,$livewire){
+                                            if ($state){
                                                 $set('stock',Place_stock::where('place_id', $get('../../place_from'))
-                                                                               ->where('item_id', $get('item_id'))->first()->stock1
-                                                );
+                                                    ->where('item_id', $get('item_id'))->first()->stock1  );
+                                                $set('barcode',Barcode::where('item_id', $get('item_id'))->first()->id);
+
+                                            }
+
                                          //   $livewire->dispatch('gotonext');
                                             //$livewire->dispatch('gotoitem',  test: 'q1');
                                         })
@@ -152,6 +215,7 @@ use PublicTrait;
                                                 $set('quant',0);
                                             };
                                         })
+                                        ->gt(0)
                                         ->required(),
                                     TextInput::make('stock')
                                         ->readOnly()

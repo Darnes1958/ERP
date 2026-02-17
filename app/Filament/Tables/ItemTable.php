@@ -20,7 +20,6 @@ class ItemTable
                 TextColumn::make('barcode')->searchable()->sortable(),
                 TextColumn::make('name')->searchable()->sortable(),
             ])
-            ->extraAttributes(['class' => 'mytable'])
             ->filters([
                 //
             ])
