@@ -297,19 +297,20 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->prefix('الصنف')
                           ->suffixAction(
                               Action::make('select_item')
-                               ->label('بحث عن الصنف')
+                               ->modalHeading('')
+                                  ->hiddenLabel()
                                ->icon(Heroicon::MagnifyingGlass)
                                ->schema([
                                    TableSelect::make('item_id')
                                     ->relationship('Item','name')
+                                    ->hiddenLabel()
                                     ->tableConfiguration(ItemTable::class)
                                     ->columnSpanFull()
                                ])
-                              ->action(function (array $data,Set $set){
+                               ->action(function (array $data,Set $set){
                                   $set('item_id',$data['item_id']);
                                   $this->ChkItem($data['item_id']);
                               })
-
                           )
                           ->searchable()
                           ->preload()

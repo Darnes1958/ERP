@@ -6,12 +6,20 @@
 @source '../../../../resources/views/livewire/**/*';
 
 
-.fi-ta-ctn .py-4 {
-    padding-top: .3rem !important;
-    padding-bottom: .3rem !important;
-}
-.fi-sidebar-nav-groups  {
 
+.fi-sidebar-nav-groups  {
     @apply gap-y-2;
 }
+@utility mytable
+{
+
+    .fi-ta-cell, .fi-ta-cell div{
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        margin-top: 0px !important;
+        margin-bottom: 0px !important;
+        border-radius: 0% !important;
+    }
+}
+
 
