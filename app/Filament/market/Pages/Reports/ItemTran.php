@@ -29,8 +29,8 @@ class ItemTran extends Page implements HasForms,HasTable
 
     protected string $view = 'filament.market.pages.reports.item-tran';
     protected static ?string $navigationLabel='حركة صنف';
-  protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
-  protected static ?int $navigationSort=4;
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
+    protected static ?int $navigationSort=4;
     protected ?string $heading='';
     public static function shouldRegisterNavigation(): bool
     {
@@ -59,9 +59,7 @@ class ItemTran extends Page implements HasForms,HasTable
           ->searchable()
           ->preload()
           ->afterStateUpdated(function ($state){
-
             $this->item_id=$state;
-
           })
           ->label('الصنف')
           ->columnSpan(2),
@@ -71,9 +69,7 @@ class ItemTran extends Page implements HasForms,HasTable
               ->searchable()
               ->preload()
               ->afterStateUpdated(function ($state){
-
                   $this->place_id=$state;
-
               })
               ->label('المكان')
               ->columnSpan(2),
@@ -118,8 +114,7 @@ class ItemTran extends Page implements HasForms,HasTable
            ->when($this->place_id,function ($q){
                $q->where('place_id',$this->place_id);
            })
-          ->where('order_date','>=',$this->repDate)
-           ;
+          ->where('order_date','>=',$this->repDate);
 
         return $rec;
       }
@@ -134,6 +129,7 @@ class ItemTran extends Page implements HasForms,HasTable
           ->color(function ($state){
               if ($state=='مشتريات') return 'info';
               if ($state=='مبيعات') return 'success';
+              if ($state=='جرد') return 'danger';
           })
           ->label('البيان'),
         TextColumn::make('order_date')

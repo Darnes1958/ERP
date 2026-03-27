@@ -29,7 +29,8 @@ class CreateInventory extends CreateRecord
 
         $place=Place_stock::find($data['place_stock_id']);
         $item=Item::find($data['item_id']);
-        $difference=$data['actual_balance']-$item->stock1;
+       // $data['book_balance']=$place->stock1;
+        $difference=$data['actual_balance']-$place->stock1;
         $data['difference']=$difference;
         $data['its_value']=$difference*$item->price_buy;
         $place->stock1=$data['actual_balance'];
