@@ -362,6 +362,48 @@ trait Raseed {
         }
 //        Sell_tran::find($sell_tran_id)->update(['profit'=>$profit]);
     }
+    public static function decQsInv($item,$quant){
+        $buyTran=Buy_tran::where('item_id',$item)
+            ->Where(function (Builder $query) {
+                $query->where('qs1', '>',0);
+            })
+            ->orderBy('created_at','asc')
+            ->get();
+        $tank=0;
+        foreach ($buyTran as $tran) {
+
+            if ( $tran->qs1 > ($quant-$tank)) $decQuant=$quant-$tank;
+            else $decQuant=$tran->qs1;
+
+            $tran->qs1 -= $decQuant;
+            $tran->save();
+
+            $tank+=$decQuant;
+            if ($tank==$quant) break;
+
+        }
+
+    }
+    public static function incQsInv($item,$quant){
+        $buyTran=Buy_tran::where('item_id',$item)
+            ->Where(function (Builder $query) {
+                $query->where('qs1', 0)
+                      ->orWhereColumn('qs1','!=','q1');
+            })
+            ->orderBy('created_at','desc')
+            ->get();
+        $tank=0;
+        foreach ($buyTran as $tran) {
+            if (($quant-$tank)>$tran->q1-$tran->qs1) $incQuant=$tran->q1-$tran->qs1;
+            else $incQuant=$quant-$tank;
+
+            $tran->qs1 += $incQuant;
+            $tran->save();
+
+            $tank+=$incQuant;
+            if ($tank==$quant) break;
+        }
+    }
    public function incQs($sell_id,$item,$count){
 
    $buysell= BuySell::where('sell_id',$sell_id)

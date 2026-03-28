@@ -2,6 +2,7 @@
 
 namespace App\Filament\Market\Resources\Inventories\Tables;
 
+use App\Livewire\Traits\Raseed;
 use App\Models\Inventory;
 use App\Models\Item;
 use App\Models\Place;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventoriesTable
 {
+    use Raseed;
     public static function configure(Table $table): Table
     {
         return $table
@@ -63,6 +65,8 @@ class InventoriesTable
                         $item=Item::find($record->item_id);
                         $item->stock1-=$record->difference;
                         $item->save();
+                        if ($record->difference>0) self::decQsInv($record->item_id,$record->difference);
+                        else self::incQsInv($record->item_id,abs($record->difference));
                         $record->delete();
                     }),
             ])

@@ -63,7 +63,7 @@ class AppServiceProvider extends ServiceProvider
                 $shot->noSandbox()
                     ->setChromePath(GlobalSetting::first()->exePath);
             })
-            ->margins(10, 10, 20, 10, );
+            ->margins(10, 10, 10, 10, );
         Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;
         });
@@ -73,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
             ->pluralModelLabel('الصفحات')
             ->emptyStateHeading('لا توجد بيانات')
             ->defaultKeySort(false)
+
         );
 
         CreateAction::configureUsing(fn(CreateAction $createAction) => $createAction->label('إضافة'));

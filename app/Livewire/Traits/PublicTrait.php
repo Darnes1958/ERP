@@ -85,8 +85,12 @@ trait PublicTrait {
   }
     public static function ret_spatie_land($res,$blade,$arr=[])
     {
+        if(!File::exists(Auth::user()->company)) {
+            File::makeDirectory(Auth::user()->company);
+        }
+        $cus=OurCompany::where('Company',Auth::user()->company)->first();
         Pdf::view($blade,
-            ['res'=>$res,'arr'=>$arr])
+            ['res'=>$res,'arr'=>$arr,'cus'=>$cus])
             ->landscape()
             ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
         return public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';

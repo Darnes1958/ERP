@@ -10,16 +10,28 @@
 .fi-sidebar-nav-groups  {
     @apply gap-y-2;
 }
-@utility mytable
+@utility mytable2
 {
-
     .fi-ta-cell, .fi-ta-cell div{
-        padding-top: 0px !important;
-        padding-bottom: 0px !important;
-        margin-top: 0px !important;
-        margin-bottom: 0px !important;
-        border-radius: 0% !important;
+        padding-top: .2rem !important;
+        padding-bottom: .2rem !important;
+
     }
+}
+.fi-ta-cell, .fi-ta-cell div{
+    font-size: small !important;
+    padding-top: .1rem !important;
+    padding-bottom: .1rem !important;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.fi-ta-header-cell {
+    font-size: smaller !important;
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
+}
+.fi-page-header-main-ctn, .fi-page-header-main-ctn div{
+   padding-top: 5px !important;
 }
 
 

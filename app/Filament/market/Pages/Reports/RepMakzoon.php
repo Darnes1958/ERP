@@ -5,10 +5,12 @@ namespace App\Filament\market\Pages\Reports;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Place;
 use App\Models\Place_stock;
+use App\Models\RepMakzoone;
 use App\Models\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Pages\Page;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -18,6 +20,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
@@ -32,8 +35,8 @@ class RepMakzoon extends Page implements HasTable
 
     protected string $view = 'filament.market.pages.reports.rep-makzoon';
     protected static ?string $navigationLabel='تقرير عن المخزون';
-  protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
-  protected static ?int $navigationSort=6;
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
+    protected static ?int $navigationSort=6;
     protected ?string $heading="";
 
   public static function shouldRegisterNavigation(): bool
@@ -49,12 +52,12 @@ class RepMakzoon extends Page implements HasTable
         return $table
             ->pluralModelLabel('الصفحات')
             ->query(function (){
-                $place_stock=Place_stock::
-                withSum('Item as buy_cost',DB::raw('stock1 * price_buy'))
-                ->withSum('Item as sell_cost',DB::raw('stock1 * price1'))
-                ;
+                $place_stock=RepMakzoone:: query();
+
                 return $place_stock;
             })
+            ->defaultSort('name')
+
             ->headerActions([
                 Action::make('طباعة')
                     ->action(function (){
@@ -68,7 +71,7 @@ class RepMakzoon extends Page implements HasTable
                         else $place=null;
 
 
-                        return Response::download(self::ret_spatie($res,
+                        return Response::download(self::ret_spatie_land($res,
                             'PDF.pdf-rep-makzoone',[
                                 'place'=>$place,'show'=>true,
                             ]
@@ -88,7 +91,7 @@ class RepMakzoon extends Page implements HasTable
                         else $place=null;
 
 
-                        return Response::download(self::ret_spatie($res,
+                        return Response::download(self::ret_spatie_land($res,
                             'PDF.pdf-rep-makzoone',[
                                 'place'=>$place,'show'=>false,
                             ]
@@ -97,26 +100,30 @@ class RepMakzoon extends Page implements HasTable
                     })
             ])
             ->columns([
-                TextColumn::make('Place.name')
+                TextColumn::make('place_name')
                     ->sortable()
                     ->searchable()
                     ->label('المكان'),
-                TextColumn::make('item_id')
+                TextColumn::make('id')
                     ->sortable()
                     ->searchable()
                    ->label('رقم الصنف'),
-                TextColumn::make('Item.name')
+                TextColumn::make('name')
                     ->sortable()
                     ->searchable()
                     ->label('اسم الصنف'),
-
-                TextColumn::make('Item.stock1')
-                 ->label('الرصيد الكلي'),
                 TextColumn::make('stock1')
+                 ->label('الرصيد الكلي'),
+                TextColumn::make('cost_all')
+                    ->numeric('2','.',',')
+                    ->label('التكلفة الكلية'),
+                TextColumn::make('place_stock1')
                   ->visible(Setting::find(Auth::user()->company)->many_place)
                     ->label( 'رصيد المكان'),
-
-              TextColumn::make('Item.price_buy')
+                TextColumn::make('cost_one')
+                    ->numeric('2','.',',')
+                    ->label('متوسط السعر'),
+                TextColumn::make('price_buy')
                 ->visible(Auth::user()->can('ادخال مشتريات'))
                 ->numeric(
                   decimalPlaces: 2,
@@ -125,33 +132,20 @@ class RepMakzoon extends Page implements HasTable
                 )
                 ->label('سعر الشراء'),
 
-                TextColumn::make('place_buy_cost')
+              TextColumn::make('cost_place')
                     ->label('تكلفة الشراء للمكان')
+                    ->visible(Auth::user()->can('ادخال مشتريات'))
                     ->numeric(decimalPlaces: 2,thousandsSeparator: ',',decimalSeparator: '.')
-                    ->summarize(Summarizer::make()
-                        ->using(fn ($query): string =>
-                        $query->join('items','item_id','items.id')->sum(DB::Raw('items.price_buy*place_stocks.stock1')))
+                    ->summarize(Sum::make()
                         ->numeric(decimalPlaces: 2,thousandsSeparator: ',',decimalSeparator: '.')),
-              TextColumn::make('Item.price1')
+              TextColumn::make('price1')
                 ->numeric(
                   decimalPlaces: 2,
                   decimalSeparator: '.',
                   thousandsSeparator: ',',
                 )
                 ->label('سعر البيع'),
-              TextColumn::make('place_sell_cost')
-                  ->summarize(Summarizer::make()
-                      ->using(fn ($query): string =>
-                      $query->join('items','item_id','items.id')->sum(DB::Raw('items.price1*place_stocks.stock1')))
-                      ->numeric(decimalPlaces: 2,thousandsSeparator: ',',decimalSeparator: '.'))
 
-                ->visible(Auth::user()->can('ادخال مشتريات'))
-                ->numeric(
-                  decimalPlaces: 2,
-                  decimalSeparator: '.',
-                  thousandsSeparator: ',',
-                )
-                ->label('قيمة البيع'),
             ])
             ->filters([
              Filter::make('anyfilter')
@@ -163,7 +157,7 @@ class RepMakzoon extends Page implements HasTable
                 return $query
                     ->when(
                         ! $data['showZero'],
-                        fn (Builder $query, $date): Builder => $query->where('place_stocks.stock1','!=',0),
+                        fn (Builder $query, $date): Builder => $query->where('place_stock1','!=',0),
                     );
                 }),
              SelectFilter::make('place_id')
@@ -171,7 +165,7 @@ class RepMakzoon extends Page implements HasTable
                     ->label('حسب المكان')
                     ->searchable()
 
-            ], layout: FiltersLayout::AboveContent)
+            ])
 
             ->striped();
     }
