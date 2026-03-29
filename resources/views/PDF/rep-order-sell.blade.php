@@ -116,6 +116,7 @@
           <td style="padding: 4px;border: none;" > إجمالي الفاتورة </td>
           <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$arr['sell']->tot}}</td>
       </tr>
+      @if($arr['sell']->differ>0)
       <tr style="border-bottom: none;border-right: none;border-left: none;">
           <td style="border: none;"></td>
           <td style="border: none;"></td>
@@ -123,13 +124,18 @@
           <td style="padding: 4px;border: none;" > عمولة مصرفية </td>
           <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$arr['sell']->differ}}</td>
       </tr>
-      <tr style="border-bottom: none;border-right: none;border-left: none;">
-          <td style="border: none;"></td>
-          <td style="border: none;"></td>
-          <td style="border: none;"></td>
-          <td style="padding: 4px;border: none;" > تكلفة إضاقية </td>
-          <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$arr['sell']->cost}}</td>
-      </tr>
+      @endif
+      @if($arr['sell']->cost>0)
+          <tr style="border-bottom: none;border-right: none;border-left: none;">
+              <td style="border: none;"></td>
+              <td style="border: none;"></td>
+              <td style="border: none;"></td>
+              <td style="padding: 4px;border: none;" > تكلفة إضاقية </td>
+              <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$arr['sell']->cost}}</td>
+          </tr>
+      @endif
+
+
 
       <tr style="border: none;">
           <td style="border: none;"></td>
@@ -138,6 +144,16 @@
           <td style="padding: 4px;border: none;">المدفوع </td>
           <td style="font-weight: bold;text-align: right;border: white solid 4pt;text-align: center;background: lightgray;">{{$arr['sell']->pay}}</td>
       </tr >
+      @if($arr['sell']->ksm>0)
+          <tr style="border: none;">
+              <td style="border: none;"></td>
+              <td style="border: none;"></td>
+              <td style="border: none;"></td>
+              <td style="padding: 4px;border: none;">الخصم </td>
+              <td style="font-weight: bold;text-align: right;border: white solid 4pt;text-align: center;background: lightgray;">{{$arr['sell']->ksm}}</td>
+          </tr >
+      @endif
+
 
 
       <tr style="border: none;">

@@ -184,6 +184,11 @@ class SellRep extends Page implements HasForms,HasTable
                thousandsSeparator: ',',
            ))
          ->label('المدفوع'),
+         TextColumn::make('ksm')
+             ->numeric(2,'.',',')
+             ->summarize(Sum::make()->label('')
+                 ->numeric(2,'.',','))
+             ->label('الخصم'),
        TextColumn::make('baky')
            ->numeric(
                decimalPlaces: 2,

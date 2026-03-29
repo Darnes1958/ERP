@@ -146,7 +146,7 @@ class InpSell extends Page implements HasSchemas,HasTable
     public function updatePay()
     {
         $this->sell->update($this->sellForm->getState());
-        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
@@ -158,7 +158,7 @@ class InpSell extends Page implements HasSchemas,HasTable
     public function updateNonDiffer(){
         $this->sell->rate=0;
         $this->sell->differ=0;
-        $this->sell->total=$this->sell->tot+$this->sell->cost;
+        $this->sell->total=$this->sell->tot+$this->sell->cost-$this->sell->ksm;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
 
@@ -168,7 +168,7 @@ class InpSell extends Page implements HasSchemas,HasTable
     public function updateDiffer(){
         $this->sell->rate=$this->sellData['rate'];
         $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
-        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
 
         $this->sell->save();
@@ -346,6 +346,14 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->live(onBlur: true)
                             ->default('0')
                             ->id('pay'),
+                        TextInput::make('ksm')
+                            ->hiddenLabel()
+                            ->prefix('الخصم')
+                            ->columnSpan(2)
+                            ->extraAttributes(['x-on:change' => "\$wire.updatePay"])
+                            ->live(onBlur: true)
+                            ->default('0')
+                            ->id('ksm'),
 
                         TextInput::make('baky')
                             ->hiddenLabel()
@@ -422,9 +430,6 @@ class InpSell extends Page implements HasSchemas,HasTable
                                     })
 
                             )
-
-
-
                             ->relationship('Item','name',
                                 modifyQueryUsing: fn (Builder $query) =>
                                 $query->whereIn('id',Place_stock::where('place_id',$this->sellData['place_id'])
@@ -680,7 +685,7 @@ class InpSell extends Page implements HasSchemas,HasTable
                                         ]);
 
                                     $this->sell=Sell_work::find(Auth::id());
-                                    $this->sell->tot=0;  $this->sell->pay=0; $this->sell->baky=0;$this->sell->total=0;
+                                    $this->sell->tot=0;  $this->sell->pay=0;$this->sell->ksm=0; $this->sell->baky=0;$this->sell->total=0;
                                     $this->sell->differ=0;$this->sell->cost=0;
                                     $this->sell->customer_id=null;
                                     $this->sell->order_date=null;
@@ -750,7 +755,7 @@ class InpSell extends Page implements HasSchemas,HasTable
         $tot=Sell_tran_work::where('sell_id',Auth::id())->sum('sub_tot');
         $this->sell->tot=$tot;
         $this->sell->differ=($tot+$this->sell->cost)*$this->sell->rate/100;
-        $total=$tot+$this->sell->cost+$this->sell->differ;
+        $total=$tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
         $baky=$total-$this->sell->pay;
 
         $this->sell->total=$total;

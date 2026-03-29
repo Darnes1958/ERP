@@ -86,7 +86,6 @@ public function form(Schema $schema): Schema
              ->label('ارباح الإدارة العامة')
                 ->default(0)
             ->readOnly(),
-
         ])->columns(4);
 }
 

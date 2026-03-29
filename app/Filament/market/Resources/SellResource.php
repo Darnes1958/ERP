@@ -19,6 +19,7 @@ use App\Models\Sell;
 use App\Models\Sell_tran;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -127,6 +128,7 @@ class SellResource extends Resource
             ->defaultKeySort(false)
             ->defaultSort('updated_at','desc')
             ->emptyStateHeading('لا توجد فواتير')
+            ->recordUrl(false)
             ->columns([
                 TextColumn::make('id')
                     ->searchable()
@@ -158,6 +160,26 @@ class SellResource extends Resource
                     ->label('الإجمالي النهائي'),
                 TextColumn::make('pay')
                     ->label('المدفوع'),
+                TextColumn::make('ksm')
+                    ->action(
+                        Action::make('editKsm')
+                            ->fillForm(fn($record)=>['ksm'=>$record->ksm])
+                            ->schema([
+                              TextInput::make('ksm')
+                                ->required(),
+                            ])
+                            ->tooltip('انقر هنا لتعديل الخصم')
+                            ->requiresConfirmation()
+                            ->modalHeading('تعديل الخصم')
+                            ->action(function (Sell $record,array $data){
+                                $record->ksm=$data['ksm'];
+                                $record->total=$record->tot+$record->cost-$data['ksm'];
+                                $record->baky=$record->total-$record->pay;
+                                $record->save();
+                            })
+
+                    )
+                    ->label('الخصم'),
                 TextColumn::make('baky')
                     ->label('الباقي'),
                 TextColumn::make('notes')

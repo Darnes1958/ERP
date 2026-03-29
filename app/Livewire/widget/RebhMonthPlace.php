@@ -39,6 +39,7 @@ class RebhMonthPlace extends BaseWidget
             'rent',
             'masr',
             'sal',
+            'ksm',
             'safi',
         ],
     ];
@@ -59,10 +60,12 @@ class RebhMonthPlace extends BaseWidget
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'masr\'),0) masr,
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'rent\'),0) rent,
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'sal\'),0) sal,
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'ksm\'),0) ksm,
 
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'rebh\'),0) -
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'masr\'),0) -
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'rent\'),0) -
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'ksm\'),0) -
                 round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'sal\'),0) safi
                 ')
                     ->Where('wyear',$this->year)
@@ -103,6 +106,11 @@ class RebhMonthPlace extends BaseWidget
                       decimalSeparator: '',
                       thousandsSeparator: ',')
                 ->label('ايجارات'),
+                TextColumn::make('ksm')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
+                    ->label('خصومات'),
               TextColumn::make('safi')
                   ->numeric(decimalPlaces: 0,
                       decimalSeparator: '',

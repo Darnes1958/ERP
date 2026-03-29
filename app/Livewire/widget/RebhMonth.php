@@ -33,6 +33,7 @@ class RebhMonth extends BaseWidget
             'rent',
             'masr',
             'sal',
+            'ksm',
             'safi',
         ],
     ];
@@ -51,9 +52,11 @@ class RebhMonth extends BaseWidget
                 ,round(sum(masr),0) masr
                 ,round(sum(rent),0) rent
                 ,round(sum(sal),0) sal
+                ,round(sum(sal),0) ksm
                 ,round(sum(rebh),0)-
                  round(sum(masr),0)-
                  round(sum(rent),0)-
+                 round(sum(ksm),0)-
                  round(sum(sal),0) safi')
                     ->WhereYear('date',$this->year)
                     ->groupByRaw('month(date)');
@@ -77,6 +80,8 @@ class RebhMonth extends BaseWidget
                 ->label('مرتبات'),
               TextColumn::make('rent')
                 ->label('ايجارات'),
+                TextColumn::make('ksm')
+                    ->label('خصومات'),
               TextColumn::make('safi')
                     ->label('صافي الأرباح'),
 
