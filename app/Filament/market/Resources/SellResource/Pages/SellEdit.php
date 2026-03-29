@@ -294,6 +294,14 @@ class SellEdit extends Page implements HasTable,HasForms
                         ->mask(RawJs::make('$money($input)'))
                         ->disabled()
                         ->default('0'),
+                    TextInput::make('ksm')
+                        ->hiddenLabel()
+                        ->prefix('الخصم')
+                        ->columnSpan(2)
+                        ->extraAttributes(['x-on:change' => "\$wire.updatePay"])
+                        ->live(onBlur: true)
+                        ->default('0')
+                        ->id('ksm'),
                     TextInput::make('total')
                         ->hiddenLabel()
                         ->prefix('الإجمالي النهائي')

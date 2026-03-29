@@ -354,7 +354,6 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->live(onBlur: true)
                             ->default('0')
                             ->id('ksm'),
-
                         TextInput::make('baky')
                             ->hiddenLabel()
                             ->prefix('المتبقي')
@@ -367,7 +366,6 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->columnSpan(2)
                             ->readOnly()
                             ->default('0'),
-
                         TextInput::make('notes')
                             ->hiddenLabel()
                             ->prefix('ملاحظات')
@@ -380,7 +378,6 @@ class InpSell extends Page implements HasSchemas,HasTable
                                     ->send();
                             })
                             ->columnSpanFull(),
-
                     ])
                     ->columns(10)
             ]);

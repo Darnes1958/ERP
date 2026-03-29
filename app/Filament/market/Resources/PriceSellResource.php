@@ -58,6 +58,9 @@ class PriceSellResource extends Resource
                 TextColumn::make('Price_type.name')
                     ->searchable()
                     ->label('نوع السعر'),
+                TextColumn::make('Item.price_buy')
+                 ->visible(fn()=>Auth::user()->hasRole('admin'))
+                 ->label('سعر الشراء'),
                 TextInputColumn::make('price1')
                     ->rules(['required', 'gt:0'])
                     ->afterStateUpdated(function ($state, $record) {
