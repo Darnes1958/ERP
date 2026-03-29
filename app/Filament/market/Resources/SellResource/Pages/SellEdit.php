@@ -549,7 +549,7 @@ class SellEdit extends Page implements HasTable,HasForms
         $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
         $this->sell->tot=$tot;
         $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
-        $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
+        $this->sell->total=$tot+$this->sell->differ+$this->sell->cost-$this->sell->ksm;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
 
@@ -578,7 +578,7 @@ class SellEdit extends Page implements HasTable,HasForms
     public function updatePay()
     {
         $this->sell->update($this->sellForm->getState());
-        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
@@ -623,7 +623,7 @@ class SellEdit extends Page implements HasTable,HasForms
     public function updateNonDiffer(){
         $this->sell->rate=0;
         $this->sell->differ=0;
-        $this->sell->total=$this->sell->tot+$this->sell->cost;
+        $this->sell->total=$this->sell->tot+$this->sell->cost-$this->sell->ksm;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
@@ -632,7 +632,7 @@ class SellEdit extends Page implements HasTable,HasForms
     public function updateDiffer(){
         $this->sell->rate=$this->sellData['rate'];
         $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
-        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ;
+        $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
         $this->sell->baky=$this->sell->total-$this->sell->pay;
 
         $this->sell->save();
