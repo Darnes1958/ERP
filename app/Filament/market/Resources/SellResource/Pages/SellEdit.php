@@ -84,8 +84,6 @@ class SellEdit extends Page implements HasTable,HasForms
         else return false;
     }
 
-
-
     public function sellForm(Schema $schema): Schema
     {
         return $schema
@@ -298,8 +296,15 @@ class SellEdit extends Page implements HasTable,HasForms
                         ->hiddenLabel()
                         ->prefix('الخصم')
                         ->columnSpan(2)
-                        ->extraAttributes(['x-on:change' => "\$wire.updatePay"])
-                        ->live(onBlur: true)
+                       // ->extraAttributes(['x-on:change' => "\$wire.updatePay"])
+                       ->afterStateUpdated(function ($state){
+                           $this->sell->update(['ksm'=>$state]);
+                           $this->sell->total=$this->sell->tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
+                           $this->sell->baky=$this->sell->total-$this->sell->pay;
+                           $this->sell->save();
+                           $this->sellForm->fill($this->sell->toArray());
+                       })
+                       ->live(onBlur: true)
                         ->default('0')
                         ->id('ksm'),
                     TextInput::make('total')
