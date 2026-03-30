@@ -17,8 +17,10 @@ class KlasaTar extends BaseWidget
 {
     public $repDate1;
     public $repDate2;
+    protected static bool $isLazy = false;
 
-  public function mount(){
+
+    public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 

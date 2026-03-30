@@ -18,7 +18,7 @@ class RebhMonth extends BaseWidget
     use AksatTrait;
   public $year;
 
-
+    protected static bool $isLazy = false;
 
   #[On('updateyear')]
   public function updateyear($year)

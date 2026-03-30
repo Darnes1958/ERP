@@ -21,6 +21,7 @@ class RebhMonthPlace extends BaseWidget
   public $year;
   public $place;
 
+    protected static bool $isLazy = false;
 
   public function mount()
   {

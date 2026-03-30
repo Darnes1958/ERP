@@ -18,7 +18,10 @@ class RepResSupp extends BaseWidget
   public $repDate2;
     public $place_id;
   public $raseed;
-  public function mount(){
+
+    protected static bool $isLazy = false;
+
+    public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 

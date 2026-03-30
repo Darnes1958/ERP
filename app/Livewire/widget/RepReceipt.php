@@ -20,7 +20,9 @@ class RepReceipt extends BaseWidget
   public $raseed;
   public $mden;
   public $daen;
-  public function mount(){
+    protected static bool $isLazy = false;
+
+    public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 

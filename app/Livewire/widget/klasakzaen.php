@@ -15,7 +15,9 @@ class klasakzaen extends BaseWidget
 {
     public $repDate1;
     public $repDate2;
-  public function mount(){
+    protected static bool $isLazy = false;
+
+    public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 
@@ -68,10 +70,13 @@ class klasakzaen extends BaseWidget
                 TextColumn::make('name')
                     ->label('البيان'),
                 TextColumn::make('mden')
+                    ->numeric(2,'.',',')
                     ->label('مدين'),
                 TextColumn::make('daen')
+                    ->numeric(2,'.',',')
                     ->label('دائن'),
                 TextColumn::make('raseed')
+                    ->numeric(2,'.',',')
                   ->color(function ($state){if ($state<0) return 'danger'; else return 'info';})
                     ->label('الرصيد'),
             ])

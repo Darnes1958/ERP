@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Auth;
 class RepDaily extends Page implements HasForms
 {
     use InteractsWithForms;
+
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'الحركة اليومية';
     protected static string | \UnitEnum | null $navigationGroup = 'الحركة اليومية';

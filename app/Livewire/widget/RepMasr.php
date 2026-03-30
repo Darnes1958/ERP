@@ -16,7 +16,9 @@ class RepMasr extends BaseWidget
   public $repDate1;
   public $repDate2;
     public $place_id;
-  public function mount(){
+    protected static bool $isLazy = false;
+
+    public function mount(){
     $this->repDate1=now();
     $this->repDate2=now();
 
