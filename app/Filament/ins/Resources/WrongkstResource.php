@@ -19,6 +19,7 @@ use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -77,9 +78,9 @@ class WrongkstResource extends Resource
             ->recordUrl(
                 null
             )
-            ->checkIfRecordIsSelectableUsing(
-                fn (Model $record): bool => $record->status->value === 1,
-            )
+        //    ->checkIfRecordIsSelectableUsing(
+        //        fn (Model $record): bool => $record->status->value === 1 || $record->status->value === 3,
+        //    )
             ->filters([
                 SelectFilter::make('taj_id')
                     ->relationship('Taj','TajName')
@@ -128,15 +129,41 @@ class WrongkstResource extends Resource
                     }
                     Main::find($data['main_id'])->update(['acc'=>$record->acc]);
                     self::MainTarseed2($data['main_id']);
-                })
+                }),
+                Action::make('toCorrect')
+                    ->label('أرشفة')
+                    ->icon(Heroicon::ArchiveBox)
+                    ->iconButton()
+                    ->visible(function (Model $record): bool {
+                        return $record->status->value!=1;
+                    })
+                    ->color('success')
+                    ->requiresConfirmation()
+
+                    ->action(function (Model $record) {
+                        $res=Wrongkst::where('taj_id',$record->taj_id)->where('acc',$record->acc)->get();
+                        foreach ($res as $wr) {
+                            $oldRecord= $wr;
+                            $newRecord = $oldRecord->replicate();
+
+                            $newRecord->setTable('corrects');
+                            //  $newRecord->id=$record->id;
+
+                            $newRecord->save();
+                            $oldRecord->delete();
+                        }
+
+                    })
             ])
             ->toolbarActions([
                 BulkAction::make('ترجيع')
                     ->color('success')
+
                     ->deselectRecordsAfterCompletion()
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
                         foreach ($records as  $item){
+                            if ($item->status->value!=1){continue;}
                             $item->tarkst()->create([
                                 'tar_date' => date('Y-m-d'),
                                 'kst' => $item->kst,
@@ -148,8 +175,28 @@ class WrongkstResource extends Resource
                             $item->save();
                         }
                     }),
+                BulkAction::make('أرشفة')
+                    ->color('success')
+
+                    ->deselectRecordsAfterCompletion()
+                    ->requiresConfirmation()
+                    ->action(function (Collection $records) {
+                        foreach ($records as  $item){
+                                if ($item->status->value==1) {continue;}
+                                $oldRecord= $item;
+                                $newRecord = $oldRecord->replicate();
+
+                                $newRecord->setTable('corrects');
+                                //  $newRecord->id=$record->id;
+
+                                $newRecord->save();
+                                $oldRecord->delete();
+
+                        }
+                    }),
             ]);
     }
+
 
     public static function getRelations(): array
     {
