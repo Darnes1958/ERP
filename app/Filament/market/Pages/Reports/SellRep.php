@@ -62,40 +62,7 @@ class SellRep extends Page implements HasForms,HasTable
       ;
       return Sell::query();
     })
-       ->headerActions([
-           Action::make('print1')
-               ->label('طباعة')
-               ->action(function (){
-                   $filters=$this->table->getFilters();
-                   $res=$this->getTableQueryForExport()->get();
-                   if ($res->count()==0) return ;
 
-                   if ($filters['place_id']->getState()['value'])
-                    $place=Place::find($filters['place_id']->getState()['value'])->name;
-                   else $place=null;
-                   if ($filters['customer_id']->getState()['value'])
-                       $customer=Customer::find($filters['customer_id']->getState()['value'])->name;
-                   else $customer=null;
-
-                   $any=$filters['created_at']->getState();
-                   $RepDate1=$any['Date1'] ; $RepDate2=$any['Date2'];
-
-                   $active=$this->activeTab;
-
-
-                   return Response::download(self::ret_spatie($res,
-                       'PDF.pdf-rep-sell',[
-                           'RepDate1'=>$RepDate1,
-                           'RepDate2'=>$RepDate2,
-                           'place'=>$place,
-                           'customer'=>$customer,
-                           'active'=>$active,
-                           ]
-                       ), 'filename.pdf', self::ret_spatie_header());
-
-               })
-
-       ])
      ->pluralModelLabel('الصفحات')
      ->striped()
      ->defaultKeySort(false)
@@ -242,17 +209,52 @@ class SellRep extends Page implements HasForms,HasTable
              })
 
      ])
-     ->modifyQueryUsing($this->modifyQueryWithActiveTab(...))
-     ->filtersFormWidth(Width::Small)
+     ->toolbarActions([
+         Action::make('print1')
+             ->label('طباعة')
+             ->action(function (){
+                 $filters=$this->table->getFilters();
+                 $res=$this->getTableQueryForExport()->get();
+                 if ($res->count()==0) return ;
 
+                 if ($filters['place_id']->getState()['value'])
+                     $place=Place::find($filters['place_id']->getState()['value'])->name;
+                 else $place=null;
+                 if ($filters['customer_id']->getState()['value'])
+                     $customer=Customer::find($filters['customer_id']->getState()['value'])->name;
+                 else $customer=null;
+
+                 $any=$filters['created_at']->getState();
+                 $RepDate1=$any['Date1'] ; $RepDate2=$any['Date2'];
+
+                 $active=$this->activeTab;
+
+
+                 return Response::download(self::ret_spatie($res,
+                     'PDF.pdf-rep-sell',[
+                         'RepDate1'=>$RepDate1,
+                         'RepDate2'=>$RepDate2,
+                         'place'=>$place,
+                         'customer'=>$customer,
+                         'active'=>$active,
+                     ]
+                 ), 'filename.pdf', self::ret_spatie_header());
+
+             })
+     ])
+     ->modifyQueryUsing($this->modifyQueryWithActiveTab(...))
+     ->filtersFormWidth(Width::Large)
+     ->filtersFormColumns(2)
      ->filters([
        SelectFilter::make('customer_id')
          ->options(Customer::all()->pluck('name', 'id'))
          ->searchable()
+           ->preload()
          ->label('زبون معين'),
        SelectFilter::make('place_id')
              ->options(Place::all()->pluck('name', 'id'))
              ->searchable()
+             ->preload()
              ->label('نقطة بيع معينة'),
        Filter::make('created_at')
          ->schema([
@@ -261,7 +263,6 @@ class SellRep extends Page implements HasForms,HasTable
            DatePicker::make('Date2')
              ->label('إلي تاريخ'),
          ])
-
          ->indicateUsing(function (array $data): ?string {
            if (! $data['Date1'] && ! $data['Date2']) { return null;   }
            if ( $data['Date1'] && !$data['Date2'])

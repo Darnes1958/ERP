@@ -21,6 +21,7 @@
         "schmeits/filament-4-phosphor-icons": "^1.0",
         "spatie/laravel-pdf": "^1.6",
         "spatie/laravel-permission": "^6.3",
+        "stechstudio/laravel-zipstream": "^5.10",
         "thiagoprz/eloquent-composite-key": "^1.0"
     },
     "require-dev": {
