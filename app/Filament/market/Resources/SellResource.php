@@ -154,19 +154,13 @@ class SellResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('فرق عملة'),
-                TextColumn::make('total')
-                    ->searchable()
-                    ->sortable()
-                    ->label('الإجمالي النهائي'),
-                TextColumn::make('pay')
-                    ->label('المدفوع'),
                 TextColumn::make('ksm')
                     ->action(
                         Action::make('editKsm')
                             ->fillForm(fn($record)=>['ksm'=>$record->ksm])
                             ->schema([
-                              TextInput::make('ksm')
-                                ->required(),
+                                TextInput::make('ksm')
+                                    ->required(),
                             ])
                             ->tooltip('انقر هنا لتعديل الخصم')
                             ->requiresConfirmation()
@@ -180,6 +174,13 @@ class SellResource extends Resource
 
                     )
                     ->label('الخصم'),
+                TextColumn::make('total')
+                    ->searchable()
+                    ->sortable()
+                    ->label('الإجمالي النهائي'),
+                TextColumn::make('pay')
+                    ->label('المدفوع'),
+
                 TextColumn::make('baky')
                     ->label('الباقي'),
                 TextColumn::make('notes')
