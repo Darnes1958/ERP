@@ -689,7 +689,22 @@ class QueckSell extends Page implements HasSchemas,HasTable
             if ($rec['price1']==0) $rec['price1']='';
             $stock=Place_stock::where('item_id',$item_id->id)
                 ->where('place_id',$this->sellData['place_id'])->first();
-            if ($stock) $placestock=$stock->stock1;else $placestock=0;
+            if ($stock) {
+                $placestock = $stock->stock1;
+                if ($placestock<=0) {
+                    Notification::make()->title('رصيد المعرض لهذا الصنف صفر')
+                        ->danger()
+                        ->send();
+                    return;
+                }
+            }
+            else {
+                $placestock=0;
+                Notification::make()->title('رصيد المعرض لهذا الصنف صفر')
+                ->danger()
+                ->send();
+                return;
+            }
 
             $q=$this->selltranData['q1'];
 
