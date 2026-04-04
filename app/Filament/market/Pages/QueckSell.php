@@ -53,8 +53,8 @@ class QueckSell extends Page implements HasSchemas,HasTable
     protected ?string $heading='';
     public static function shouldRegisterNavigation(): bool
     {
-        return false;
-       // return Auth::user()->can('ادخال مبيعات');
+
+        return Auth::user()->can('ادخال مبيعات');
     }
 
 
