@@ -9,6 +9,7 @@ use App\Models\Barcode;
 use App\Models\Item;
 use App\Models\Kazena;
 use App\Models\OurCompany;
+use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Price_sell;
 use App\Models\Price_type;
@@ -69,24 +70,16 @@ class QueckSell extends Page implements HasSchemas,HasTable
     {
         $this->sell = Sell_work::find(auth()->id());
         if (!$this->sell) {
-            if (Auth::user()->hasRole('admin'))
+                if (Auth::user()->place_id) $place_id=Auth::user()->place_id;
+                else $place_id=Place::query()->first()->id;
                 $this->sell=Sell_work::create([
-                    'id'=>Auth::id(),'user_id'=>Auth::id(),
-                ]);
-            else {
-
-                $this->sell=Sell_work::create([
-                    'id'=>Auth::id(),'user_id'=>Auth::id(),'place_id'=>Auth::user()->place_id,'customer_id'=>1,'price_type_id'=>1,
-                ]);
-
-            }
-
-
+                    'id'=>Auth::id(),'user_id'=>Auth::id(),'place_id'=>$place_id,'customer_id'=>1,'price_type_id'=>1,]);
         }
         $kaz=Kazena::where('user_id',auth()->id())->first();
         $kaz_id=null;
         if ($kaz && $this->sell->price_type_id==1)  $kaz_id=$kaz->id;
 
+        $this->sell->order_date=date('Y-m-d');
 
         $this->sellForm->fill($this->sell->toArray());
 
@@ -119,7 +112,6 @@ class QueckSell extends Page implements HasSchemas,HasTable
         );
 
     }
-
     public function updateSells()
     {
         $this->sell->update($this->sellForm->getState());
@@ -130,7 +122,6 @@ class QueckSell extends Page implements HasSchemas,HasTable
             ->success()
             ->send();
     }
-
     public function updatePriceType(Set $set){
         $this->sell->price_type_id=$this->sellData['price_type_id'] ;
         if ($this->sell->price_type_id==2)
@@ -190,8 +181,6 @@ class QueckSell extends Page implements HasSchemas,HasTable
             ->success()
             ->send();
     }
-
-
     public function sellForm(Schema $schema): Schema
     {
         return $schema
@@ -202,14 +191,11 @@ class QueckSell extends Page implements HasSchemas,HasTable
                     ->schema([
                         DatePicker::make('order_date')
                             ->id('order_date')
-
                             ->hiddenLabel()
                             ->prefix('التاريخ')
                             ->columnSpan(2)
                             ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
                             ->required(),
-
-
                         Select::make('price_type_id')
                             ->hiddenLabel()
                             ->prefix('طريقة الدفع')
@@ -231,33 +217,9 @@ class QueckSell extends Page implements HasSchemas,HasTable
                             ->required()
                             ->columnSpan(4)
                             ->extraAttributes(['x-on:change' => "\$wire.updateSells"])
-                            ->createOptionForm([
-                                Section::make('ادخال مكان تخزين')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->required()
-                                            ->unique()
-                                            ->label('الاسم'),
-                                        Radio::make('place_type')
-                                            ->inline()
-                                            ->options(PlaceType::class)
-                                    ])
-                            ])
-                            ->editOptionForm([
-                                Section::make('تعديل مكان تخزين')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->required()
-                                            ->unique()
-                                            ->label('الاسم'),
-                                        Radio::make('place_type')
-                                            ->inline()
-                                            ->options(PlaceType::class)
-                                    ])->columns(2)
-                            ])
                             ->id('place_id')
-                            ->visible(Setting::find(Auth::user()->company)->many_place)
-                            ->disabled( !Auth::user()->hasRole('admin')),
+                            ->visible(Setting::find(Auth::user()->company)->many_place ),
+
                         TextInput::make('total')
                             ->hiddenLabel()
                             ->prefix('الإجمالي النهائي')
@@ -370,55 +332,6 @@ class QueckSell extends Page implements HasSchemas,HasTable
                             ->relationship('Kazena','name')
                             ->label('الخزينة')
                             ->inlineLabel()
-                            ->createOptionForm([
-                                Section::make('ادخال حساب خزينة جديد')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->label('اسم الخزينة')
-                                            ->required()
-                                            ->autofocus()
-
-                                            ->unique(ignoreRecord: true)
-                                            ->validationMessages([
-                                                'unique' => ' :attribute مخزون مسبقا ',
-                                            ])        ,
-
-                                        TextInput::make('balance')
-                                            ->label('رصيد بداية المدة')
-                                            ->numeric()
-                                            ->required(),
-                                        Select::make('user_id')
-                                            ->label('المستخدم')
-                                            ->searchable()
-                                            ->default(Auth::id())
-                                            ->preload()
-                                            ->options(User::
-                                            where('company',Auth::user()->company)
-                                                ->where('id','!=',1)
-                                                ->pluck('name','id')),
-
-                                    ])
-                            ])
-                            ->editOptionForm([
-                                Section::make('تعديل بيانات خزينة')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->label('اسم الخزينة')
-                                            ->required()
-                                            ->autofocus()
-                                            ->columnSpan(2)
-                                            ->unique(ignoreRecord: true)
-                                            ->validationMessages([
-                                                'unique' => ' :attribute مخزون مسبقا ',
-                                            ])        ,
-
-                                        TextInput::make('raseed')
-                                            ->label('رصيد بداية المدة')
-                                            ->numeric()
-                                            ->required()
-
-                                    ])->columns(2)
-                            ])
                             ->disabled(function (){
                                 return Kazena::where('user_id',Auth::id())->exists();
                             })
@@ -548,8 +461,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
                                     $this->sell->tot = 0;
                                     $this->sell->pay = 0;
                                     $this->sell->baky = 0;
-                                    $this->sell->customer_id=null;
-                                    $this->sell->order_date=null;
+
                                     $this->sell->save();
                                     $this->sellForm->fill($this->sell->toArray());
                                     $this->selltran= Sell_tran_work::where('sell_id', Auth::id())->delete();
@@ -655,8 +567,13 @@ class QueckSell extends Page implements HasSchemas,HasTable
 
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$item_id)->first();
-        if ($this->selltran)
-            $this->sellTranForm->fill($this->selltran->toArray());
+        if ($this->selltran) {
+
+            $this->sellTranForm->fill(array_merge($this->selltran->toArray(),['raseed_all'=>$item->stock1,'raseed_place'=>$placestock,]));
+         //   $this->sellTranForm->raseed_all=$item->stock1;
+           // $this->sellTranForm->raseed_place=$placestock;
+        }
+
         else $this->sellTranForm->fill([
             'barcode_id'=>$barcode,'item_id'=>$item_id,
             'price1'=>$rec['price1'],'price2'=>$rec['price2'],'q1'=>$q,'q2'=>'',
@@ -711,6 +628,8 @@ class QueckSell extends Page implements HasSchemas,HasTable
             $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
                 ->where('item_id',$item_id->id)->first();
             if ($this->selltran)
+            {
+                if ($q==1) $q=$this->selltran->q1+1;
                 $this->sellTranForm->fill([
                         'barcode_id'=>$this->barcode_id,'item_id'=>$item_id->id,
                         'price1'=>$this->selltran->price1,'price2'=>$this->selltran->price2,'q1'=>$q,'q2'=>'',
@@ -721,6 +640,8 @@ class QueckSell extends Page implements HasSchemas,HasTable
                         'user_id'=>Auth::id()
                     ]
                 );
+
+            }
             else $this->sellTranForm->fill([
                 'barcode_id'=>$this->barcode_id,'item_id'=>$item_id->id,
                 'price1'=>$rec['price1'],'price2'=>$rec['price2'],'q1'=>$q,'q2'=>'',
@@ -747,19 +668,18 @@ class QueckSell extends Page implements HasSchemas,HasTable
         if (!$res) return;
         $this->fill_item($state,$res->barcode);
     }
-
     public function chkData(){
         if (! $this->selltranData['item_id']) return 'يجب ادخال الصنف';
         $item_id=$this->selltranData['item_id'];
         $place_id=$this->sellData['place_id'];
-        $q1=floatval($this->selltranData['q1']);
-        $q2=floatVal($this->selltranData['q2']);
+        $q1=$this->selltranData['q1'];
 
-        $has_two=Setting::find(Auth::user()->company)->has_two && Item::find($item_id)->two_unit;
-        if (!$has_two && $q1<=0) return 'يجب ادخال الكمية';
-        if ($has_two &&  $q2<=0 && $q1<=0) return 'يجب ادخال الكمية';
 
-        if (!$this->chkRaseed($item_id,$place_id,$q1,$q2) ) return 'الرصيد لا يسمح !!';
+        if  ($q1<=0) return 'يجب ادخال الكمية';
+
+
+        if (Place_stock::where('item_id',$item_id)
+            ->where('place_id',$place_id)->first()->stock1<$q1) return 'الرصيد لا يسمح !!';
         return 'ok';
     }
     public function add_rec(){
@@ -776,6 +696,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$this->selltranData['item_id'])->first();
         if ($this->selltran)
+
             $this->selltran->update($this->sellTranForm->getState());
         else
             $this->selltran=Sell_tran_work::
@@ -802,6 +723,9 @@ class QueckSell extends Page implements HasSchemas,HasTable
 
                 TextColumn::make('item_id')
                     ->label('رقم الصنف')
+                    ->sortable(),
+                TextColumn::make('barcode_id')
+                    ->label('الباركود')
                     ->sortable(),
 
                 TextColumn::make('Item.name')

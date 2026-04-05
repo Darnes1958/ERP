@@ -91,12 +91,12 @@ class UserResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
-                if (auth()->id() != 1) {
+
                     return $query
                         ->where('company', auth()->user()->company)
-                        ->where('id','!=',1)
+                        ->where('is_prog','!=',1)
                         ;
-                }
+
             })
             ->columns([
                 TextColumn::make('id')->label('الرقم الألي')->sortable(),

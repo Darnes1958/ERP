@@ -56,6 +56,7 @@ class KazenaResource extends Resource
                       ->where('id','!=',1)
                      ->pluck('name','id')),
                 TextInput::make('balance')
+                    ->default(0)
                     ->label('رصيد بداية المدة')
                     ->numeric()
                     ->required(),
