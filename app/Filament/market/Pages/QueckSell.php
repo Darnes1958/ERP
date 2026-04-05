@@ -585,7 +585,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
 
     }
     public function ChkBarcode(){
-
+        info('yes');
         if ($this->barcode_id==null) return;
         if (!$this->sellData['price_type_id']) {
             Notification::make()->title('يجب اختيار طريقة دفع')->danger()->send();
@@ -629,7 +629,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
                 ->where('item_id',$item_id->id)->first();
             if ($this->selltran)
             {
-                if ($q==1) $q=$this->selltran->q1+1;
+
                 $this->sellTranForm->fill([
                         'barcode_id'=>$this->barcode_id,'item_id'=>$item_id->id,
                         'price1'=>$this->selltran->price1,'price2'=>$this->selltran->price2,'q1'=>$q,'q2'=>'',
