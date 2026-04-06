@@ -46,6 +46,8 @@ class QueckSell extends Page implements HasSchemas,HasTable
 {
     use InteractsWithForms,InteractsWithTable;
     use Raseed;
+
+
     protected string $view = 'filament.market.pages.inp-sell';
 
     protected static ?string $navigationLabel='فاتورة مبيعات سريعة';
@@ -58,7 +60,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
         return Auth::user()->can('ادخال مبيعات');
     }
 
-
+    public $myMessage=' ';
     public $sell;
     public $selltran;
     public $sellData;
@@ -68,6 +70,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
     public $barcode_id;
     public function mount()
     {
+        $this->myMessage=' ';
         $this->sell = Sell_work::find(auth()->id());
         if (!$this->sell) {
                 if (Auth::user()->place_id) $place_id=Auth::user()->place_id;
@@ -244,13 +247,17 @@ class QueckSell extends Page implements HasSchemas,HasTable
                             ->prefix('الباركود')
                             ->columnSpan(2)
                             ->required()
-                            ->exists(Barcode::class,column: 'id')
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state){$this->barcode_id=$state;})
+                          //  ->exists(Barcode::class,column: 'id')
+                            ->live()
+                            ->afterStateUpdatedJs(function ($state){$this->barcode_id=$state;})
                             ->extraAttributes(['wire:keydown.enter' => "ChkBarcode",])
+                        //    ->extraAlpineAttributes(['x-on:keydown.enter' => "\$wire.ChkBarcode"])
 
                             ->autocomplete(false)
                             ->autofocus()
+                         //   ->belowContent(function (){
+                         //       return $this->myMessage;
+                         //   })
                             ->id('barcode_id'),
                         Select::make('item_id')
                             ->hiddenLabel()
@@ -499,61 +506,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
     }
-    public function retPrice($item,$single,$price_type){
 
-        $Item=Item::find($item);
-        $Price_type=Price_type::find($price_type);
-
-        if ($Price_type->inc_dec->value==0)
-        {
-            $rec=Price_sell::where('item_id',$item)->where('price_type_id',$price_type)->first();
-
-            if ($rec) {
-                if ($single) return ['price1'=>$rec->price1,'price2'=>$rec->price2];
-                else return ['price1'=>$rec->pricej1,'price2'=>$rec->pricej2];
-            } else {
-                if ($single) return  ['price1'=>$Item->price1,'price2'=>$Item->price2];
-                else return  ['price1'=>$Item->pricej1,'price2'=>$Item->pricej2];
-            }
-        }
-        if ($Price_type->inc_dec->value==1)
-        {
-            if ($Price_type->val!=0) {
-                if ($single) return [
-                    'price1'=>$Item->price1+$Price_type->val,
-                    'price2'=>$Item->price2+$Price_type->val];
-                else return [
-                    'price1'=>$Item->pricej1+$Price_type->val,
-                    'price2'=>$Item->pricej2+$Price_type->val,];
-            } else {
-                if ($single) return  [
-                    'price1'=>$Item->price1+(($Price_type->rate*$Item->price1)/100),
-                    'price2'=>$Item->price2+(($Price_type->rate*$Item->price2)/100),];
-                else return  [
-                    'price1'=>$Item->pricej1+(($Price_type->rate*$Item->pricej1)/100),
-                    'price2'=>$Item->pricej2+(($Price_type->rate*$Item->pricje2)/100),];
-            }
-        }
-        if ($Price_type->inc_dec->value==2)
-        {
-            if ($Price_type->val!=0) {
-                if ($single) return [
-                    'price1'=>$Item->price1-$Price_type->val,
-                    'price2'=>$Item->price2-$Price_type->val];
-                else return [
-                    'price1'=>$Item->pricej1-$Price_type->val,
-                    'price2'=>$Item->pricej2-$Price_type->val,];
-            } else {
-                if ($single) return  [
-                    'price1'=>$Item->price1-(($Price_type->rate*$Item->price1)/100),
-                    'price2'=>$Item->price2-(($Price_type->rate*$Item->price2)/100),];
-                else return  [
-                    'price1'=>$Item->pricej1-(($Price_type->rate*$Item->pricej1)/100),
-                    'price2'=>$Item->pricej2-(($Price_type->rate*$Item->pricje2)/100),];
-            }
-        }
-
-    }
     public function fill_item($item_id,$barcode){
         $item=Item::find($item_id);
         $rec=$this->retPrice($item_id,$this->sell->single,$this->sellData['price_type_id']);
@@ -585,25 +538,31 @@ class QueckSell extends Page implements HasSchemas,HasTable
 
     }
     public function ChkBarcode(){
-        info('yes');
-        if ($this->barcode_id==null) return;
+
+         if ($this->barcode_id==null) return;
+
         if (!$this->sellData['price_type_id']) {
             Notification::make()->title('يجب اختيار طريقة دفع')->danger()->send();
             return;
         }
         $res=Barcode::find($this->barcode_id);
+
         if (! $res)
+        {
+          //  $this->myMessage='هذا الباركود غير مخزون';
             Notification::make()
                 ->title('هذا الباركود غير مخزون ')
                 ->icon('heroicon-o-check')
                 ->iconColor('success')
                 ->send();
+        }
         else {
 
             $item_id=Item::find($res->item_id);
-            $rec=$this->retPrice($item_id->id,$this->sell->single,$this->sellData['price_type_id']);
+            $rec=Price_sell::where('item_id',$item_id->id)
+                ->where('price_type_id',$this->sellData['price_type_id'])->first();
+            if ($rec) $price=$rec->price1; else $price=0;
 
-            if ($rec['price1']==0) $rec['price1']='';
             $stock=Place_stock::where('item_id',$item_id->id)
                 ->where('place_id',$this->sellData['place_id'])->first();
             if ($stock) {
@@ -629,10 +588,9 @@ class QueckSell extends Page implements HasSchemas,HasTable
                 ->where('item_id',$item_id->id)->first();
             if ($this->selltran)
             {
-
                 $this->sellTranForm->fill([
                         'barcode_id'=>$this->barcode_id,'item_id'=>$item_id->id,
-                        'price1'=>$this->selltran->price1,'price2'=>$this->selltran->price2,'q1'=>$q,'q2'=>'',
+                        'price1'=>$this->selltran->price1,'q1'=>$q,
                         'sub_tot'=>0,
                         'raseed_all'=>$item_id->stock1,
                         'raseed_place'=>$placestock,
@@ -644,7 +602,8 @@ class QueckSell extends Page implements HasSchemas,HasTable
             }
             else $this->sellTranForm->fill([
                 'barcode_id'=>$this->barcode_id,'item_id'=>$item_id->id,
-                'price1'=>$rec['price1'],'price2'=>$rec['price2'],'q1'=>$q,'q2'=>'',
+                'price1'=>0,
+                'q1'=>$q,
                 'sub_tot'=>0,
                 'raseed_all'=>$item_id->stock1,
                 'raseed_place'=>$placestock,
