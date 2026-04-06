@@ -35,6 +35,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -247,17 +248,11 @@ class QueckSell extends Page implements HasSchemas,HasTable
                             ->prefix('الباركود')
                             ->columnSpan(2)
                             ->required()
-                          //  ->exists(Barcode::class,column: 'id')
+                            ->exists(Barcode::class,column: 'id')
                             ->live()
-                            ->afterStateUpdatedJs(function ($state){$this->barcode_id=$state;})
-                            ->extraAttributes(['wire:keydown.enter' => "ChkBarcode",])
-                        //    ->extraAlpineAttributes(['x-on:keydown.enter' => "\$wire.ChkBarcode"])
-
+                            ->extraInputAttributes(['wire:keydown.enter' => 'ChkBarcode($event.target.value)',])
                             ->autocomplete(false)
                             ->autofocus()
-                         //   ->belowContent(function (){
-                         //       return $this->myMessage;
-                         //   })
                             ->id('barcode_id'),
                         Select::make('item_id')
                             ->hiddenLabel()
@@ -293,7 +288,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
                             ->required()
                             ->gt(0)
                             ->id('price1')
-                            ->readOnly(fn():bool => ! Auth::user()->hasRole('admin'))
+                            //->readOnly(fn():bool => ! Auth::user()->hasRole('admin'))
                             ->extraAttributes([
                                 'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",
                             ]),
@@ -506,12 +501,27 @@ class QueckSell extends Page implements HasSchemas,HasTable
         $this->sell->save();
         $this->sellForm->fill($this->sell->toArray());
     }
+    public function retPrice($Item,$price_type){
+
+        $Price_type=Price_type::find($price_type);
+
+        if ($Price_type->inc_dec->value==0) return $Item->price1;
+        if ($Price_type->inc_dec->value==1) {
+            if ($Price_type->val != 0) return $Item->price1 + $Price_type->val;
+            else return $Item->price1+(($Price_type->rate*$Item->price1)/100);
+        }
+        if ($Price_type->inc_dec->value==2)
+        {
+            if ($Price_type->val!=0) return $Item->price1-$Price_type->val;
+            else return $Item->price1-(($Price_type->rate*$Item->price1)/100);
+        }
+
+    }
 
     public function fill_item($item_id,$barcode){
         $item=Item::find($item_id);
-        $rec=$this->retPrice($item_id,$this->sell->single,$this->sellData['price_type_id']);
+        $price=$this->retPrice($item,$this->sellData['price_type_id']);
 
-        if ($rec['price1']==0) $rec['price1']='';
         $stock=Place_stock::where('item_id',$item_id)
             ->where('place_id',$this->sellData['place_id'])->first();
         if ($stock) $placestock=$stock->stock1;else $placestock=0;
@@ -521,15 +531,12 @@ class QueckSell extends Page implements HasSchemas,HasTable
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$item_id)->first();
         if ($this->selltran) {
-
             $this->sellTranForm->fill(array_merge($this->selltran->toArray(),['raseed_all'=>$item->stock1,'raseed_place'=>$placestock,]));
-         //   $this->sellTranForm->raseed_all=$item->stock1;
-           // $this->sellTranForm->raseed_place=$placestock;
         }
 
         else $this->sellTranForm->fill([
             'barcode_id'=>$barcode,'item_id'=>$item_id,
-            'price1'=>$rec['price1'],'price2'=>$rec['price2'],'q1'=>$q,'q2'=>'',
+            'price1'=>$price,'q1'=>$q,
             'sub_tot'=>0,
             'raseed_all'=>$item->stock1,
             'raseed_place'=>$placestock,
@@ -537,9 +544,11 @@ class QueckSell extends Page implements HasSchemas,HasTable
             'user_id'=>Auth::id()]);
 
     }
-    public function ChkBarcode(){
 
-         if ($this->barcode_id==null) return;
+    public function ChkBarcode($bar){
+
+        $this->barcode_id=$bar;
+        if ($this->barcode_id==null) return;
 
         if (!$this->sellData['price_type_id']) {
             Notification::make()->title('يجب اختيار طريقة دفع')->danger()->send();
@@ -549,7 +558,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
 
         if (! $res)
         {
-          //  $this->myMessage='هذا الباركود غير مخزون';
+
             Notification::make()
                 ->title('هذا الباركود غير مخزون ')
                 ->icon('heroicon-o-check')
@@ -558,12 +567,10 @@ class QueckSell extends Page implements HasSchemas,HasTable
         }
         else {
 
-            $item_id=Item::find($res->item_id);
-            $rec=Price_sell::where('item_id',$item_id->id)
-                ->where('price_type_id',$this->sellData['price_type_id'])->first();
-            if ($rec) $price=$rec->price1; else $price=0;
+            $item=$res->Item;
+            $price=$this->retPrice($item,$this->sellData['price_type_id']);
 
-            $stock=Place_stock::where('item_id',$item_id->id)
+            $stock=Place_stock::where('item_id',$item->id)
                 ->where('place_id',$this->sellData['place_id'])->first();
             if ($stock) {
                 $placestock = $stock->stock1;
@@ -577,40 +584,30 @@ class QueckSell extends Page implements HasSchemas,HasTable
             else {
                 $placestock=0;
                 Notification::make()->title('رصيد المعرض لهذا الصنف صفر')
-                ->danger()
-                ->send();
+                    ->danger()
+                    ->send();
                 return;
             }
 
             $q=$this->selltranData['q1'];
+            $this->sellTranForm->fill([
+                    'barcode_id'=>$this->barcode_id,'item_id'=>$item->id,
+                    'price1'=>$price,'q1'=>$q,
+                    'sub_tot'=>0,
+                    'raseed_all'=>$item->stock1,
+                    'raseed_place'=>$placestock,
+                    'sell_id'=>Auth::id(),
+                    'user_id'=>Auth::id()
+                ]
+            );
 
             $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
-                ->where('item_id',$item_id->id)->first();
-            if ($this->selltran)
+                ->where('item_id',$item->id)->first();
+            if ($price==0)
             {
-                $this->sellTranForm->fill([
-                        'barcode_id'=>$this->barcode_id,'item_id'=>$item_id->id,
-                        'price1'=>$this->selltran->price1,'q1'=>$q,
-                        'sub_tot'=>0,
-                        'raseed_all'=>$item_id->stock1,
-                        'raseed_place'=>$placestock,
-                        'sell_id'=>Auth::id(),
-                        'user_id'=>Auth::id()
-                    ]
-                );
-
+                $this->dispatch('gotoitem','price1');
+                return;
             }
-            else $this->sellTranForm->fill([
-                'barcode_id'=>$this->barcode_id,'item_id'=>$item_id->id,
-                'price1'=>0,
-                'q1'=>$q,
-                'sub_tot'=>0,
-                'raseed_all'=>$item_id->stock1,
-                'raseed_place'=>$placestock,
-                'sell_id'=>Auth::id(),
-                'user_id'=>Auth::id()
-            ]);
-
 
 
             $this->add_rec();
@@ -655,11 +652,9 @@ class QueckSell extends Page implements HasSchemas,HasTable
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$this->selltranData['item_id'])->first();
         if ($this->selltran)
-
             $this->selltran->update($this->sellTranForm->getState());
         else
-            $this->selltran=Sell_tran_work::
-            create(collect($this->selltranData)->except(['id','raseed_place','raseed_all'])->toArray());
+            $this->selltran=Sell_tran_work::create(collect($this->selltranData)->except(['id','raseed_place','raseed_all'])->toArray());
 
         $this->sub_tot();
         $this->tot();
@@ -686,51 +681,20 @@ class QueckSell extends Page implements HasSchemas,HasTable
                 TextColumn::make('barcode_id')
                     ->label('الباركود')
                     ->sortable(),
-
                 TextColumn::make('Item.name')
                     ->label('اسم الصنف')
                     ->color('info')
                     ->sortable(),
                 TextColumn::make('q1')
-                    ->label('الكمية')
-                    ->sortable(),
-                TextColumn::make('q2')
-                    ->label('صغري')
-                    ->visible(Setting::find(Auth::user()->company)->has_two)
-                    ->formatStateUsing(function (string $state) {
-                        if ($state=='0') return '';
-                        return $state;
-                    }),
+                    ->numeric()
+                    ->label('الكمية'),
                 TextColumn::make('price1')
                     ->label('سعر البيع')
-                    ->numeric(
-                        decimalPlaces: 3,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
-                    ->sortable(),
-
-                TextColumn::make('price2')
-                    ->label('سعر الصغري')
-                    ->numeric(
-                        decimalPlaces: 3,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
-                    ->visible(Setting::find(Auth::user()->company)->has_two)
-                    ->formatStateUsing(function (string $state) {
-                        if ($state=='0.0') return '';
-                        return $state;
-                    }),
-
+                    ->numeric(),
                 TextColumn::make('sub_tot')
                     ->label('المجموع')
-                    ->numeric(
-                        decimalPlaces: 3,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
-                    ->sortable(),
+                    ->summarize(Sum::make()->label(''))
+                    ->numeric(),
             ])
             ->recordActions([
                 Action::make('delete')

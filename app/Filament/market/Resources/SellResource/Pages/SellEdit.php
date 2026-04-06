@@ -683,24 +683,17 @@ class SellEdit extends Page implements HasTable,HasForms
                     ->sortable(),
                 TextColumn::make('q1')
                     ->label('الكمية'),
-
-                TextColumn::make('q2')
-                    ->label('صغري')
-                    ->visible(Setting::find(Auth::user()->company)->has_two)
-                    ->formatStateUsing(function (string $state) {
-                        if ($state=='0') return '';
-                        return $state;
-                    }),
                 TextColumn::make('price1')
                     ->label('سعر البيع'),
+                TextColumn::make('sub_tot')
+                    ->label('المجموع')
+                    ->numeric(
+                        decimalPlaces: 3,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ),
 
-                TextColumn::make('price2')
-                    ->label('سعر الصغري')
-                    ->visible(Setting::find(Auth::user()->company)->has_two)
-                    ->formatStateUsing(function (string $state) {
-                        if ($state=='0.0') return '';
-                        return $state;
-                    }),
+
             ])
 
             ->recordActions([
@@ -725,7 +718,11 @@ class SellEdit extends Page implements HasTable,HasForms
                         $this->selltran= $record->delete();
 
                         $tot=Sell_tran::where('sell_id',$this->sell_id)->sum('sub_tot');
-                        $baky=$tot-$this->sell->pay;
+                        $this->sell->differ=($tot+$this->sell->cost)*$this->sell->rate/100;
+                        $total=$tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
+                        $baky=$total-$this->sell->pay;
+
+                        $this->sell->total=$total;
                         $this->sell->tot=$tot;
                         $this->sell->baky=$baky;
                         $this->sell->save();
