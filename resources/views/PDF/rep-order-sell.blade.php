@@ -143,6 +143,7 @@
               <td style="font-weight: bold;text-align: right;border: white solid 4pt;text-align: center;background: lightgray;">{{$arr['sell']->ksm}}</td>
           </tr >
       @endif
+      @if($arr['sell']->ksm>0 || $arr['sell']->cost>0)
       <tr style="border-bottom: none;border-right: none;border-left: none;">
           <td style="border: none;"></td>
           <td style="border: none;"></td>
@@ -150,6 +151,7 @@
           <td style="padding: 4px;border: none;" > الإحمالي </td>
           <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$arr['sell']->total}}</td>
       </tr>
+      @endif
 
       <tr style="border: none;">
           <td style="border: none;"></td>

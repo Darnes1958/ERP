@@ -21,6 +21,7 @@ class StatsKlasa extends BaseWidget
   public $repDate1;
   public $repDate2;
     public $place_id;
+    public $fontZize=' text-lg';
    // protected static bool $isLazy = false;
 
     public function mount(){
@@ -50,7 +51,7 @@ class StatsKlasa extends BaseWidget
         return [
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">مشتريات</span>'))
-            ->value(new HtmlString('<span class="text-primary-500 ">'.
+            ->value(new HtmlString('<span class="text-primary-500 '.$this->fontZize.'">'.
               number_format(Buy::whereBetween('order_date',[$this->repDate1,$this->repDate2])
                   ->when($this->place_id,function ($q){
                       return $q->where('place_id',$this->place_id);
@@ -58,7 +59,7 @@ class StatsKlasa extends BaseWidget
                   ->sum('tot'),2, '.', ',').'</span>')),
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">مبيعات</span>'))
-            ->value(new HtmlString('<span class="text-danger-600 ">'.
+            ->value(new HtmlString('<span class="text-danger-600 '.$this->fontZize.'">'.
               number_format(Sell::whereBetween('order_date',[$this->repDate1,$this->repDate2])
                   ->when($this->place_id,function ($q){
                       return $q->where('place_id',$this->place_id);
@@ -67,7 +68,7 @@ class StatsKlasa extends BaseWidget
 
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">قبض</span>'))
-            ->value(new HtmlString('<span class="text-primary-500">'.
+            ->value(new HtmlString('<span class="text-primary-500 '.$this->fontZize.'">'.
               number_format(Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->where('imp_exp',0)
                       ->when($this->place_id,function ($q){
                           return $q->where('place_id',$this->place_id);
@@ -80,7 +81,7 @@ class StatsKlasa extends BaseWidget
 
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">دفع</span>'))
-            ->value(new HtmlString('<span class="text-danger-600">'.
+            ->value(new HtmlString('<span class="text-danger-600 '.$this->fontZize.'">'.
               number_format(Receipt::whereBetween('receipt_date',[$this->repDate1,$this->repDate2])->where('imp_exp',1)
                       ->when($this->place_id,function ($q){
                           return $q->where('place_id',$this->place_id);
@@ -93,14 +94,14 @@ class StatsKlasa extends BaseWidget
             ,
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">ترجيع مشتريات</span>'))
-            ->value(new HtmlString('<span class="text-danger-600">'.
+            ->value(new HtmlString('<span class="text-danger-600 '.$this->fontZize.'">'.
               number_format(Tar_buy::whereBetween('tar_date',[$this->repDate1,$this->repDate2])
                  ->sum('sub_tot')
                 ,2, '.', ',').'</span>'))
             ,
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">ترجيع مبيعات</span>'))
-            ->value(new HtmlString('<span class="text-danger-600">'.
+            ->value(new HtmlString('<span class="text-danger-600 '.$this->fontZize.'">'.
               number_format(Tar_sell::whereBetween('tar_date',[$this->repDate1,$this->repDate2])
                   ->sum('sub_tot')
                 ,2, '.', ',').'</span>'))
@@ -108,7 +109,7 @@ class StatsKlasa extends BaseWidget
 
           Stat::make('','')
             ->label(new HtmlString('<span class="text-indigo-700">مصروفات</span>'))
-            ->value(new HtmlString('<span class="text-danger-600">'.
+            ->value(new HtmlString('<span class="text-danger-600 '.$this->fontZize.'">'.
               number_format(Masrofat::whereBetween('masr_date',[$this->repDate1,$this->repDate2])
                   ->when($this->place_id,function ($q){
                       return $q->where('place_id',$this->place_id);

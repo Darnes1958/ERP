@@ -18,7 +18,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\VerticalAlignment;
 use Illuminate\Support\Facades\Auth;
 
 class RepDaily extends Page implements HasForms
@@ -124,25 +126,24 @@ class RepDaily extends Page implements HasForms
 
                      $this->dispatch('updatePlace', place: $state);
                  })
-                 ->label('المكان')
+                 ->label('المكان'),
+                Actions::make([
+                    Action::make('print')
+                        ->visible(function (){
+                            return $this->chkDate($this->repDate1) || $this->chkDate($this->repDate2);
+                        })
+                        ->label('طباعة')
+                        ->button()
+                        ->color('danger')
+                        ->icon('heroicon-m-printer')
+
+                        ->color('info')
+                        ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
+                            'place_id'=>$this->place_id ]))
+                ])->verticalAlignment(VerticalAlignment::End)
 
 
-            ])->columns(6);
+            ])->columns(12);
     }
-    public function printAction(): Action
-    {
 
-        return Action::make('print')
-            ->visible(function (){
-                return $this->chkDate($this->repDate1) || $this->chkDate($this->repDate2);
-            })
-            ->label('طباعة')
-            ->button()
-            ->color('danger')
-            ->icon('heroicon-m-printer')
-
-            ->color('info')
-            ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,
-                'place_id'=>$this->place_id ]));
-    }
 }

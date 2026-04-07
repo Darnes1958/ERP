@@ -136,7 +136,7 @@ class SellRep extends Page implements HasForms,HasTable
            decimalSeparator: '.',
            thousandsSeparator: ',',
          )
-           ->summarize(Sum::make()->label('')->label('')->numeric(
+           ->summarize(Sum::make()->label('')->numeric(
                decimalPlaces: 2,
                decimalSeparator: '.',
                thousandsSeparator: ',',

@@ -29,7 +29,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\VerticalAlignment;
 use Illuminate\Support\Facades\Auth;
 
 class RepKlasa extends Page implements HasForms,HasActions
@@ -137,17 +139,18 @@ class RepKlasa extends Page implements HasForms,HasActions
                    if ($this->chkDate($state))  $this->repDate1=$state;
                      $this->dispatch('updateDate1', repdate: $state);
                  })
+                ->columnSpan(2)
+                ->label('من تاريخ'),
 
-                ->prefix('من تاريخ')
-                ->hiddenLabel(),
                 DatePicker::make('repDate2')
                   ->live()
                   ->afterStateUpdated(function ($state){
                     if ($this->chkDate($state)) $this->repDate2=$state;
                     $this->dispatch('updateDate2', repdate: $state);
                   })
-                  ->prefix('حتي تاريخ')
-                  ->hiddenLabel(),
+                  ->columnSpan(2)
+                  ->label('حتي تاريخ'),
+
                 Select::make('place_id')
                     ->placeholder('الكل')
                     ->columnSpan(2)
@@ -157,10 +160,23 @@ class RepKlasa extends Page implements HasForms,HasActions
                         if ($state!=null) $this->place_id=$state;else $this->place_id=0;
                         $this->dispatch('updateklasaplace', place: $state);
                     })
-                    ->label('المكان')
+                    ->label('المكان'),
+                Actions::make([
+                    Action::make('print')
+                        ->visible(function (){
+                            return $this->chkDate($this->repDate1) || $this->chkDate($this->repDate2);
+                        })
+                        ->label('طباعة')
+                        ->button()
+                        ->color('danger')
+                        ->icon('heroicon-m-printer')
+                        ->color('info')
+
+                        ->url(fn (): string => route('pdfklasa', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'place_id'=>$this->place_id]))
+                ])->verticalAlignment(VerticalAlignment::End)
 
 
-            ])->columns(2);
+            ])->columns(12);
     }
     public function printAction(): Action
     {
