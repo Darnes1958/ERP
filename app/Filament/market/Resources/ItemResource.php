@@ -51,7 +51,7 @@ class ItemResource extends Resource
     {
         return $schema
             ->components([
-                Hidden::make('id'),
+               // Hidden::make('id'),
                //  ->hidden(fn(string $operation)=>$operation=='create')
                 // ->readonly()
               //   ->label('الرقم الألي'),

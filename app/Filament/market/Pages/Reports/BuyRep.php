@@ -7,11 +7,13 @@ use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Item;
 use App\Models\OurCompany;
+use App\Models\Sell;
 use App\Models\Supplier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
@@ -70,6 +72,22 @@ class BuyRep extends Page implements HasForms,HasTable
           ->label('اسم المورد'),
         TextColumn::make('order_date')
           ->searchable()
+            ->action(
+                Action::make('editDate')
+                    ->fillForm(fn($record)=>['order_date'=>$record->order_date])
+                    ->schema([
+                        DatePicker::make('order_date')
+                            ->required(),
+                    ])
+                    ->tooltip('انقر هنا لتعديل تاريخ الفاتورة')
+                    ->requiresConfirmation()
+                    ->modalHeading('تعديل الفاتورة')
+                    ->action(function (Buy $record,array $data){
+                        $record->order_date=$data['order_date'];
+                        $record->save();
+                    })
+
+            )
           ->sortable()
           ->label('التاريخ'),
         TextColumn::make('tot')

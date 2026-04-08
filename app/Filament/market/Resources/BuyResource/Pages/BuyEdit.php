@@ -17,6 +17,7 @@ use App\Models\Sell_tran;
 use App\Models\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -320,10 +321,7 @@ public function buyTranForm(Schema $schema): Schema
                     ->createOptionForm([
                         Section::make('ادخال صنف')
                             ->schema([
-                                TextInput::make('id')
-                                    ->hidden(fn(string $operation)=>$operation=='create')
-                                    ->disabled()
-                                    ->label('الرقم الألي'),
+
                                 TextInput::make('name')
                                     ->label('اسم الصنف')
                                     ->autocomplete(false)
@@ -441,11 +439,8 @@ public function buyTranForm(Schema $schema): Schema
                                                     ->label('الاسم'),
                                             ])
                                     ]),
-                                TextInput::make('user_id')
-                                    ->label('رقم المستخدم')
-                                    ->extraAttributes(['bg-blue-500'])
-                                    ->readOnly()
-                                    ->default(Auth::id()),
+                                Hidden::make('user_id')
+                                   ->default(Auth::id()),
                             ])
                             ->columns(4)
                     ])
