@@ -357,7 +357,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                   ->live()
                                                   ->default(function (){
                                                       if (!Setting::find(Auth::user()->company)->barcode)
-                                                          Barcode::max('id')+1;
+                                                        return  Barcode::max('id')+1;
                                                   })
                                                   ->unique(ignoreRecord: true,table: Item::class)
                                                   ->validationMessages([
@@ -374,8 +374,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                   ->default(Unita::min('id'))
                                                   ->columnSpan(2)
                                                   ->createOptionForm([
-                                                      Section::make('ادخال وحدات كبري')
-                                                          ->description('ادخال وحدة كبري (صندوق,دزينه,كيس .... الخ)')
+                                                      Section::make('ادخال وحدات')
+                                                          ->model(Unita::class)
                                                           ->schema([
                                                               TextInput::make('name')
                                                                   ->required()
@@ -386,8 +386,9 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                   ])
                                                   ->createOptionUsing(function (array $data): int {
                                                       return Unita::create($data)->getKey();
-
                                                   }),
+
+
 
                                               TextInput::make('price_buy')
                                                   ->label('سعر الشراء')
@@ -407,7 +408,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                   ->columnSpan(2)
                                                   ->createOptionForm([
                                                       Section::make('ادخال تصنيف للأصناف')
-
+                                                          ->model(Item_type::class)
                                                           ->schema([
                                                               TextInput::make('name')
                                                                   ->required()
@@ -429,6 +430,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                   ->columnSpan(2)
                                                   ->createOptionForm([
                                                       Section::make('ادخال شركات مصنع')
+                                                          ->model(Company::class)
                                                           ->schema([
                                                               TextInput::make('name')
                                                                   ->required()
