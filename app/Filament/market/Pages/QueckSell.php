@@ -31,10 +31,12 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -42,6 +44,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class QueckSell extends Page implements HasSchemas,HasTable
 {
@@ -69,6 +72,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
     public $sellStoreData;
     public $id_to_print='';
     public $barcode_id;
+    public $item_id;
     public function mount()
     {
         $this->myMessage=' ';
@@ -268,7 +272,6 @@ class QueckSell extends Page implements HasSchemas,HasTable
                             ->live(onBlur: true)
                             ->required()
                             ->afterStateUpdated(function ($state){$this->ChkItem($state);})
-
                             ->id('item_id'),
                         TextInput::make('raseed_all')
                             ->hiddenLabel()
@@ -530,11 +533,15 @@ class QueckSell extends Page implements HasSchemas,HasTable
 
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$item_id)->first();
+
         if ($this->selltran) {
-            $this->sellTranForm->fill(array_merge($this->selltran->toArray(),['raseed_all'=>$item->stock1,'raseed_place'=>$placestock,]));
+            $q+=$this->selltran->q1;
+            $price=$this->selltran->price1;
         }
 
-        else $this->sellTranForm->fill([
+        $this->chkData();
+
+         $this->sellTranForm->fill([
             'barcode_id'=>$barcode,'item_id'=>$item_id,
             'price1'=>$price,'q1'=>$q,
             'sub_tot'=>0,
@@ -543,100 +550,91 @@ class QueckSell extends Page implements HasSchemas,HasTable
             'sell_id'=>Auth::id(),
             'user_id'=>Auth::id()]);
 
+
     }
 
     public function ChkBarcode($bar){
-
-        $this->barcode_id=$bar;
-        if ($this->barcode_id==null) return;
-
-        if (!$this->sellData['price_type_id']) {
-            Notification::make()->title('يجب اختيار طريقة دفع')->danger()->send();
-            return;
-        }
-        $res=Barcode::find($this->barcode_id);
-
+        if ($bar==null) return;
+        $res=Barcode::find($bar);
         if (! $res)
-        {
-
             Notification::make()
                 ->title('هذا الباركود غير مخزون ')
                 ->icon('heroicon-o-check')
                 ->iconColor('success')
                 ->send();
-        }
         else {
-
+            $this->barcode_id=$bar;
             $item=$res->Item;
-            $price=$this->retPrice($item,$this->sellData['price_type_id']);
-
-            $stock=Place_stock::where('item_id',$item->id)
-                ->where('place_id',$this->sellData['place_id'])->first();
-            if ($stock) {
-                $placestock = $stock->stock1;
-                if ($placestock<=0) {
-                    Notification::make()->title('رصيد المعرض لهذا الصنف صفر')
-                        ->danger()
-                        ->send();
-                    return;
-                }
-            }
-            else {
-                $placestock=0;
-                Notification::make()->title('رصيد المعرض لهذا الصنف صفر')
-                    ->danger()
-                    ->send();
-                return;
-            }
-
-            $q=$this->selltranData['q1'];
-            $this->sellTranForm->fill([
-                    'barcode_id'=>$this->barcode_id,'item_id'=>$item->id,
-                    'price1'=>$price,'q1'=>$q,
-                    'sub_tot'=>0,
-                    'raseed_all'=>$item->stock1,
-                    'raseed_place'=>$placestock,
-                    'sell_id'=>Auth::id(),
-                    'user_id'=>Auth::id()
-                ]
-            );
-
-            $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
-                ->where('item_id',$item->id)->first();
-            if ($price==0)
-            {
-                $this->dispatch('gotoitem','price1');
-                return;
-            }
-
-
-            $this->add_rec();
-
+            $this->item_id=$item->id;
+            $this->chkData();
         }
     }
     public function ChkItem($state){
-        if ($state==null) return;
+        $this->item_id=null;
+        if ($state==null) return ;
+        $res=Item::find($state);
+        if (!$res) return ;
+        $this->item_id=$state;
+        $this->barcode_id=$res->barcode;
+        $this->chkData();
+    }
+    public function chkData(){
+        if (! $this->item_id)
+        {
+            $this->dispatch('gotoitem','barcode_id');
+            return;
+        }
+
+        $item=Item::find($this->item_id);
+
         if (!$this->sellData['price_type_id']) {
             Notification::make()->title('يجب اختيار طريقة دفع')->danger()->send();
             return;
         }
-        $res=Item::find($state);
-        if (!$res) return;
-        $this->fill_item($state,$res->barcode);
-    }
-    public function chkData(){
-        if (! $this->selltranData['item_id']) return 'يجب ادخال الصنف';
-        $item_id=$this->selltranData['item_id'];
+
         $place_id=$this->sellData['place_id'];
         $q1=$this->selltranData['q1'];
+        if  ($q1==null || $q1<=0)
+        {
+            Notification::make()->title('يجب ادخال الكمية')->danger()->send();
+            $this->dispatch('gotoitem','q1');
+            return ;
+        }
 
+        $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
+            ->where('item_id',$this->item_id)->first();
+        if ($this->selltran) $q1+=$this->selltran->q1;
+        $placestock=Place_stock::where('item_id',$this->item_id)
+            ->where('place_id',$place_id)->first()->stock1;
+        if ($placestock<$q1)
+        {
+            Notification::make()->title('الرصيد لا يسمح !!')->danger()->send();
+            return ;
+        }
 
-        if  ($q1<=0) return 'يجب ادخال الكمية';
+        $price=$this->retPrice($item,$this->sellData['price_type_id']);
+        $this->sellTranForm->fill([
+                'barcode_id'=>$this->barcode_id,'item_id'=>$item->id,
+                'price1'=>$price,'q1'=>$q1,
+                'sub_tot'=>0,
+                'raseed_all'=>$item->stock1,
+                'raseed_place'=>$placestock,
+                'sell_id'=>Auth::id(),
+                'user_id'=>Auth::id()
+            ]
+        );
+        if ($this->selltran)
+            $this->selltran->update($this->sellTranForm->getState());
+        else
+            $this->selltran=Sell_tran_work::create(collect($this->selltranData)->except(['id','raseed_place','raseed_all'])->toArray());
 
+        $this->sub_tot();
+        $this->tot();
+        $this->item_id=null;
+        $this->barcode_id=null;
 
-        if (Place_stock::where('item_id',$item_id)
-            ->where('place_id',$place_id)->first()->stock1<$q1) return 'الرصيد لا يسمح !!';
-        return 'ok';
+        $this->dispatch('gotoitem',  'barcode_id');
+
     }
     public function add_rec(){
 
@@ -649,8 +647,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
             Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
             return;
         }
-        $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
-            ->where('item_id',$this->selltranData['item_id'])->first();
+
         if ($this->selltran)
             $this->selltran->update($this->sellTranForm->getState());
         else
@@ -687,6 +684,50 @@ class QueckSell extends Page implements HasSchemas,HasTable
                     ->sortable(),
                 TextColumn::make('q1')
                     ->numeric()
+                    ->action(
+                        Action::make('updateQuantity')
+                            ->fillForm(fn($record)=>['q1'=>$record->q1])
+                            ->schema([
+                                   Text::make(fn($record) =>new HtmlString(
+
+                                       '<br><strong class="text-indigo-700">الرصيد : </strong> '.Place_stock::query()
+                                            ->where('place_id',$this->sellData['place_id'])
+                                            ->where('item_id',$record->item_id)->first()->stock1
+                                       )
+                                   ),
+                                   TextInput::make('q1')
+                                       ->label('الكمية الجديدة')
+                                       ->required()
+                                       ->minValue(1),
+
+                            ])
+                            ->modalWidth(Width::Medium)
+
+                            ->modalHeading('')
+                            ->action(function ($record,array $data){
+                                if ($data['q1']<=0)
+                                {
+                                    Notification::make()->title('يجب ادخال الكمية')->danger()->send();
+                                    return;
+                                }
+
+                                if ($data['q1']>Place_stock::query()
+                                        ->where('item_id',$record->item_id)
+                                        ->where('place_id',$this->sellData['place_id'])
+                                        ->first()->stock1)
+                                {
+                                    Notification::make()->title('الرصيد لا يسمح !!')->danger()->send();
+                                    return ;
+                                }
+
+                                $record->q1=$data['q1'];
+                                $record->sub_tot=$data['q1']*$record->price1;
+                                $record->save();
+                                $this->tot();
+                                $this->dispatch('gotoitem', test: 'barcode_id');
+
+                            })
+                    )
                     ->label('الكمية'),
                 TextColumn::make('price1')
                     ->label('سعر البيع')
