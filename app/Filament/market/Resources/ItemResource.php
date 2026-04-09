@@ -51,10 +51,10 @@ class ItemResource extends Resource
     {
         return $schema
             ->components([
-               // Hidden::make('id'),
-               //  ->hidden(fn(string $operation)=>$operation=='create')
-                // ->readonly()
-              //   ->label('الرقم الألي'),
+                Hidden::make('id'),
+           //     ->hidden(fn(string $operation)=>$operation=='create')
+           //     ->readonly()
+           //     ->label('الرقم الألي'),
                 TextInput::make('name')
                  ->label('اسم الصنف')
                  ->required()
