@@ -63,8 +63,6 @@ class QueckSell extends Page implements HasSchemas,HasTable
 
         return Auth::user()->can('ادخال مبيعات');
     }
-
-    public $myMessage=' ';
     public $sell;
     public $selltran;
     public $sellData;
@@ -75,7 +73,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
     public $item_id;
     public function mount()
     {
-        $this->myMessage=' ';
+
         $this->sell = Sell_work::find(auth()->id());
         if (!$this->sell) {
                 if (Auth::user()->place_id) $place_id=Auth::user()->place_id;
@@ -83,6 +81,12 @@ class QueckSell extends Page implements HasSchemas,HasTable
                 $this->sell=Sell_work::create([
                     'id'=>Auth::id(),'user_id'=>Auth::id(),'place_id'=>$place_id,'customer_id'=>1,'price_type_id'=>1,]);
         }
+        if ($this->sell->customer_id!=1)
+        {
+            $this->sell->customer_id=1;
+            $this->sell->save();
+        }
+
         $kaz=Kazena::where('user_id',auth()->id())->first();
         $kaz_id=null;
         if ($kaz && $this->sell->price_type_id==1)  $kaz_id=$kaz->id;
