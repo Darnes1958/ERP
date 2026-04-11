@@ -397,8 +397,9 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->required()
                             ->exists(Barcode::class,column: 'id')
                             ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state){$this->ChkBarcode($state);})
-                            ->extraAttributes(['wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",])
+                        //    ->afterStateUpdated(function ($state){$this->ChkBarcode($state);})
+                            ->extraInputAttributes(['wire:keydown.enter' => 'ChkBarcode($event.target.value)',])
+                         //   ->extraAttributes(['wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",])
                             ->autocomplete(false)
                             ->id('barcode_id'),
                         Select::make('item_id')
@@ -825,6 +826,7 @@ class InpSell extends Page implements HasSchemas,HasTable
         if ($stock) $placestock=$stock->stock1;else $placestock=0;
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$item_id)->first();
+
         if ($this->selltran)
             $this->sellTranForm->fill($this->selltran->toArray());
         else $this->sellTranForm->fill([
@@ -834,6 +836,7 @@ class InpSell extends Page implements HasSchemas,HasTable
             'raseed_all'=>$item->stock1,
             'raseed_place'=>$placestock,
             'sell_id'=>Auth::id(),'user_id'=>Auth::id()]);
+
         if ($rec['price1']=='')  $this->dispatch('gotoitem',  test: 'price1' );
         else $this->dispatch('gotoitem',  test: 'q1' );
     }
@@ -904,12 +907,17 @@ class InpSell extends Page implements HasSchemas,HasTable
             Notification::make()->title($chk)->icon('heroicon-o-check')->iconColor('danger')->send();
             return;
         }
-        $this->selltran=Sell_tran_work::where('item_id',$this->selltranData['item_id'])->first();
+        $this->selltran=Sell_tran_work::where('sell_id',Auth::id())->
+        where('item_id',$this->selltranData['item_id'])->first();
+
         if ($this->selltran)
-            $this->selltran->update($this->sellTranForm->getState());
+        {
+            info($this->selltran);
+            $this->selltran->update($this->sellTranForm->getState());}
         else
             $this->selltran=Sell_tran_work::
             create(collect($this->selltranData)->except(['id','raseed_place','raseed_all'])->toArray());
+
         $this->sub_tot();
         $this->tot();
 
@@ -931,6 +939,9 @@ class InpSell extends Page implements HasSchemas,HasTable
 
                 TextColumn::make('item_id')
                     ->label('رقم الصنف')
+                    ->sortable(),
+                TextColumn::make('Item.barcode')
+                    ->label('الباركود')
                     ->sortable(),
 
                 TextColumn::make('Item.name')
