@@ -597,15 +597,22 @@ class QueckSell extends Page implements HasSchemas,HasTable
         if  ($q1==null || $q1<=0)
         {
             Notification::make()->title('يجب ادخال الكمية')->danger()->send();
-            $this->dispatch('gotoitem','q1');
+            $this->dispatch('focus-next',next: 'q1');
             return ;
         }
 
         $this->selltran=Sell_tran_work::where('sell_id',Auth::id())
             ->where('item_id',$this->item_id)->first();
         if ($this->selltran) $q1+=$this->selltran->q1;
-        $placestock=Place_stock::where('item_id',$this->item_id)
-            ->where('place_id',$place_id)->first()->stock1;
+
+        $res=Place_stock::where('item_id',$this->item_id)
+            ->where('place_id',$place_id)->first();
+        if (!$res)
+        {
+            Notification::make()->title(' الصنف غير مخزون في نقطة البيع هذه !!')->danger()->send();
+            return ;
+        }
+        $placestock=$res->stock1;
         if ($placestock<$q1)
         {
             Notification::make()->title('الرصيد لا يسمح !!')->danger()->send();
@@ -633,7 +640,7 @@ class QueckSell extends Page implements HasSchemas,HasTable
         $this->item_id=null;
         $this->barcode_id=null;
 
-        $this->dispatch('gotoitem',  'barcode_id');
+        $this->dispatch('focus-next', first: 'barcode', next:'item_id');
 
     }
     public function add_rec(){

@@ -151,4 +151,30 @@
         });
     </script>
 
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+
+
+            @this.on('focus-next', (event) => {
+                setTimeout(() => {
+                    // 1. Try to find the internal search input (standard for searchable selects)
+                    const selectWrapper = document.getElementById(event.first);
+                    const internalInput = selectWrapper?.closest('.fi-fo-select')?.querySelector('input[type="search"]');
+
+                    if (internalInput) {
+                        internalInput.focus();
+                        internalInput.select();
+                    } else {
+                        // 2. Fallback for native or standard inputs
+                        const field = document.getElementById(event.next);
+                        field?.select();
+                        field?.focus();
+                    }
+                }, 100);
+            });
+        });
+
+
+    </script>
+
 

@@ -288,7 +288,10 @@ class InpBuy extends Page implements HasTable,HasSchemas
                           ->inlineLabel()
                           ->exists(Barcode::class,column: 'id')
                           ->live(onBlur: true)
-                          ->afterStateUpdated(function ($state){$this->ChkBarcode($state);})
+                          ->afterStateUpdated(function ($state){
+                              $this->ChkBarcode($state);
+
+                          })
                           ->extraAttributes(['wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",])
                           ->autocomplete(false)
                           ->id('barcode_id'),
@@ -703,7 +706,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
 
 
     if ($price_input==0)  $this->dispatch('gotoitem',  test: 'price_input' );
-    else $this->dispatch('gotoitem',  test: 'q1' );
+    else $this->dispatch('focus-next' ,first: 'item_id',next: 'q1' );
   }
   public function ChkBarcode($state){
 
