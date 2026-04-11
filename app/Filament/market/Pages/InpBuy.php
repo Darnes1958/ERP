@@ -360,7 +360,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                                   ->live()
                                                   ->default(function (){
                                                       if (!Setting::find(Auth::user()->company)->barcode)
-                                                        return  str(Barcode::max('id')+1);
+                                                        return  str(Item::max('id')+1);
                                                   })
                                                   ->unique(ignoreRecord: true,table: Item::class)
                                                   ->validationMessages([
