@@ -23,11 +23,11 @@ class ListRoles extends ListRecords
             Action::make('Dec Qs1')
              ->action(function (){
 
-                 $trans=Sell_tran::query()->orderBy('sell_id')->get();
-                 foreach ($trans as $tran){
-                     $this->decQs2($tran->id,$tran->sell_id,$tran->item_id,1,$tran->q1);
-                 }
-                 Notification::make('ok')->title('Ok')->success()->send();
+              //  $trans=Sell_tran::query()->orderBy('sell_id')->get();
+              //  foreach ($trans as $tran){
+              //      $this->decQs2($tran->id,$tran->sell_id,$tran->item_id,1,$tran->q1);
+              //  }
+              //  Notification::make('ok')->title('Ok')->success()->send();
 
              })
 

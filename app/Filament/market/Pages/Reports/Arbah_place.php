@@ -39,6 +39,10 @@ class Arbah_place extends Page implements HasForms,HasActions
   {
     return Auth::user()->hasRole('admin');
   }
+    public static function canAccess(): bool
+    {
+        return Auth::user()->hasRole('admin');
+    }
 
     protected string $view = 'filament.market.pages.reports.arbah-place';
 

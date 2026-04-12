@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class FromexcelResource extends Resource
 {
@@ -24,6 +25,10 @@ class FromexcelResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return  auth()->user()->id==1;
+    }
+    public static function canAccess(): bool
+    {
+        return Auth::user()->id==1;
     }
 
     public static function form(Schema $schema): Schema

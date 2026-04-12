@@ -5,6 +5,7 @@ namespace App\Filament\market\Resources;
 use App\Filament\market\Resources\UserResource\Pages\CreateUser;
 use App\Filament\market\Resources\UserResource\Pages\EditUser;
 use App\Filament\market\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Market\Resources\UserResource\Pages\ShowUserRoles;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\OurCompany;
@@ -37,6 +38,10 @@ class UserResource extends Resource
   {
       return Auth::user()->hasRole('admin');
   }
+    public static function canAccess(): bool
+    {
+        return Auth::user()->hasRole('admin');
+    }
 
 
     public static function form(Schema $schema): Schema
@@ -135,6 +140,7 @@ class UserResource extends Resource
             'index' => ListUsers::route('/'),
             'create' => CreateUser::route('/create'),
             'edit' => EditUser::route('/{record}/edit'),
+
         ];
     }
 }

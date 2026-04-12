@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Auth;
 
 class PermissionResource extends Resource
 {
@@ -28,6 +29,11 @@ class PermissionResource extends Resource
   {
     return  auth()->user()->id==1;
   }
+    public static function canAccess(): bool
+    {
+        return Auth::user()->id==1;
+    }
+
     protected static ?string $model = \Spatie\Permission\Models\Permission::class;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';

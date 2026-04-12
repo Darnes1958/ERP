@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Models\User;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
@@ -31,6 +32,10 @@ class RoleResource extends Resource
   {
     return  auth()->user()->id==1;
   }
+    public static function canAccess(): bool
+    {
+        return  auth()->user()->id==1;
+    }
   protected static ?string $model = \Spatie\Permission\Models\Role::class;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -61,14 +66,22 @@ class RoleResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
+
                 return $query
                     ->when('for_who'!=null,function ($q){$q->where('for_who','sell');})
                     ;
 
             })
+            ->recordUrl(false)
             ->columns([
-                TextColumn::make('name'),
+                TextColumn::make('name')->searchable(),
                 TextColumn::make('Permissions.name')
+                    ->listWithLineBreaks()
+                    ->limitList(3)
+                    ->expandableLimitedList(),
+                TextColumn::make('users.name')
+                    ->getStateUsing(fn ($record) =>  User::where('company',Auth::user()->company)
+                        ->role($record->name)->get()->pluck('name')),
             ])
             ->filters([
                 //
