@@ -183,6 +183,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
 
                                  ])->columns(2)
                          ])
+                         ->editOptionAction(fn($action)=> $action->visible(fn()=>$this->buy->supplier_id!=1) )
                          ->id('supplier_id'),
                      Select::make('place_id')
                          ->label('مكان التخزين')
@@ -204,10 +205,12 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                          ->unique()
                                          ->label('الاسم'),
                                      Radio::make('place_type')
-                                         ->inline()
+                                         ->label('النوع')
+                                         ->inlineLabel(false)
                                          ->options(PlaceType::class)
                                  ])
                          ])
+                         ->createOptionModalHeading('')
                          ->editOptionForm([
                              Section::make('تعديل مكان تخزين')
                                  ->schema([
@@ -216,7 +219,8 @@ class InpBuy extends Page implements HasTable,HasSchemas
                                          ->unique()
                                          ->label('الاسم'),
                                      Radio::make('place_type')
-                                         ->inline()
+                                         ->label('النوع')
+                                         ->inlineLabel(false)
                                          ->options(PlaceType::class)
                                  ])->columns(2)
                          ])
@@ -664,8 +668,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
           ]);
   }
 
-
-    public function sub_tot(){
+  public function sub_tot(){
     $this->buytran->sub_input=$this->buytran->q1*$this->buytran->price_input;
     $this->buytran->save();
     $this->buyTranForm->fill([]);
@@ -763,9 +766,6 @@ class InpBuy extends Page implements HasTable,HasSchemas
 
     $this->dispatch('gotoitem', test: 'barcode_id');
   }
-
-
-
   public function table(Table $table):Table
   {
       return $table

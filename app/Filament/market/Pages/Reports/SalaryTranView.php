@@ -29,8 +29,9 @@ class SalaryTranView extends Page implements HasTable, HasForms
 {
   use InteractsWithTable,InteractsWithForms;
   use AksatTrait;
+    protected static ?string $navigationParentItem='ادراج مرتبات';
   protected static ?string $navigationLabel='حركة مرتب';
-  protected static string | \UnitEnum | null $navigationGroup='مرتبات';
+  protected static string | \UnitEnum | null $navigationGroup='مصروفات , مرتبات , ايجارات';
   protected static ?int $navigationSort=7;
   protected ?string $heading = '';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
@@ -99,6 +100,14 @@ class SalaryTranView extends Page implements HasTable, HasForms
                     ->label('التاريخ'),
               TextColumn::make('tran_type')
                     ->sortable()
+                    ->color(function ($record){
+                        switch ($record->tran_type) {
+                            case 'مرتب': return 'success'; break;
+                            case 'سحب': return 'danger'; break;
+                            case 'خصم': return 'primary'; break;
+                            case 'اضافة': return 'info'; break;
+                        }
+                    })
                     ->label('البيان'),
               TextColumn::make('pay_type')
                 ->state(function (Salarytran $record){

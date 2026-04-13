@@ -15,6 +15,7 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Size;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -44,7 +45,7 @@ class TopBar extends Component implements HasSchemas,HasActions
         return $schema
             ->components([
                Select::make('name')
-                ->columnSpan(2)
+                ->columnSpan(4)
                    ->afterStateUpdated(function ($state){
                        User::find(Auth::id())->update(['company' => $state]);
                        $this->name=Auth::user()->company;
@@ -122,11 +123,8 @@ class TopBar extends Component implements HasSchemas,HasActions
 
                             return response()->download($zip_file)->deleteFileAfterSend(true);
                         }),
-
-
-
                   ]
-                )->columnSpan(2)
+                )->columnSpan(2)->verticalAlignment(VerticalAlignment::Center)
 
                  //->outlined()
                  //->iconButton()

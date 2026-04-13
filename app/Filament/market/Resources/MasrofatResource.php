@@ -40,7 +40,7 @@ class MasrofatResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralLabel='مصروفات';
-    protected static string | \UnitEnum | null $navigationGroup='مصروفات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات , مرتبات , ايجارات';
 
     public static function shouldRegisterNavigation(): bool
     {

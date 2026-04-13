@@ -114,7 +114,7 @@ class CustomerResource extends Resource
             ->recordActions([
                 EditAction::make()
                  ->iconButton()
-                 ->hidden(fn(Customer $record)=>$record->id<3),
+                 ->hidden(fn(Customer $record)=>$record->id==1),
                 DeleteAction::make()
                   ->iconButton()
                   ->modalHeading('حذف زبون')

@@ -22,9 +22,9 @@ use Illuminate\Support\Facades\Auth;
 
 class SalaryResource extends Resource
 {
-
+    //protected static ?string $navigationParentItem='المرتبات';
     protected static ?string $pluralModelLabel='ادراج مرتبات';
-    protected static string | \UnitEnum | null $navigationGroup='مرتبات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات , مرتبات , ايجارات';
     protected static ?int $navigationSort=1;
 
     protected static ?string $model = Salary::class;

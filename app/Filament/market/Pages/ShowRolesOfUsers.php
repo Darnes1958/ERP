@@ -17,7 +17,8 @@ class ShowRolesOfUsers extends Page implements HasTable
     protected string $view = 'filament.market.pages.show-roles-of-users';
     protected ?string $heading='عرض الصلاحيات المجمعة للمستخدمين';
     protected static ?string $navigationLabel='عرض الصلاحيات المجمعة للمستخدمين';
-    protected static string | \UnitEnum | null $navigationGroup='اعدادات';
+    protected static string | \UnitEnum | null $navigationGroup='ادارة';
+    protected static ?string $navigationParentItem='مستخدمين وصلاحيات';
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->hasRole('admin');

@@ -30,7 +30,7 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
-  protected static string | \UnitEnum | null $navigationGroup='اعدادات';
+  protected static string | \UnitEnum | null $navigationGroup='ادارة';
   protected static ?string $navigationLabel='مستخدمين وصلاحيات';
   protected static ?string $pluralLabel='مستخدم';
 

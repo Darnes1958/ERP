@@ -58,16 +58,10 @@ class MarketPanelProvider extends PanelProvider
                 NavigationGroup::make('ايصالات قبض ودفع'),
                 NavigationGroup::make('زبائن وموردين'),
                 NavigationGroup::make('مصارف وخزائن'),
-                NavigationGroup::make('مصروفات'),
                 NavigationGroup::make('مخازن و أصناف'),
                 NavigationGroup::make('الحركة اليومية'),
-
-                NavigationGroup::make('تحويلات بين الخزائن والمصارف'),
-                NavigationGroup::make('إيجارات'),
-                NavigationGroup::make('مرتبات'),
-                NavigationGroup::make('الارباح'),
-                NavigationGroup::make('اعدادات'),
-
+                NavigationGroup::make('مصروفات , مرتبات , ايجارات'),
+                NavigationGroup::make('ادارة'),
 
             ])
             ->middleware([

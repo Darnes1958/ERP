@@ -229,6 +229,7 @@ class InpSell extends Page implements HasSchemas,HasTable
                                             ->default(Auth::id()),
                                     ])
                             ])
+                            ->editOptionAction(fn($action)=> $action->visible(fn()=>$this->sell->customer_id!=1) )
                             ->editOptionForm([
                                 Section::make('تعديل بيانات زبون')
                                     ->schema([

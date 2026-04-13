@@ -26,7 +26,8 @@ class RentTranView extends Page implements HasTable, HasForms
 {
     use InteractsWithTable,InteractsWithForms;
     protected static ?string $navigationLabel='حركة إيجار';
-    protected static string | \UnitEnum | null $navigationGroup='إيجارات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات , مرتبات , ايجارات';
+    protected static ?string $navigationParentItem='إيجارات';
     protected static ?int $navigationSort=2;
     protected ?string $heading = '';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
@@ -79,6 +80,13 @@ class RentTranView extends Page implements HasTable, HasForms
                     ->label('التاريخ'),
                 TextColumn::make('tran_type')
                     ->sortable()
+                    ->color(function ($record){
+                        switch ($record->tran_type) {
+                            case 'إيجار': return 'success'; break;
+                            case 'سحب': return 'danger'; break;
+
+                        }
+                    })
                     ->label('البيان'),
                 TextColumn::make('pay_type')
                     ->state(function (Renttran $record){

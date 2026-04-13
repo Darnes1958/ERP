@@ -23,7 +23,8 @@ class InventoryDataResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $navigationLabel='التجهيز للجرد';
-    protected static string | UnitEnum | null $navigationGroup='اعدادات';
+    protected static string | UnitEnum | null $navigationGroup='ادارة';
+    protected static ?string $navigationParentItem='جرد';
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::id()==1;

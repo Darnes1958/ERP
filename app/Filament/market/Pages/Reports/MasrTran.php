@@ -4,6 +4,7 @@ namespace App\Filament\market\Pages\Reports;
 
 use App\Models\Masr_type;
 use App\Models\Masrofat;
+use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -22,7 +23,8 @@ class MasrTran extends Page  implements HasForms,HasTable
     use InteractsWithTable,InteractsWithForms;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='حركة مصروفات';
-    protected static string | \UnitEnum | null $navigationGroup='مصروفات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات , مرتبات , ايجارات';
+    protected static ?string $navigationParentItem='مصروفات';
     protected ?string $heading="";
     protected string $view = 'filament.market.pages.reports.masr-tran';
 
@@ -37,7 +39,8 @@ class MasrTran extends Page  implements HasForms,HasTable
     public $masr_id;
 
     public function mount(){
-        $this->repDate1=now();
+
+        $this->repDate1=Carbon::createFromDate(now())->startOfYear();
         $this->repDate2=now();
 
         $this->form->fill(['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,]);
@@ -67,7 +70,7 @@ class MasrTran extends Page  implements HasForms,HasTable
                     ->afterStateUpdated(function ($state){
                         $this->masr_id=$state;
 
-                    })
+                    })->columnSpan(2)
                     ->label('نوع المصروفات'),
                 DatePicker::make('repDate1')
                     ->live()
@@ -114,13 +117,18 @@ class MasrTran extends Page  implements HasForms,HasTable
                     ->sortable(),
 
                 TextColumn::make('Acc.name')
-                    ->label('المصرف')
+                    ->label('المصرف / الخزينة')
+                    ->state(function ($record){
+                        if($record->Acc){return $record->Acc->name;}
+                        else return $record->Kazena->name;
+                    })
+                    ->color(function ($record){
+                        if($record->Acc){return 'primary';}
+                        else return 'success';
+                    })
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('Kazena.name')
-                    ->label('الخزينة')
-                    ->searchable()
-                    ->sortable(),
+
                TextColumn::make('val')
                     ->label('المبلغ')
                     ->searchable()

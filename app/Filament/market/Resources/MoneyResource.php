@@ -39,8 +39,8 @@ class MoneyResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-  protected static ?string $navigationLabel = 'تحويل';
-  protected static string | \UnitEnum | null $navigationGroup = 'تحويلات بين الخزائن والمصارف';
+  protected static ?string $navigationLabel = 'تحويلات بين الخزائن والمصارف';
+  protected static string | \UnitEnum | null $navigationGroup = 'مصارف وخزائن';
   protected static ?int $navigationSort = 1;
 
   public static function shouldRegisterNavigation(): bool

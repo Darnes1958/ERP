@@ -24,7 +24,8 @@ class Arbah_place extends Page implements HasForms,HasActions
   use InteractsWithForms,InteractsWithActions;
   protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel = 'الارباح حسب الصالات';
-  protected static string | \UnitEnum | null $navigationGroup = 'الارباح';
+  protected static string | \UnitEnum | null $navigationGroup = 'ادارة';
+  protected static ?string $navigationParentItem='الارباح';
   protected static ?int $navigationSort=3;
 
   public function chkDate($repDate){
