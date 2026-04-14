@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Filament\Resources\Roles\Pages;
+
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\Roles\RoleResource;
+use App\Livewire\Traits\Raseed;
+use App\Models\Sell_tran;
+use Filament\Actions;
+use Filament\Notifications\Notification;
+use Filament\Resources\Pages\ListRecords;
+
+class ListRoles extends ListRecords
+{
+    use Raseed;
+    protected static string $resource = RoleResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            CreateAction::make(),
+            Action::make('Dec Qs1')
+             ->action(function (){
+
+              //  $trans=Sell_tran::query()->orderBy('sell_id')->get();
+              //  foreach ($trans as $tran){
+              //      $this->decQs2($tran->id,$tran->sell_id,$tran->item_id,1,$tran->q1);
+              //  }
+              //  Notification::make('ok')->title('Ok')->success()->send();
+
+             })
+
+        ];
+    }
+}

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Market\Resources\InventoryData;
+namespace App\Filament\market\Resources\InventoryData;
 
 use App\Filament\Market\Resources\InventoryData\Pages\CreateInventoryData;
 use App\Filament\Market\Resources\InventoryData\Pages\EditInventoryData;

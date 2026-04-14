@@ -4,7 +4,7 @@ namespace App\Filament\market\Pages;
 
 use App\Enums\PlaceType;
 use App\Enums\TwoUnit;
-use App\Filament\market\Resources\BuysWorkResource;
+use App\Filament\market\Resources\BuysWorks\BuysWorkResource;
 use App\Filament\Tables\ItemTable;
 use App\Livewire\Traits\Raseed;
 use App\Models\Barcode;
@@ -296,6 +296,7 @@ class InpBuy extends Page implements HasTable,HasSchemas
                               $this->ChkBarcode($state);
 
                           })
+
                           ->extraAttributes(['wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",])
                           ->autocomplete(false)
                           ->id('barcode_id'),

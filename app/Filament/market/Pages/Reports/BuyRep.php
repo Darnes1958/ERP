@@ -2,6 +2,7 @@
 
 namespace App\Filament\market\Pages\Reports;
 
+use App\Filament\market\Resources\Buys\BuyResource;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 use App\Models\Buy_tran;
@@ -27,6 +28,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
@@ -140,7 +142,7 @@ class BuyRep extends Page implements HasForms,HasTable
           ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
           ->modalContent(fn (Buy $record): View => view(
             'filament.market.pages.reports.views.view-buy-tran-widget',
-            ['buy_id' => $record->id],
+            ['buy_id' => $record->id,'record'=>$record],
           ))
 
           ->icon('heroicon-o-eye')
@@ -157,8 +159,7 @@ class BuyRep extends Page implements HasForms,HasTable
                   'PDF.rep-order-buy',['orderdetail'=>$orderdetail],
               ), 'filename.pdf', self::ret_spatie_header());
 
-          })
-    ,
+          }),
       Action::make('print2')
           ->tooltip('طباعة اسعار الأصناف')
           ->icon('heroicon-s-printer')
@@ -171,9 +172,15 @@ class BuyRep extends Page implements HasForms,HasTable
                   'PDF.PrnBuyPrices',
               ), 'filename.pdf', self::ret_spatie_header());
 
-          })
+          }),
+      Action::make('buytran')
+          ->iconButton()
+          ->icon('heroicon-m-pencil')
+          ->color('info')
+          ->url(fn(Model $record) => BuyResource::getUrl('buyedit', ['record' => $record])),
 
       ])
+
 
       ->filters([
         SelectFilter::make('supplier_id')

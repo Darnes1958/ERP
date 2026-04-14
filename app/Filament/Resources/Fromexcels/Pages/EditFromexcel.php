@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Filament\Resources\Fromexcels\Pages;
+
+use App\Filament\Resources\Fromexcels\FromexcelResource;
+use Filament\Resources\Pages\EditRecord;
+
+class EditFromexcel extends EditRecord
+{
+    protected static string $resource = FromexcelResource::class;
+
+
+}

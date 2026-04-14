@@ -2,7 +2,7 @@
 
 namespace App\Filament\ins\Pages;
 
-use App\Filament\ins\Resources\MainResource\Pages\ListMains;
+use App\Filament\ins\Resources\Mains\Pages\ListMains;
 use App\Models\aksat\MainArc;
 use App\Models\Main;
 use App\Models\stores\halls_names;

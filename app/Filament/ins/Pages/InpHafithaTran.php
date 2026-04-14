@@ -3,7 +3,7 @@
 namespace App\Filament\Ins\Pages;
 
 use App\Enums\Haf_kst_type;
-use App\Filament\ins\Resources\HafithaResource;
+use App\Filament\ins\Resources\Hafithas\HafithaResource;
 use App\Filament\Tables\MainArcTable;
 use App\Filament\Tables\MainTable;
 use App\Livewire\Traits\AksatTrait;
