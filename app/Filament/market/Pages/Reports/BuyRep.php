@@ -152,13 +152,11 @@ class BuyRep extends Page implements HasForms,HasTable
       ->iconButton()
       ->color('blue')
           ->action(function (Buy $record){
-
               $cus=OurCompany::where('Company',Auth::user()->company)->first();
               $orderdetail=Buy_tran::where('buy_id',$record->id)->get();
               return Response::download(self::ret_spatie($record,
                   'PDF.rep-order-buy',['orderdetail'=>$orderdetail],
               ), 'filename.pdf', self::ret_spatie_header());
-
           }),
       Action::make('print2')
           ->tooltip('طباعة اسعار الأصناف')

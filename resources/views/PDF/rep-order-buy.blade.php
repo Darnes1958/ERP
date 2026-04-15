@@ -11,47 +11,36 @@
     <style>
 
         body {
-
             direction: rtl;
             font-family: Amiri ;
-
         }
-
-
-
 
         table {
             width: 96%;
-
             font-size: 14px;
+            border-collapse: collapse;
         }
         tr {
-            line-height: 14px;
+            line-height: 20px;
+            border: 1pt solid  gray;
         }
         th {
             text-align: center;
-
             font-size: 14px;
             height: 30px;
+            border: 1pt solid  gray;
         }
-
-
         td {
             text-align: right;
-
+            border: 1pt solid  gray;
         }
-
-
     </style>
 </head>
-<body  >
-<div  >
-
-
-        <label style="font-family: Amiri; font-size: 24pt; margin-right: 12px;" >{{$cus->CompanyName}}</label>
+<body>
+<div>
+    <label style="font-family: Amiri; font-size: 24pt; margin-right: 12px;" >{{$cus->CompanyName}}</label>
     <br>
-        <label style="font-family: Amiri; font-size: 18pt;margin-right: 12px;">{{$cus->CompanyNameSuffix}}</label>
-
+    <label style="font-family: Amiri; font-size: 18pt;margin-right: 12px;">{{$cus->CompanyNameSuffix}}</label>
     <br>
     <br>
     <br>
@@ -70,8 +59,8 @@
 
     </div>
     <br>
-  <table  width="100%"   align="right" style="border: none;">
 
+  <table>
     <thead style=" font-family: DejaVu Sans, sans-serif; margin-top: 8px;" >
     <tr  style="background: #9dc1d3;" >
         <th  width="12%">رقم الصنف</th>
@@ -86,43 +75,37 @@
       <tr >
           <td style="color: #0c63e4; text-align: center;"> {{ $item->item_id }} </td>
           <td style=" text-align: right;"> {{ $item->Item->name }} </td>
-          <td style="text-align: center;"> {{ $item->q1 }} </td>
+          <td style="text-align: center;">  {{ number_format($item->q1,0) }} </td>
           <td style=" text-align: right;"> {{ $item->price_input }} </td>
           <td style=" text-align: right;"> {{ $item->sub_input }}</td>
       </tr>
-
     @endforeach
     </tbody>
       <tbody>
-      <tr style="border-bottom: none;border-right: none;border-left: none;">
-
-
-        <td style="border: none;"></td>
-        <td style="border: none;"></td>
-        <td style="border: none;"></td>
-          <td style="padding: 4px;border: none;" > إجمالي الفاتورة </td>
-          <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$res->tot}}</td>
-
+      <tr style="border: none">
+        <td style="border: none"></td>
+        <td style="border: none"></td>
+        <td style="border: none"></td>
+          <td  > إجمالي الفاتورة </td>
+          <td style="font-weight: bold;text-align: right; background: lightgray;">{{$res->tot}}</td>
       </tr>
-      <tr style="border: none;">
+      <tr style="border: none">
 
 
-        <td style="border: none;"></td>
-        <td style="border: none;"></td>
-        <td style="border: none;"></td>
-          <td style="padding: 4px;border: none;">المدفوع </td>
-          <td style="font-weight: bold;text-align: right;border: white solid 4pt;text-align: center;background: lightgray;">{{$res->pay}}</td>
+        <td style="border: none"></td>
+        <td style="border: none"></td>
+        <td style="border: none"></td>
+          <td style="padding: 4px;">المدفوع </td>
+          <td style="font-weight: bold; text-align: right;background: lightgray;">{{$res->pay}}</td>
       </tr >
 
 
-      <tr style="border: none;">
-
-
-        <td style="border: none;"></td>
-        <td style="border: none;"></td>
-        <td style="border: none;"></td>
-          <td style="padding: 4px;border: none;">المتبقي </td>
-          <td style="font-weight: bold;text-align: right;border: white solid 4pt;text-align: center;background: lightgray;">{{$res->baky}}</td>
+      <tr style="border: none">
+        <td style="border: none"></td>
+        <td style="border: none"></td>
+        <td style="border: none"></td>
+          <td style="padding: 4px;">المتبقي </td>
+          <td style="font-weight: bold;text-align: right;background: lightgray;">{{$res->baky}}</td>
       </tr>
 
       </tbody>
