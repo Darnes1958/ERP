@@ -70,11 +70,8 @@ use PublicTrait;
                                 ->relationship('Placefrom', 'name')
                                 ->searchable()
                                 ->afterStateUpdated(function ($livewire,$state,Set $set){
-
                                     self::$from_pl=$state;
-                                    info(self::$from_pl);
-
-                                 $livewire->dispatch('hall1-submitted');
+                                    $livewire->dispatch('hall1-submitted');
                                 })
                                 ->required()
                                 ->preload()
