@@ -456,7 +456,7 @@ class InpSell extends Page implements HasSchemas,HasTable
                             ->required()
                             ->gt(0)
                             ->id('price1')
-                            ->readOnly(fn():bool => ! Auth::user()->hasRole('admin'))
+                            ->readOnly(fn():bool => ! Auth::user()->can('تعديل السعر'))
                             ->extraAttributes([
                                 'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",
                             ]),
