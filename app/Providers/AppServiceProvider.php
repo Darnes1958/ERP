@@ -7,6 +7,7 @@ use App\Filament\ins\Pages\KsmKst;
 use App\Filament\ins\Pages\newCont;
 use App\Filament\ins\Resources\Mains\MainResource;
 use App\Filament\market\Pages\InpBuy;
+use App\Filament\Market\Pages\InpPer;
 use App\Filament\market\Pages\InpSell;
 use App\Filament\market\Pages\QueckSell;
 use App\Filament\market\Resources\Buys\BuyResource;
@@ -106,6 +107,7 @@ class AppServiceProvider extends ServiceProvider
         'panels::page.end',
         fn (): View => view('analytics'),
         scopes: [
+            InpPer::class,
             BuysWorkResource::class,
             SellWorkResource::class,
             BuyResource::class,

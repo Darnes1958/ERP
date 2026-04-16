@@ -4,8 +4,10 @@ namespace App\Filament\Market\Pages;
 
 use App\Filament\Tables\ItemTable;
 use App\Models\Barcode;
+use App\Models\Item;
 use App\Models\Per;
 use App\Models\PerTran;
+use App\Models\Place;
 use App\Models\Place_stock;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -19,6 +21,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard;
@@ -36,6 +39,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\HtmlString;
 
 class InpPer extends Page implements HasSchemas,HasTable
 {
@@ -44,12 +48,14 @@ class InpPer extends Page implements HasSchemas,HasTable
 
     public $per;
     public $per_tran;
-    public $place_from;
+    public $place_from,$place_from_name;
+
     public $place_to;
     public $per_date;
-    public $kydedata=[];
+    public $tableData=[];
     public function mount(){
         $this->perForm->fill([]);
+        $this->tranForm->fill([]);
     }
     public  function perForm(Schema $schema): Schema
     {
@@ -65,6 +71,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                           ->searchable()
                           ->afterStateUpdated(function ($livewire,$state,Set $set){
                               $this->place_from=$state;
+                              $this->place_from_name=Place::find($state)->name;
                               $livewire->dispatch('hall1-submitted');
                           })
                           ->required()
@@ -101,114 +108,151 @@ class InpPer extends Page implements HasSchemas,HasTable
 
     }
 
+    public function ChkBarcode($barcode)
+    {
+        if (!$barcode) return;
+        $res=Barcode::find($barcode);
+
+        if ($res) $this->gotoQuantity($res->item_id,$res->id);
+    }
+    public function ChkItem($state){
+        if ($state==null) return ;
+        $res=Item::find($state);
+        if ($res) $this->gotoQuantity($res->id,$res->barcode);
+
+    }
+    public function gotoQuantity($item_id,$barcode)
+    {
+        $place_stock=Place_stock::where('place_id', $this->place_from)
+            ->where('item_id', $item_id)->where('stock1','>',0)->first();
+        if (!$place_stock) return;
+
+        $this->tranForm->fill([
+                'barcode'=>$barcode,
+                'item_id'=>$item_id,
+                'stock'=>$place_stock->stock1
+            ]);
+            $this->dispatch('focus-next',next: 'quantity');
+
+    }
+    public function ChkQuantity(){
+
+        if (!$this->per_tran['item_id'])
+        {
+            Notification::make()->title('يجب اختيار الصنف')->danger()->send();
+            $this->dispatch('focus-next',next: 'barcode');
+            return;
+
+        }
+
+        if (!$this->per_tran['quantity'] || $this->per_tran['quantity']<=0){
+            Notification::make()->title('يجب اختيار الكمية')->danger()->send();
+            $this->dispatch('focus-next',next: 'quantity');
+            return;
+        }
+        if ($this->per_tran['quantity']> $this->per_tran['stock']){
+            Notification::make()
+                ->title('الرصيد لايسمح بهذه الكمية')
+                ->send();
+            return;
+        };
+        $this->putRecToArr($this->per_tran);
+
+    }
+
     public function tranForm(Schema $schema): Schema
     {
         return $schema
             ->model(PerTran::class)
             ->statePath('per_tran')
             ->components([
-                Hidden::make('place_id')
+               Section::make()
+                ->schema([
+                    TextInput::make('barcode')
+                        ->exists(Barcode::class,column: 'id')
+                        ->live()
+                        ->extraInputAttributes(['wire:keydown.enter' => 'ChkBarcode($event.target.value)',])
+                        ->autocomplete(false)
+                        ->columnSpan(2)
+                        ->id('barcode_id')
+                        ->dehydrated(false),
+                    Select::make('item_id')
+                        ->relationship('Item', 'name',
+                            modifyQueryUsing: fn (Builder $query) =>
+                            $query->whereIn('id',Place_stock::
+                            where('place_id', $this->place_from)
+                                ->where('stock1','>',0)->pluck('item_id')),)
+                        ->afterStateUpdated(function ($state){$this->ChkItem($state);})
+                        ->searchable()
+                        ->suffixAction(
+                            Action::make('select_item')
+                                ->label('بحث عن الصنف')
+                                ->icon(Heroicon::MagnifyingGlass)
+                                ->schema([
+                                    TableSelect::make('item_id')
+                                        ->relationship('Item','name')
+                                        ->tableConfiguration(ItemTable::class)
+                                        ->columnSpanFull()
+                                        ->tableArguments(function (): array {
 
-                    ->dehydrated(false),
-                TextInput::make('barcode')
-                    ->afterStateUpdated(function ($state,Set $set){
+                                            return [
+                                                'place_id' =>  $this->placeFrom,
+                                                'noZero' => 1,
+                                            ];
+                                        })
+                                ])
+                                ->action(function (array $data,Set $set,Get $get){
+                                    $set('item_id',$data['item_id']);
+                                    $set('barcode',Barcode::where('item_id', $data['item_id'])->first()->id);
+                                    $set('stock',Place_stock::where('place_id', $this->placeFrom)
+                                        ->where('item_id', $data['item_id'])->first()->stock1
+                                    );
+                                })
 
-                        if ($state){
-                            $res=Barcode::find($state);
-                            if ($res) {
-                                $set('item_id',$res->item_id);
-                                $set('stock',Place_stock::where('place_id', $this->place_from)
-                                    ->where('item_id', $res->item_id)->first()->stock1
-                                );
-                            }
-
-                        }
-                    })
-                    ->live()
-                    ->dehydrated(false),
-                Select::make('item_id')
-                    ->relationship('Item', 'name',
-                        modifyQueryUsing: fn (Builder $query) =>
-                        $query->whereIn('id',Place_stock::
-                        where('place_id', $this->place_from)
-                            ->where('stock1','>',0)->pluck('item_id')),)
-                    ->searchable()
-                    ->suffixAction(
-                        Action::make('select_item')
-                            ->label('بحث عن الصنف')
-                            ->icon(Heroicon::MagnifyingGlass)
-                            ->schema([
-                                TableSelect::make('item_id')
-                                    ->relationship('Item','name')
-                                    ->tableConfiguration(ItemTable::class)
-                                    ->columnSpanFull()
-                                    ->tableArguments(function (): array {
-
-                                        return [
-                                            'place_id' =>  $this->placeFrom,
-                                            'noZero' => 1,
-                                        ];
-                                    })
-                            ])
-                            ->action(function (array $data,Set $set,Get $get){
-                                $set('item_id',$data['item_id']);
-                                $set('barcode',Barcode::where('item_id', $data['item_id'])->first()->id);
-                                $set('stock',Place_stock::where('place_id', $this->placeFrom)
-                                    ->where('item_id', $data['item_id'])->first()->stock1
-                                );
-                            })
-
-                    )
-                    ->required()
-                    ->distinct()
-                    ->preload()
-
-                    ->live(),
-
-
-                TextInput::make('quantity')
-                    ->label('الكمية')
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function (Get $get,$state,Set $set){
-                        $stock=Place_stock::where('place_id', $this->place_from)
-                            ->where('item_id',$get('item_id'))->first();
-                        if (!$stock || $state > $stock->stock1){
-                            Notification::make()
-                                ->title('الرصيد لايسمح بهذه الكمية')
-                                ->send();
-                            $set('quant',0);
-                        };
-                    })
-                    ->gt(0)
-                    ->required(),
-                TextInput::make('stock')
-                    ->readOnly()
-                    ->numeric()
-                    ->mask(0.00)
-                    ->dehydrated(false),
+                        )
+                        ->required()
+                        ->distinct()
+                        ->preload()
+                        ->id('item_id')
+                        ->columnSpan(2)
+                        ->live(),
+                    TextInput::make('quantity')
+                        ->label('الكمية')
+                        ->live(onBlur: true)
+                        ->extraInputAttributes(['wire:keydown.enter' => 'ChkQuantity',])
+                        ->gt(0)
+                        ->id('quantity')
+                        ->required(),
+                    TextInput::make('stock')
+                        ->readOnly()
+                        ->label(function (){
+                            if($this->place_from_name)
+                            return new HtmlString('<span class="text-indigo-700">رصيد : </span><span class="text-primary-600">'.$this->place_from_name.'</span>') ;
+                            else return '-';
+                        })
+                        ->numeric()
+                        ->mask(0.00)
+                        ->dehydrated(false),
+                ])
+                ->columns(2),
             ]);
     }
 
-    public function putRecToArr($tran)
+    public function putRecToArr( $tran)
     {
-     //   if (!$this->account_id || !Account::find($this->account_id || !Account::find($this->account_id)->is_active))
-     //   {
-     //       Notification::make()->title('يجب ادخال حساب صحيح')->danger()->send();
-     //       $this->dispatch('gotoitem', test: 'account_id');
-     //       return ;
-     //   }
-        $One= array_column($this->kydedata, 'item_id');
-        $index = array_search( $tran->item_id, $One);
+
+        $One= array_column($this->tableData, 'item_id');
+      $index = array_search( $tran['item_id'], $One);
 
 
         if  ($index!='') {
-            $this->kydedata[$index]['item_id']=$tran->item_id;
-            $this->kydedata[$index]['barcode']=$tran->barcode;
-            $this->kydedata[$index]['name']=$tran->name;
-            $this->kydedata[$index]['quantity']=$tran->quantity;
+            $this->tableData[$index]['item_id']=$tran['item_id'];
+            $this->tableData[$index]['barcode']=$tran['barcode'];
+            $this->tableData[$index]['name']=Item::find($tran['item_id'])->name;
+            $this->tableData[$index]['quantity']=$tran['quantity'];
         }
         else {
-            $this->kydedata[] =['item-id'=>$tran->item_id,'barcode'=>$tran->barcode,'name'=>$tran->name,'quantity'=>$tran->quantity,];
+            $this->tableData[] =['item_id'=>$tran['item_id'],'barcode'=>$tran['barcode'],'name'=>Item::find($tran['item_id'])->name,'quantity'=>$tran['quantity'],];
         }
       //  $this->sumArr();
     }
@@ -216,7 +260,7 @@ class InpPer extends Page implements HasSchemas,HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->records(fn(): Collection=> collect($this->kydedata))
+            ->records(fn(): Collection=> collect($this->tableData))
             ->columns([
                 TextColumn::make('barcode'),
                 TextColumn::make('item_id'),
