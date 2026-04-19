@@ -20,6 +20,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -29,6 +30,7 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -45,6 +47,7 @@ class InpPer extends Page implements HasSchemas,HasTable
 {
     use InteractsWithForms,InteractsWithTable;
     protected string $view = 'filament.market.pages.inp-per';
+    protected ?string $heading='';
 
     public $per;
     public $per_tran;
@@ -63,7 +66,7 @@ class InpPer extends Page implements HasSchemas,HasTable
             ->model(Per::class)
             ->statePath('per')
             ->components([
-                Grid::make()
+                Section::make()
                   ->schema([
                       Select::make('place_from')
                           ->label('مــــن')
@@ -76,6 +79,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                           })
                           ->required()
                           ->preload()
+                          ->disabled(fn()=>$this->tableData)
                           ->columnSpan(2)
                           ->live(),
 
@@ -92,16 +96,54 @@ class InpPer extends Page implements HasSchemas,HasTable
                           })
                           ->required()
                           ->preload()
+                          ->disabled(fn()=>!$this->place_from)
                           ->columnSpan(2)
                           ->live(),
                       DatePicker::make('per_date')
                           ->label('التاريخ')
                           ->required()
+                          ->id('per_date')
                           ->default(fn()=>now()),
+
+                      Actions::make([
+                          Action::make('store')
+                              ->label('تخزين')
+                              ->visible(fn()=>$this->tableData)
+                              ->action(function (){
+                                  if (!$this->place_to)
+                                  {
+                                      Notification::make()->title('يجب اختيار المكان المنقول إليه')->danger()->send();
+                                      return;
+                                  }
+                                  if (!$this->per_date)
+                                  {
+                                      Notification::make()->title('يجب ادخال التاريخ')->danger()->send();
+                                      $this->dispatch('focus-next',next: 'per_date');
+                                      return;
+                                  }
+                                  $per=Per::create($this->per);
+                                  foreach ($this->tableData as $rec){
+                                      PerTran::create(['per_id'=>$per->id,
+                                          'item_id'=>$rec['item_id'],
+                                          'quantity'=>$rec['quantity'],
+                                      ]);
+                                  }
+                                  Notification::make()->title('تم تحزين القيد بنجاح')->success()->send();
+                                  $this->tableData=[];
+                                  $this->per_date='';
+                                  $this->place_from='';
+                                  $this->place_to='';
+                                  $this->perForm->fill([]);
+
+
+                              })
+                             ->requiresConfirmation(),
+                      ])->verticalAlignment(VerticalAlignment::Center)->alignCenter(),
+
                       Hidden::make('user_id')->default(auth()->id()),
 
                   ])
-                  ->columns(5)
+                  ->columns(6)
 
             ]);
 
@@ -112,24 +154,34 @@ class InpPer extends Page implements HasSchemas,HasTable
     {
         if (!$barcode) return;
         $res=Barcode::find($barcode);
-
         if ($res) $this->gotoQuantity($res->item_id,$res->id);
     }
     public function ChkItem($state){
         if ($state==null) return ;
         $res=Item::find($state);
         if ($res) $this->gotoQuantity($res->id,$res->barcode);
-
     }
     public function gotoQuantity($item_id,$barcode)
     {
+        if (!$this->place_from)
+        {
+            Notification::make()->title('يجب اختيار المخزن أو الصالة المراد النقل منها')->danger()->send();
+            return;
+        }
         $place_stock=Place_stock::where('place_id', $this->place_from)
             ->where('item_id', $item_id)->where('stock1','>',0)->first();
         if (!$place_stock) return;
 
+        $One= array_column($this->tableData, 'item_id');
+        $index = array_search( $item_id, $One);
+        if ($index!='')
+                    $q=$this->tableData[$index]['quantity'];
+        else $q='';
+
         $this->tranForm->fill([
                 'barcode'=>$barcode,
                 'item_id'=>$item_id,
+                'quantity'=>$q,
                 'stock'=>$place_stock->stock1
             ]);
             $this->dispatch('focus-next',next: 'quantity');
@@ -142,7 +194,6 @@ class InpPer extends Page implements HasSchemas,HasTable
             Notification::make()->title('يجب اختيار الصنف')->danger()->send();
             $this->dispatch('focus-next',next: 'barcode');
             return;
-
         }
 
         if (!$this->per_tran['quantity'] || $this->per_tran['quantity']<=0){
@@ -157,6 +208,8 @@ class InpPer extends Page implements HasSchemas,HasTable
             return;
         };
         $this->putRecToArr($this->per_tran);
+        $this->tranForm->fill([]);
+        $this->dispatch('focus-next',next: 'barcode');
 
     }
 
@@ -174,7 +227,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                         ->extraInputAttributes(['wire:keydown.enter' => 'ChkBarcode($event.target.value)',])
                         ->autocomplete(false)
                         ->columnSpan(2)
-                        ->id('barcode_id')
+                        ->id('barcode')
                         ->dehydrated(false),
                     Select::make('item_id')
                         ->relationship('Item', 'name',
@@ -233,6 +286,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                         ->numeric()
                         ->mask(0.00)
                         ->dehydrated(false),
+
                 ])
                 ->columns(2),
             ]);
@@ -242,7 +296,7 @@ class InpPer extends Page implements HasSchemas,HasTable
     {
 
         $One= array_column($this->tableData, 'item_id');
-      $index = array_search( $tran['item_id'], $One);
+        $index = array_search( $tran['item_id'], $One);
 
 
         if  ($index!='') {
@@ -266,7 +320,31 @@ class InpPer extends Page implements HasSchemas,HasTable
                 TextColumn::make('item_id'),
                 TextColumn::make('name'),
                 TextColumn::make('quantity'),
-            ]);
+            ])
+            ->recordActions([
+                    Action::make('del')
+                        ->iconButton()
+                        ->icon(Heroicon::XMark)
+                        ->color('danger')
+                //        ->requiresConfirmation()
+                        ->action(function (array $record) {
+                            unset($this->tableData[$record['__key']]);
+                            array_values($this->tableData);
+                            $this->resetTable();
+                        }
+                    ),
+                    Action::make('edit')
+                        ->iconButton()
+                        ->icon(Heroicon::Pencil)
+                        ->color('info')
+                        //        ->requiresConfirmation()
+                        ->action(function (array $record) {
+                            $this->gotoQuantity($record['item_id'],$record['barcode']);
+                        }
+                        )
+
+                ]
+            );
     }
 
 

@@ -1,6 +1,9 @@
 <x-filament-panels::page>
-    {{$this->perForm}}
-    <div class="flex w-full gap-2 pt-2">
+    <div>
+        {{$this->perForm}}
+    </div>
+
+    <div class="flex w-full gap-2 ">
         <div class="w-5/12  ">
             <div >
                 {{$this->tranForm}}

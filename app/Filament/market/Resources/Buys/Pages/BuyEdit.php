@@ -374,8 +374,6 @@ class BuyEdit extends Page implements HasTable,HasForms
                                             ->validationMessages([
                                                 'unique' => 'هذا الـ :attribute مخزون مسبقا',
                                             ]),
-
-
                                         Select::make('unita_id')
                                             ->label('الوحدة')
                                             ->searchable()

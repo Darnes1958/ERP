@@ -65,6 +65,7 @@
     "Inventory data": "بيان الجرد",
     "Item": "الصنف",
     "Item id": "الصنف",
-    "Barcode": "الباركود"
+    "Barcode": "الباركود",
+    "Quantity": "الكمية"
 
 }
