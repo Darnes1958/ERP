@@ -2,6 +2,7 @@
 
 namespace App\Filament\Market\Pages;
 
+use App\Filament\market\Resources\Pers\PerResource;
 use App\Filament\Tables\ItemTable;
 use App\Models\Barcode;
 use App\Models\Item;
@@ -40,14 +41,19 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
+use PHPUnit\Exception;
 
 class InpPer extends Page implements HasSchemas,HasTable
 {
     use InteractsWithForms,InteractsWithTable;
     protected string $view = 'filament.market.pages.inp-per';
     protected ?string $heading='';
+
+    protected static bool $shouldRegisterNavigation=false;
 
     public $per;
     public $per_tran;
@@ -57,7 +63,8 @@ class InpPer extends Page implements HasSchemas,HasTable
     public $per_date;
     public $tableData=[];
     public function mount(){
-        $this->perForm->fill([]);
+        $this->per_date=now();
+        $this->perForm->fill(['user_id'=>Auth::id(),'per_date'=>now()]);
         $this->tranForm->fill([]);
     }
     public  function perForm(Schema $schema): Schema
@@ -101,14 +108,20 @@ class InpPer extends Page implements HasSchemas,HasTable
                           ->live(),
                       DatePicker::make('per_date')
                           ->label('التاريخ')
+                          ->afterStateUpdated(fn($state)=>$this->per_date=$state)
                           ->required()
                           ->id('per_date')
                           ->default(fn()=>now()),
+                      Hidden::make('user_id'),
 
                       Actions::make([
+                          Action::make('goBack')
+                              ->label('عودة')
+                              ->url(PerResource::getUrl()),
                           Action::make('store')
                               ->label('تخزين')
                               ->visible(fn()=>$this->tableData)
+                              ->color('success')
                               ->action(function (){
                                   if (!$this->place_to)
                                   {
@@ -121,26 +134,78 @@ class InpPer extends Page implements HasSchemas,HasTable
                                       $this->dispatch('focus-next',next: 'per_date');
                                       return;
                                   }
-                                  $per=Per::create($this->per);
+
                                   foreach ($this->tableData as $rec){
-                                      PerTran::create(['per_id'=>$per->id,
-                                          'item_id'=>$rec['item_id'],
-                                          'quantity'=>$rec['quantity'],
-                                      ]);
+                                      if ($rec['quantity'] > Place_stock::where('place_id', $this->place_from)
+                                              ->where('item_id', $rec['item_id'])->where('stock1','>',0)->first()->stock1)
+                                      {
+                                          Notification::make()
+                                              ->title(new HtmlString('<span>رصيد الصنف </span><span class="text-primary-600" >'.Item::find($rec['item_id'])->name.'</span><span> لا يكفي</span>'))
+                                              ->danger()
+                                              ->send();
+
+                                          return;
+                                      }
                                   }
-                                  Notification::make()->title('تم تحزين القيد بنجاح')->success()->send();
+
+                                  DB::connection(Auth::user()->company)->beginTransaction();
+                                  try {
+                                      $per=Per::create($this->per);
+                                      foreach ($this->tableData as $rec) {
+                                          PerTran::create(['per_id'=>$per->id,
+                                              'item_id'=>$rec['item_id'],
+                                              'quantity'=>$rec['quantity'],
+                                          ]);
+                                          $placefrom=Place_stock::where('item_id',$rec['item_id'])
+                                              ->where('place_id',$this->place_from)->first();
+
+                                          $placefrom->stock1 -= $rec['quantity'];
+                                          $placefrom->save();
+                                          $placeto=Place_stock::where('item_id',$rec['item_id'])
+                                              ->where('place_id',$this->place_to)->first();
+                                          if ($placeto){
+                                              $placeto->stock1+= $rec['quantity'];
+                                              $placeto->save();
+                                          } else {
+                                              Place_stock::create([
+                                                      'item_id' => $rec['item_id'],
+                                                      'place_id' => $this->place_to,
+                                                      'stock1' => $rec['quantity']
+                                              ]);
+                                          }
+
+
+                                      }
+                                      DB::connection(Auth::user()->company)->commit();
+                                  } catch (Exception $e) {
+                                      Notification::make()
+                                          ->title('حدث خطأ !!')
+                                          ->color('danger')
+                                          ->icon('heroicon-o-x-circle')
+                                          ->danger()
+                                          ->send();
+                                      info($e);
+                                      DB::connection(Auth()->user()->company)->rollback();
+                                  };
+
+
+                                  Notification::make()->title('تم تحزين اذن الصرف بنجاح')->success()->send();
                                   $this->tableData=[];
-                                  $this->per_date='';
                                   $this->place_from='';
                                   $this->place_to='';
-                                  $this->perForm->fill([]);
+                                  $this->per_date=now();
+                                  $this->perForm->fill(['user_id'=>Auth::id(),'per_date'=>now()]);
+
 
 
                               })
                              ->requiresConfirmation(),
-                      ])->verticalAlignment(VerticalAlignment::Center)->alignCenter(),
 
-                      Hidden::make('user_id')->default(auth()->id()),
+                      ])->verticalAlignment(VerticalAlignment::Center)
+                        ->alignEnd()
+                        ,
+
+
 
                   ])
                   ->columns(6)
@@ -274,6 +339,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                         ->live(onBlur: true)
                         ->extraInputAttributes(['wire:keydown.enter' => 'ChkQuantity',])
                         ->gt(0)
+                        ->numeric()
                         ->id('quantity')
                         ->required(),
                     TextInput::make('stock')

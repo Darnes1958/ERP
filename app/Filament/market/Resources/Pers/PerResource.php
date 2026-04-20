@@ -2,6 +2,7 @@
 
 namespace App\Filament\market\Resources\Pers;
 
+use App\Filament\Market\Pages\InpPer;
 use App\Filament\market\Resources\Pers\Pages\CreatePer;
 use App\Filament\market\Resources\Pers\Pages\EditPer;
 use App\Filament\market\Resources\Pers\Pages\ListPers;
@@ -275,6 +276,7 @@ use PublicTrait;
             ->filters([
                 //
             ])
+
             ->recordActions([
                 Action::make('del')
                     ->icon('heroicon-o-trash')
