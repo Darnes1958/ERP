@@ -79,10 +79,9 @@ class InpPer extends Page implements HasSchemas,HasTable
                           ->label('مــــن')
                           ->relationship('Placefrom', 'name')
                           ->searchable()
-                          ->afterStateUpdated(function ($livewire,$state,Set $set){
+                          ->afterStateUpdated(function ($state){
                               $this->place_from=$state;
                               $this->place_from_name=Place::find($state)->name;
-                              $livewire->dispatch('hall1-submitted');
                           })
                           ->required()
                           ->preload()
@@ -97,9 +96,9 @@ class InpPer extends Page implements HasSchemas,HasTable
                               $query->where('id','!=',$get('place_from'))
                           )
                           ->searchable()
-                          ->afterStateUpdated(function ($state,$livewire){
+                          ->afterStateUpdated(function ($state){
                               $this->place_to=$state;
-                              $livewire->dispatch('hall2-submitted');
+
                           })
                           ->required()
                           ->preload()
@@ -247,9 +246,9 @@ class InpPer extends Page implements HasSchemas,HasTable
                 'barcode'=>$barcode,
                 'item_id'=>$item_id,
                 'quantity'=>$q,
-                'stock'=>$place_stock->stock1
+                'stock'=>$place_stock->stock1,
             ]);
-            $this->dispatch('focus-next',next: 'quantity');
+        $this->dispatch('focus-next',next: 'quantity');
 
     }
     public function ChkQuantity(){
@@ -288,7 +287,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                 ->schema([
                     TextInput::make('barcode')
                         ->exists(Barcode::class,column: 'id')
-                        ->live()
+                        ->live(onBlur: true)
                         ->extraInputAttributes(['wire:keydown.enter' => 'ChkBarcode($event.target.value)',])
                         ->autocomplete(false)
                         ->columnSpan(2)
@@ -333,7 +332,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                         ->preload()
                         ->id('item_id')
                         ->columnSpan(2)
-                        ->live(),
+                        ->live(onBlur: true),
                     TextInput::make('quantity')
                         ->label('الكمية')
                         ->live(onBlur: true)
@@ -350,7 +349,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                             else return '-';
                         })
                         ->numeric()
-                        ->mask(0.00)
+                     //   ->mask(0.00)
                         ->dehydrated(false),
 
                 ])
