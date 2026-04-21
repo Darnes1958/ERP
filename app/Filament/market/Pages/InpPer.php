@@ -251,7 +251,7 @@ class InpPer extends Page implements HasSchemas,HasTable
         $this->dispatch('focus-next',next: 'quantity');
 
     }
-    public function ChkQuantity(){
+    public function ChkQuantity($quantity){
 
         if (!$this->per_tran['item_id'])
         {
@@ -260,12 +260,12 @@ class InpPer extends Page implements HasSchemas,HasTable
             return;
         }
 
-        if (!$this->per_tran['quantity'] || $this->per_tran['quantity']<=0){
+        if (!$quantity || $quantity<=0){
             Notification::make()->title('يجب اختيار الكمية')->danger()->send();
             $this->dispatch('focus-next',next: 'quantity');
             return;
         }
-        if ($this->per_tran['quantity']> $this->per_tran['stock']){
+        if ($quantity> $this->per_tran['stock']){
             Notification::make()
                 ->title('الرصيد لايسمح بهذه الكمية')
                 ->send();
@@ -336,7 +336,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                     TextInput::make('quantity')
                         ->label('الكمية')
                         ->live(onBlur: true)
-                        ->extraInputAttributes(['wire:keydown.enter' => 'ChkQuantity',])
+                        ->extraInputAttributes(['wire:keydown.enter' => 'ChkQuantity($event.target.value)',])
                         ->gt(0)
                         ->numeric()
                         ->id('quantity')
