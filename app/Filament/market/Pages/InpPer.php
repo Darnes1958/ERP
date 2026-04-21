@@ -271,7 +271,7 @@ class InpPer extends Page implements HasSchemas,HasTable
                 ->send();
             return;
         };
-        $this->putRecToArr($this->per_tran);
+        $this->putRecToArr($this->per_tran,$quantity);
         $this->tranForm->fill([]);
         $this->dispatch('focus-next',next: 'barcode');
 
@@ -357,7 +357,7 @@ class InpPer extends Page implements HasSchemas,HasTable
             ]);
     }
 
-    public function putRecToArr( $tran)
+    public function putRecToArr( $tran,$quantity)
     {
 
         $One= array_column($this->tableData, 'item_id');
@@ -368,10 +368,10 @@ class InpPer extends Page implements HasSchemas,HasTable
             $this->tableData[$index]['item_id']=$tran['item_id'];
             $this->tableData[$index]['barcode']=$tran['barcode'];
             $this->tableData[$index]['name']=Item::find($tran['item_id'])->name;
-            $this->tableData[$index]['quantity']=$tran['quantity'];
+            $this->tableData[$index]['quantity']=$quantity;
         }
         else {
-            $this->tableData[] =['item_id'=>$tran['item_id'],'barcode'=>$tran['barcode'],'name'=>Item::find($tran['item_id'])->name,'quantity'=>$tran['quantity'],];
+            $this->tableData[] =['item_id'=>$tran['item_id'],'barcode'=>$tran['barcode'],'name'=>Item::find($tran['item_id'])->name,'quantity'=>$quantity,];
         }
       //  $this->sumArr();
     }
