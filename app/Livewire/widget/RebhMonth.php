@@ -52,7 +52,7 @@ class RebhMonth extends BaseWidget
                 ,round(sum(masr),0) masr
                 ,round(sum(rent),0) rent
                 ,round(sum(sal),0) sal
-                ,round(sum(sal),0) ksm
+                ,round(sum(ksm),0) ksm
                 ,round(sum(rebh),0)-
                  round(sum(masr),0)-
                  round(sum(rent),0)-
