@@ -88,7 +88,7 @@ public function form(Schema $schema): Schema
                     $this->dispatch('updateyearplace',year: $this->year,place: $this->place);
                 }),
             TextInput::make('amma')
-             ->label('ارباح الإدارة العامة')
+             ->label('مصروفات الإدارة العامة')
                 ->default(0)
             ->readOnly(),
         ])->columns(4);
