@@ -18,12 +18,14 @@ class RebhMonth extends BaseWidget
     use AksatTrait;
   public $year;
 
-    protected static bool $isLazy = false;
+ //   protected static bool $isLazy = false;
 
   #[On('updateyear')]
   public function updateyear($year)
   {
     $this->year=$year;
+    info($year);
+    info($this->year);
 
   }
 
@@ -68,7 +70,7 @@ class RebhMonth extends BaseWidget
           ->heading(new HtmlString('<div class="text-primary-400 text-lg">'.'الارباح بالأشهر لسنه '.$this->year.'</div>'))
           ->contentFooter(view('table.footer', $this->data_list))
           ->defaultSort('date')
-            ->columns([
+          ->columns([
                 TextColumn::make('date')
 
                  ->label('الشهر'),

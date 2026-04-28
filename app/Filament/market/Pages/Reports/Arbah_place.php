@@ -17,11 +17,17 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
-class Arbah_place extends Page implements HasForms,HasActions
+class Arbah_place extends Page implements HasForms,HasActions,HasTable
 {
-  use InteractsWithForms,InteractsWithActions;
+  use InteractsWithForms,InteractsWithActions,InteractsWithTable;
   protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel = 'الارباح حسب الصالات';
   protected static string | \UnitEnum | null $navigationGroup = 'ادارة';
@@ -93,20 +99,109 @@ public function form(Schema $schema): Schema
             ->readOnly(),
         ])->columns(4);
 }
-
-    protected function getFooterWidgets(): array
-  {
-    return [
-
-      RebhMonthPlace::make([
-        'year'=>$this->year,'place' => $this->place,
-      ]),
-        ChartArbah::make(['year'=>$this->year,'place' => $this->place,])
-
-
-
+    public array $data_list= [
+        'calc_columns' => [
+            'rebh',
+            'rent',
+            'masr',
+            'sal',
+            'ksm',
+            'safi',
+        ],
     ];
-  }
+    public function getTableRecordKey(Model|array $record): string
+    {
+        return uniqid();
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(function (){
+
+                $res=Rebh_first_place::selectRaw('
+                wyear,
+                wmonth ,
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'rebh\'),0) rebh,
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'masr\'),0) masr,
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'rent\'),0) rent,
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'sal\'),0) sal,
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'ksm\'),0) ksm,
+
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'rebh\'),0) -
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'masr\'),0) -
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'rent\'),0) -
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'ksm\'),0) -
+                round(dbo.RebhPlace(wyear,wmonth,'.$this->place.',\'sal\'),0) safi
+                ')
+                    ->Where('wyear',$this->year)
+                    ->groupBy('wyear','wmonth')
+                ;
+
+                return $res;
+            }
+
+            )
+            ->emptyStateHeading('لا توجد بيانات')
+            ->heading(fn()=>new HtmlString(
+                '<div class="text-primary-400 text-lg">'.'الارباح بالأشهر لسنه '.$this->year.'</div>'
+
+            ))
+            ->contentFooter(view('table.footerNoDecimal', $this->data_list))
+            ->paginated([5,10,12])
+            ->defaultPaginationPageOption(12)
+            ->defaultSort('wmonth')
+            ->columns([
+                TextColumn::make('wmonth')
+                    ->label('الشهر'),
+                TextColumn::make('rebh')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
+                    ->label('هامش الربح'),
+                TextColumn::make('masr')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
+                    ->label('مصروفات'),
+                TextColumn::make('sal')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
+                    ->label('مرتبات'),
+                TextColumn::make('rent')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
+                    ->label('ايجارات'),
+                TextColumn::make('ksm')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
+                    ->label('خصومات'),
+                TextColumn::make('safi')
+                    ->numeric(decimalPlaces: 0,
+                        decimalSeparator: '',
+                        thousandsSeparator: ',')
+                    ->label('صافي الأرباح'),
+
+
+            ]);
+    }
+
+ //   protected function getFooterWidgets(): array
+ // {
+ //   return [
+//
+ // //   RebhMonthPlace::make([
+ // //     'year'=>$this->year,'place' => $this->place,
+ // //   ]),
+ //       ChartArbah::make(['year'=>$this->year,'place' => $this->place,])
+//
+//
+//
+ //   ];
+ // }
 
 
 }

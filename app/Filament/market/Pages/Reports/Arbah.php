@@ -47,10 +47,8 @@ class Arbah extends Page implements HasForms,HasActions
 
   public $year;
   public function mount(){
-    $year=2024;
-   $this->form->fill([
-       'year' => $year,
-   ]);
+    //$year=2024;
+   $this->form->fill(['year'=>$this->year]);
   }
 public function form(Schema $schema): Schema
 {
@@ -71,18 +69,18 @@ public function form(Schema $schema): Schema
         ])->columns(4);
 }
 
-    protected function getFooterWidgets(): array
-  {
-    return [
+//   protected function getFooterWidgets(): array
+// {
+//   return [
 
-      RebhMonth::make([
-        'year'=>$this->year,
-      ]),
+//     RebhMonth::make([
+//       'year'=>$this->year,
+//     ]),
 
 
 
-    ];
-  }
+//   ];
+// }
 
 
 }
