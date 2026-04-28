@@ -2,6 +2,7 @@
 
 namespace App\Livewire\widget;
 
+use App\Models\Rebh_first_new;
 use App\Models\Rebh_second;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -35,29 +36,31 @@ class ArbahAll extends BaseWidget
     public function updateyear($year)
     {
         $this->year=$year;
-        info($year);
-        info($this->year);
-
     }
     protected string $view = 'livewire.widget.arbah-all';
     public function table(Table $table): Table
     {
         return $table
             ->query(function (){
+$res=Rebh_first_new::selectRaw('
+                wyear,
+                wmonth,
+                wmonth_name date ,
+                round(dbo.RebhNew(wyear,wmonth,\'rebh\'),0) rebh,
+                round(dbo.RebhNew(wyear,wmonth,\'masr\'),0) masr,
+                round(dbo.RebhNew(wyear,wmonth,\'rent\'),0) rent,
+                round(dbo.RebhNew(wyear,wmonth,\'sal\'),0) sal,
+                round(dbo.RebhNew(wyear,wmonth,\'ksm\'),0) ksm,
 
-                $res=Rebh_second::selectRaw('month(date) date
-                ,round(sum(rebh),0) rebh
-                ,round(sum(masr),0) masr
-                ,round(sum(rent),0) rent
-                ,round(sum(sal),0) sal
-                ,round(sum(ksm),0) ksm
-                ,round(sum(rebh),0)-
-                 round(sum(masr),0)-
-                 round(sum(rent),0)-
-                 round(sum(ksm),0)-
-                 round(sum(sal),0) safi')
-                    ->WhereYear('date',$this->year)
-                    ->groupByRaw('month(date)');
+                round(dbo.RebhNew(wyear,wmonth,\'rebh\'),0) -
+                round(dbo.RebhNew(wyear,wmonth,\'masr\'),0) -
+                round(dbo.RebhNew(wyear,wmonth,\'rent\'),0) -
+                round(dbo.RebhNew(wyear,wmonth,\'ksm\'),0) -
+                round(dbo.RebhNew(wyear,wmonth,\'sal\'),0) safi
+                ')
+    ->Where('wyear',$this->year)
+    ->groupBy('wyear','wmonth','wmonth_name')
+;
 
                 return $res;
             }
@@ -68,7 +71,7 @@ class ArbahAll extends BaseWidget
             ->extremePaginationLinks()
             ->heading(fn()=> new HtmlString('<div class="text-primary-400 text-lg">'.'الارباح بالأشهر لسنه '.$this->year.'</div>'))
             ->contentFooter(view('table.footer', $this->data_list))
-            ->defaultSort('date')
+            ->defaultSort('wmonth')
             ->columns([
                 TextColumn::make('date')
 
