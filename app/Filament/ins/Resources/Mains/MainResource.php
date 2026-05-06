@@ -294,6 +294,7 @@ class MainResource extends Resource
                 TextColumn::make('Customer.name')->label('الاسم')->searchable()->sortable(),
                 TextColumn::make('Bank.BankName')->label('المصرف')->searchable()->sortable(),
                 TextColumn::make('acc')->label('رقم الحساب')->searchable()->sortable(),
+                TextColumn::make('sul_begin')->label('تاريخ العقد')->sortable(),
                 TextColumn::make('sul')->label('الاجمالي')->sortable(),
                 TextColumn::make('pay')->label('المسدد')->sortable(),
                 TextColumn::make('raseed')->label('الرصيد')->sortable(),
