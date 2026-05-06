@@ -622,8 +622,8 @@ class QueckSell extends Page implements HasSchemas,HasTable
             Notification::make()->title('الرصيد لا يسمح !!')->danger()->send();
             return ;
         }
-
-        $price=$this->retPrice($item,$this->sellData['price_type_id']);
+        if ($this->selltranData['price1']) $price=$this->selltranData['price1'];
+        else $price=$this->retPrice($item,$this->sellData['price_type_id']);
         $this->sellTranForm->fill([
                 'barcode_id'=>$this->barcode_id,'item_id'=>$item->id,
                 'price1'=>$price,'q1'=>$q1,
@@ -742,6 +742,35 @@ class QueckSell extends Page implements HasSchemas,HasTable
                     ->label('الكمية'),
                 TextColumn::make('price1')
                     ->label('سعر البيع')
+                    ->action(
+                        Action::make('updatePrice')
+                            ->fillForm(fn($record)=>['price1'=>$record->price1])
+                            ->schema([
+
+                                TextInput::make('price1')
+                                    ->label('السعر الجديد')
+                                    ->required(),
+
+
+                            ])
+                            ->modalWidth(Width::Medium)
+
+                            ->modalHeading('')
+                            ->action(function ($record,array $data){
+                                if ($data['price1']<=0)
+                                {
+                                    Notification::make()->title('يجب ادخال السعر')->danger()->send();
+                                    return;
+                                }
+
+                                $record->price1=$data['price1'];
+                                $record->sub_tot=$data['price1']*$record->q1;
+                                $record->save();
+                                $this->tot();
+                                $this->dispatch('gotoitem', test: 'barcode_id');
+
+                            })
+                    )
                     ->numeric(),
                 TextColumn::make('sub_tot')
                     ->label('المجموع')

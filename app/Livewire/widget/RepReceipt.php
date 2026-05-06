@@ -3,9 +3,11 @@
 namespace App\Livewire\widget;
 
 
+use App\Models\Price_type;
 use Filament\Tables\Columns\TextColumn;
 use App\Models\Receipt;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\HtmlString;
@@ -138,16 +140,35 @@ class RepReceipt extends BaseWidget
                 TextColumn::make('rec_who')
                     ->label('البيان')
                     ->badge(),
+                TextColumn::make('receipt_date')->label('التاريخ'),
                 TextColumn::make('val')
+                    ->numeric('2','.',',')
                     ->label('المبلغ'),
+                TextColumn::make('Price_type.name')->visible(false),
                 TextColumn::make('Kazena.name')
-                    ->label('الخزينة'),
+                    ->state(function ($record){
+                        if ($record->Kazena) return $record->Kazena->name;
+                        if ($record->Acc) return $record->Acc->name;
 
+                    })
+                    ->color(function ($record){
+                        if ($record->Kazena) return 'success';
+                        if ($record->Acc) return 'primary';
+
+                    })
+                    ->label('الخزينة'),
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
 
             ])
             ->emptyStateHeading('لا توجد بيانات')
+            ->filters([
+                SelectFilter::make('price_type_id')
+                    ->options(Price_type::all()->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->label('طريقة الدفع'),
+            ])
             ->contentFooter(function (){return view('table.Recfooter',
                 $this->data_list,[
                     'raseed'=>$this->raseed,

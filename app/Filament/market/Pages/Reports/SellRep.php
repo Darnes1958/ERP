@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Main;
 use App\Models\Main_arc;
 use App\Models\Place;
+use App\Models\Price_type;
 use App\Models\Sell;
 use App\Models\Sell_tran;
 use Carbon\Carbon;
@@ -104,12 +105,20 @@ class SellRep extends Page implements HasForms,HasTable
            decimalSeparator: '.',
            thousandsSeparator: ',',
          )
-           ->summarize(Sum::make()->label('')->numeric(
+         ->summarize(Sum::make()->label('')->numeric(
                decimalPlaces: 2,
                decimalSeparator: '.',
                thousandsSeparator: ',',
            ))
          ->label('تكاليف إضافية'),
+       TextColumn::make('Price_type.name')
+         ->color(function ($record){
+             if ($record->price_type_id == 1) {return 'success';}
+             if ($record->price_type_id == 2) {return 'primary';}
+             if ($record->price_type_id == 3) {return 'info';}
+             if ($record->price_type_id == 4) {return 'warning';}
+         })
+         ->label('طريقة الدفع'),
        TextColumn::make('differ')
          ->searchable()
          ->numeric(
@@ -117,7 +126,7 @@ class SellRep extends Page implements HasForms,HasTable
            decimalSeparator: '.',
            thousandsSeparator: ',',
          )
-           ->summarize(Sum::make()->label('')->numeric(
+         ->summarize(Sum::make()->label('')->numeric(
                decimalPlaces: 2,
                decimalSeparator: '.',
                thousandsSeparator: ',',
@@ -250,13 +259,19 @@ class SellRep extends Page implements HasForms,HasTable
        SelectFilter::make('customer_id')
          ->options(Customer::all()->pluck('name', 'id'))
          ->searchable()
-           ->preload()
+         ->preload()
          ->label('زبون معين'),
        SelectFilter::make('place_id')
              ->options(Place::all()->pluck('name', 'id'))
              ->searchable()
              ->preload()
              ->label('نقطة بيع معينة'),
+         SelectFilter::make('price_type_id')
+             ->options(Price_type::all()->pluck('name', 'id'))
+             ->searchable()
+             ->preload()
+             ->label('طريقة الدفع'),
+
        Filter::make('created_at')
          ->schema([
            DatePicker::make('Date1')
