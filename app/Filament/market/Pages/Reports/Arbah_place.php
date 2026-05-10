@@ -4,6 +4,8 @@ namespace App\Filament\market\Pages\Reports;
 
 use App\Livewire\widget\ChartArbah;
 use App\Livewire\widget\RebhMonthPlace;
+use App\Models\Inventory;
+use App\Models\InventoryData;
 use App\Models\Place;
 use App\Models\Rebh_first_place;
 use Carbon\Carbon;
@@ -15,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -97,7 +100,25 @@ public function form(Schema $schema): Schema
              ->label('مصروفات الإدارة العامة')
                 ->default(0)
             ->readOnly(),
-        ])->columns(4);
+            Callout::make('فائض جرد')
+                ->visible(InventoryData::where('year',$this->year)->exists())
+                ->success()
+                ->description(Inventory::
+                where('its_value','>=',0)
+                    ->where('place_id',$this->place)
+                    ->whereIn('inventory_data_id',InventoryData::where('year',$this->year)->pluck('id'))
+                    ->sum('its_value')
+                ),
+            Callout::make('عجز جرد')
+                ->visible(InventoryData::where('year',$this->year)->exists())
+                ->danger()
+                ->description(Inventory::
+                where('its_value','<',0)
+                    ->where('place_id',$this->place)
+                    ->whereIn('inventory_data_id',InventoryData::where('year',$this->year)->pluck('id'))
+                    ->sum('its_value')
+                )
+        ])->columns(3);
 }
     public array $data_list= [
         'calc_columns' => [

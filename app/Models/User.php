@@ -26,6 +26,10 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Place::class);
     }
 
+    public function hasMessage():bool {
+        return Setting::where('company',$this->company)->first()->alertMessage ? true : false;
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
 

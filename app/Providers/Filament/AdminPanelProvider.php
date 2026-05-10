@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Widgets\StatsOverView;
+use App\Livewire\AlertWidget;
 use App\Livewire\FacingWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -51,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
               StatsOverView::class,
                 FacingWidget::class,
+                AlertWidget::class,
             ])
 
 

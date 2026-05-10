@@ -21,6 +21,7 @@ class InventoryDataForm
                          ->belowLabel('شرح مختصر لاسباب عملية لجرد')
                          ->required(),
                      TextInput::make('notes')->belowLabel('إذا كان هناك اي ملاحظات'),
+                     TextInput::make('year')->numeric()->required()->label('السنة'),
                      Hidden::make('user_id')->default(auth()->id()),
 
                  ])->columns(1)

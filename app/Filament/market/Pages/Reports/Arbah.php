@@ -3,6 +3,8 @@
 namespace App\Filament\market\Pages\Reports;
 
 use App\Livewire\widget\RebhMonth;
+use App\Models\Inventory;
+use App\Models\InventoryData;
 use App\Models\Sell;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
@@ -12,6 +14,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 
@@ -64,23 +67,27 @@ public function form(Schema $schema): Schema
                 $this->year=$state;
 
                 $this->dispatch('updateyear',year: $this->year);
-            })
-
+            }),
+            Callout::make('فائض جرد')
+             ->visible(InventoryData::where('year',$this->year)->exists())
+             ->success()
+             ->description(Inventory::
+               where('its_value','>=',0)
+               ->whereIn('inventory_data_id',InventoryData::where('year',$this->year)->pluck('id'))
+               ->sum('its_value')
+             ),
+            Callout::make('عجز جرد')
+                ->visible(InventoryData::where('year',$this->year)->exists())
+                ->danger()
+                ->description(Inventory::
+                where('its_value','<',0)
+                    ->whereIn('inventory_data_id',InventoryData::where('year',$this->year)->pluck('id'))
+                    ->sum('its_value')
+                )
         ])->columns(4);
 }
 
-//   protected function getFooterWidgets(): array
-// {
-//   return [
 
-//     RebhMonth::make([
-//       'year'=>$this->year,
-//     ]),
-
-
-
-//   ];
-// }
 
 
 }
