@@ -75,7 +75,7 @@ class ItemTran extends Page implements HasForms,HasTable
               ->columnSpan(2),
 
        DatePicker::make('repDate')
-           ->live(onBlur: true)
+           ->live()
            ->afterStateUpdated(function ($state){
                 $this->SetDate($state);
            })->columnSpan(2)
@@ -141,7 +141,7 @@ class ItemTran extends Page implements HasForms,HasTable
           ->label('العميل'),
         TextColumn::make('price_type')
           ->label('طريقة الدفع'),
-          TextColumn::make('place_name')
+        TextColumn::make('place_name')
               ->label(' المكان '),
 
         TextColumn::make('notes')

@@ -55,6 +55,7 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
       $rec->id,
       $rec->name,
       $rec->price_type,
+      $rec->place_name,
       $rec->notes,
       $rec->q1,
       $rec->price1,
@@ -73,7 +74,7 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
       [' '],
       [''],
       [''],
-      ['تاريخ الإدخال','البيان','تاريخ الفاتورة','رقم الفاتورة','العميل','طريقة الدفع','ملاحظات','الكمية','السعر','المجموع',]
+      ['تاريخ الإدخال','البيان','تاريخ الفاتورة','رقم الفاتورة','العميل','طريقة الدفع','المكان','ملاحظات','الكمية','السعر','المجموع',]
     ];
   }
   public function registerEvents(): array
@@ -82,7 +83,7 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
 
       AfterSheet::class => function(AfterSheet $event)  {
         $event->sheet
-          ->getStyle('A8:J8')
+          ->getStyle('A8:K8')
           ->getFill()
           ->setFillType(Fill::FILL_SOLID)
           ->getStartColor()
@@ -117,8 +118,8 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
   {
     return [
 
+      'K' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
       'J' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
-      'I' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
 
     ];
   }
@@ -132,10 +133,11 @@ class ItemTranExport extends DefaultValueBinder implements FromCollection,WithMa
       'D' => 14,
       'E' => 40,
       'F' => 14,
-      'G' => 40,
-      'H' => 14,
+      'G' => 20,
+      'H' => 40,
       'I' => 14,
-      'J' => 18,
+      'J' => 14,
+      'K' => 18,
 
     ];
   }
