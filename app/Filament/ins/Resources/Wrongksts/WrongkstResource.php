@@ -139,7 +139,6 @@ class WrongkstResource extends Resource
                     })
                     ->color('success')
                     ->requiresConfirmation()
-
                     ->action(function (Model $record) {
                         $res=Wrongkst::where('taj_id',$record->taj_id)->where('acc',$record->acc)->get();
                         foreach ($res as $wr) {
@@ -153,12 +152,13 @@ class WrongkstResource extends Resource
                             $oldRecord->delete();
                         }
 
-                    })
+                    }),
+
+
             ])
             ->toolbarActions([
                 BulkAction::make('ترجيع')
                     ->color('success')
-
                     ->deselectRecordsAfterCompletion()
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
@@ -177,7 +177,6 @@ class WrongkstResource extends Resource
                     }),
                 BulkAction::make('أرشفة')
                     ->color('success')
-
                     ->deselectRecordsAfterCompletion()
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
@@ -191,6 +190,17 @@ class WrongkstResource extends Resource
 
                                 $newRecord->save();
                                 $oldRecord->delete();
+
+                        }
+                    }),
+                BulkAction::make('الغاء')
+                    ->color('danger')
+                    ->deselectRecordsAfterCompletion()
+                    ->requiresConfirmation()
+                    ->action(function (Collection $records) {
+                        foreach ($records as  $item){
+                            if ($item->status->value!=1) {continue;}
+                            $item->delete();
 
                         }
                     }),
