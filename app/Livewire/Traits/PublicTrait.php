@@ -6,8 +6,10 @@ namespace App\Livewire\Traits;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
 use App\Enums\AccLevel;
+use App\Models\GlobalSetting;
 use App\Models\OurCompany;
 use App\Models\Rent;
 use App\Models\Renttran;
@@ -83,6 +85,66 @@ trait PublicTrait {
       return public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 
   }
+
+  public static function ret_spatie_label($res, $blade, $arr = [], float $width = 30, float $height = 40): string
+  {
+      if (! File::exists(Auth::user()->company)) {
+          File::makeDirectory(Auth::user()->company);
+      }
+
+      $cus = OurCompany::where('Company', Auth::user()->company)->first();
+      $path = Auth::user()->company.'/item-label.pdf';
+
+      Pdf::view($blade, [
+          'res' => $res,
+          'arr' => $arr,
+          'cus' => $cus,
+          'width' => $width,
+          'height' => $height,
+      ])
+          ->paperSize($width, $height)
+          ->margins(0, 0, 0, 0)
+          ->footerView('PDF.empty')
+          ->withBrowsershot(function (Browsershot $shot) {
+              $shot->noSandbox()
+                  ->setChromePath(GlobalSetting::first()->exePath)
+                  ->pages('1')
+                  ->margins(0, 0, 0, 0);
+          })
+          ->save($path);
+
+      return public_path().'/'.$path;
+  }
+
+  public static function ret_spatie_labels($items, $blade, $arr = [], float $width = 30, float $height = 40): string
+  {
+      if (! File::exists(Auth::user()->company)) {
+          File::makeDirectory(Auth::user()->company);
+      }
+
+      $cus = OurCompany::where('Company', Auth::user()->company)->first();
+      $path = Auth::user()->company.'/item-labels.pdf';
+
+      Pdf::view($blade, [
+          'res' => $items,
+          'arr' => $arr,
+          'cus' => $cus,
+          'width' => $width,
+          'height' => $height,
+      ])
+          ->paperSize($width, $height)
+          ->margins(0, 0, 0, 0)
+          ->footerView('PDF.empty')
+          ->withBrowsershot(function (Browsershot $shot) {
+              $shot->noSandbox()
+                  ->setChromePath(GlobalSetting::first()->exePath)
+                  ->margins(0, 0, 0, 0);
+          })
+          ->save($path);
+
+      return public_path().'/'.$path;
+  }
+
     public static function ret_spatie_land($res,$blade,$arr=[])
     {
         if(!File::exists(Auth::user()->company)) {

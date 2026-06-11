@@ -8,12 +8,14 @@ use App\Filament\market\Resources\Items\Pages\EditItem;
 use App\Filament\market\Resources\Items\Pages\ListItems;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy_tran;
 use App\Models\Item;
 use App\Models\Price_buy;
 use App\Models\Price_sell;
 use App\Models\Sell_tran;
 use App\Models\Setting;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -31,9 +33,11 @@ use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class ItemResource extends Resource
 {
+    use PublicTrait;
     protected static ?string $model = Item::class;
 
     protected static ?string $pluralModelLabel='أصناف';
@@ -294,6 +298,19 @@ class ItemResource extends Resource
                 //
             ])
             ->recordActions([
+                Action::make('print_pdf')
+                    ->label('PDF')
+                    ->tooltip('طباعة ملصق PDF')
+                    ->icon('heroicon-o-printer')
+                    ->iconButton()
+                    ->color('gray')
+                    ->action(function (Item $record) {
+                        return Response::download(
+                            self::ret_spatie_label($record, 'PDF.ItemLabel'),
+                            'item-label-'.$record->id.'.pdf',
+                            self::ret_spatie_header()
+                        );
+                    }),
                 EditAction::make()->iconButton(),
               DeleteAction::make()
                   ->hidden(fn ($record):bool =>

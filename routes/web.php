@@ -34,3 +34,8 @@ Route::controller(\App\Http\Controllers\ExlController::class)->group(function ()
   Route::get('acctranexl/{acc_id?},{repDate1?},{repDate2?}', 'AccTranExl')->name('acctranexl');
   Route::get('kazenatranexl/{kazena_id?},{repDate1?},{repDate2?}', 'KazenaTranExl')->name('kazenatranexl');
 });
+
+Route::middleware('auth')->controller(\App\Http\Controllers\QzSignController::class)->group(function () {
+    Route::get('/qz/certificate', 'certificate')->name('qz.certificate');
+    Route::get('/qz/sign', 'sign')->name('qz.sign');
+});
