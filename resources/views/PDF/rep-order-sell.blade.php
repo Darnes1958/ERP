@@ -109,6 +109,18 @@
     @endforeach
     </tbody>
       <tbody>
+      @if(\App\Models\Tar_sell::where('sell_id',$arr['sell']->id)->exists())
+          <tr style="border-bottom: none;border-right: none;border-left: none;">
+              <td style="border: none;"></td>
+              <td style="border: none; text-align: left;color: #0000cc"> قيمة مرجعة :  {{\App\Models\Tar_sell::where('sell_id',$arr['sell']->id)->sum('sub_tot')}} </td>
+
+              <td style="border: none;"></td>
+              <td style="padding: 4px;border: none;" > إجمالي الفاتورة </td>
+              <td style="font-weight: bold;text-align: right;border: white solid 4pt; text-align: center;background: lightgray;">{{$arr['sell']->tot}}</td>
+          </tr>
+
+      @endif
+
       <tr style="border-bottom: none;border-right: none;border-left: none;">
           <td style="border: none;"></td>
           <td style="border: none;"></td>

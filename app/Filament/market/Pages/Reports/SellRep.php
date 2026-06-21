@@ -2,6 +2,7 @@
 
 namespace App\Filament\market\Pages\Reports;
 
+use App\Filament\market\Resources\Sells\Pages\TarSell;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Customer;
 use App\Models\Main;
@@ -10,6 +11,7 @@ use App\Models\Place;
 use App\Models\Price_type;
 use App\Models\Sell;
 use App\Models\Sell_tran;
+use App\Models\Tar_sell;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -167,6 +169,16 @@ class SellRep extends Page implements HasForms,HasTable
          ->label('المدفوع'),
 
        TextColumn::make('baky')
+
+
+           ->color(function(Sell $record){
+               $sum=Tar_sell::where('sell_id',$record->id)->exists();
+               if ($sum) return 'info';
+           })
+          ->description(function ($record){
+             $sum=Tar_sell::where('sell_id',$record->id)->sum('sub_tot');
+             if ($sum) return $sum. ' ترجيع '; else return null;
+         })
            ->numeric(
                decimalPlaces: 2,
                decimalSeparator: '.',
@@ -178,6 +190,8 @@ class SellRep extends Page implements HasForms,HasTable
                thousandsSeparator: ',',
            ))
          ->label('الباقي'),
+
+
          TextColumn::make('sell_tran_sum_profit')
              ->visible(Auth::user()->hasRole('admin'))
              ->sum('Sell_tran','profit')

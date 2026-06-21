@@ -28,6 +28,7 @@ class SellTran extends BaseWidget
             }
 
             )
+            ->queryStringIdentifier('sell_trans')
             ->columns([
               TextColumn::make('item_id')
                 ->label('رقم الصنف')

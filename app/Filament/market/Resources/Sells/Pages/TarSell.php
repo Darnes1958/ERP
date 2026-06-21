@@ -16,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -85,6 +86,23 @@ public function tarsellForm(Schema $schema): Schema
 
             Section::make()
                 ->schema([
+                    Action::make('cal_last_tar')
+                     ->hidden()
+                     ->action(function (){
+                         $last=Sell_tran::where('tar_sell_id','!=',0)->select('sell_id')->distinct()->pluck('sell_id')->toArray();
+                          foreach ($last as $rec) {
+                              $this->sell_id = $rec;
+                              $this->sell=Sell::find($this->sell_id);
+                              $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
+                              $this->sell->tot=$tot;
+                              $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
+                              $this->sell->total=$tot+$this->sell->differ+$this->sell->cost-$this->sell->ksm;
+                              $this->sell->baky=$this->sell->total-$this->sell->pay;
+                              $this->sell->save();
+                          }
+                          Notification::make()->title('انتهي بنجاح')->send();
+                     })
+                    ,
                     TextInput::make('sell_id')
                         ->hiddenLabel()
                         ->prefix('رقم الفاتورة')
@@ -167,17 +185,17 @@ public function tarsellForm(Schema $schema): Schema
                                $this->incAll($this->sell_id,$this->tarsellData['item_id'],$this->record->place_id,$this->selltran->q1,$this->selltran->q2);
                                $this->selltran->q1-=$this->tarsellData['q1'];
                                $this->selltran->tar_sell_id=$tar->id;
-                               //$this->selltran->sub_tot-=$tar->sub_tot;
+                            //   $this->selltran->sub_tot-=$tar->sub_tot;
                                $this->selltran->save();
                                $this->decAll($this->selltran->id,$this->sell_id,$this->selltran->item_id,
                                    $this->sell->place_id,$this->selltran->q1,$this->selltran->q2);
 
-                               //$tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
-                               //$this->sell->tot=$tot;
-                               //$this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
-                               //$this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
-                               //$this->sell->baky=$this->sell->total-$this->sell->pay;
-                               //$this->sell->save();
+                             //$tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
+                             //$this->sell->tot=$tot;
+                             //$this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
+                             //$this->sell->total=$tot+$this->sell->differ+$this->sell->cost-$this->sell->ksm;
+                             //$this->sell->baky=$this->sell->total-$this->sell->pay;
+                             //$this->sell->save();
 
                                 $this->tarsellForm->fill(['sell_id'=>$this->record->id,'tar_date'=>now(),'q1'=>1,'item_id'=>null]);
                                 $this->resetTable();

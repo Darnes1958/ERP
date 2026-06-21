@@ -86,12 +86,12 @@ class Tar_sell_Page extends Page implements HasTable
                         $this->decAll($selltran->id,$record->sell_id,$selltran->item_id,
                             $sell->place_id,$selltran->q1,$selltran->q2);
 
-                        $tot = Sell_tran::where('sell_id', $record->sell_id)->sum('sub_tot');
-                        $sell->tot=$tot;
-                        $sell->differ=($sell->tot+$sell->cost)*$sell->rate/100;
-                        $sell->total=$tot+$sell->differ+$sell->cost;
-                        $sell->baky=$sell->total-$sell->pay;
-                        $sell->save();
+                      // $tot = Sell_tran::where('sell_id', $record->sell_id)->sum('sub_tot');
+                      // $sell->tot=$tot;
+                      // $sell->differ=($sell->tot+$sell->cost)*$sell->rate/100;
+                      // $sell->total=$tot+$sell->differ+$sell->cost;
+                      // $sell->baky=$sell->total-$sell->pay;
+                      // $sell->save();
 
                         $tarsell->delete();
 
