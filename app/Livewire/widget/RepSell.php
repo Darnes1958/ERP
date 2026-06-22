@@ -30,12 +30,14 @@ class RepSell extends BaseWidget
   #[On('updateDate1')]
   public function updatedate1($repdate)
   {
+      info($repdate);
     $this->repDate1=$repdate;
 
   }
   #[On('updateDate2')]
   public function updatedate2($repdate)
   {
+      info($repdate);
     $this->repDate2=$repdate;
 
   }

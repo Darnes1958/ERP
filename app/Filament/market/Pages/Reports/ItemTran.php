@@ -9,9 +9,11 @@ use App\Models\Place;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -38,6 +40,7 @@ class ItemTran extends Page implements HasForms,HasTable
     }
 
    public $item_id;
+   public $item_input;
    public $repDate;
    public $place_id;
 
@@ -49,10 +52,28 @@ class ItemTran extends Page implements HasForms,HasTable
    public function SetDate($repdate){
        $this->repDate=$repdate;
    }
+   public function setItem($item_id)
+   {
+       $this->item_id=$item_id;
+       $this->item_input=$this->item_id;
+   }
    public function form(Schema $schema): Schema
   {
     return $schema
       ->components([
+        TextInput::make('item_input')
+          ->label('رقم الصنف')
+          ->live(onBlur: true)
+          ->extraInputAttributes(['wire:keydown.enter' => 'setItem($event.target.value)',])
+          ->afterStateUpdated(function ($state){
+              if ($state) {
+                  if (Item::find($state)) {
+                      $this->item_input=$state;
+                      $this->item_id=$state;
+                  }
+              }
+          })
+          ->numeric(),
         Select::make('item_id')
           ->options(Item::all()->pluck('name','id'))
           ->live()
@@ -60,8 +81,9 @@ class ItemTran extends Page implements HasForms,HasTable
           ->preload()
           ->afterStateUpdated(function ($state){
             $this->item_id=$state;
+            $this->item_input=$state;
           })
-          ->label('الصنف')
+          ->label('بحث')
           ->columnSpan(2),
           Select::make('place_id')
               ->options(Place::all()->pluck('name','id'))
@@ -81,25 +103,25 @@ class ItemTran extends Page implements HasForms,HasTable
            })->columnSpan(2)
 
            ->label('من تاريخ'),
+       Actions::make([
+           Action::make('print')
+               ->label('Excel')
+               ->button()
+               ->color('danger')
+               ->icon('heroicon-m-printer')
+               ->color('info')
+               ->action(function (){
+                   $data=$this->getTableQueryForExport()->get();
+                   $place=null;
+                   if ($this->place_id) $place=Place::find($this->place_id)->name;
+                   return Excel::download(new ItemTranExport($this->item_id,$this->repDate,$data,$place),'item_tran.xlsx');
+               })
+       ])->verticallyAlignCenter(),
 
-      ])->columns(6);
+
+      ])->columns(8);
   }
-  public function printAction(): Action
-  {
-    return Action::make('print')
-      ->label('Excel')
-      ->button()
-      ->color('danger')
-      ->icon('heroicon-m-printer')
-      ->color('info')
-      ->action(function (){
-          $data=$this->getTableQueryForExport()->get();
-          $place=null;
-          if ($this->place_id) $place=Place::find($this->place_id)->name;
-          return Excel::download(new ItemTranExport($this->item_id,$this->repDate,$data,$place),'item_tran.xlsx');
-      });
-   //   ->url(fn (): string => route('itemtranexl', ['item_id'=>$this->item_id,'repDate'=>$this->repDate,]));
-  }
+
 
     public function getTableRecordKey(Model|array $record): string
     {
