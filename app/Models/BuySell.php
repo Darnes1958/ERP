@@ -10,6 +10,10 @@ class BuySell extends Model
 {
     protected $connection = 'other';
 
+    public function Item()
+    {
+        return $this->belongsTo(Item::class);
+    }
 
     public function __construct(array $attributes = [])
     {

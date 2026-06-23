@@ -217,6 +217,18 @@ class SellRep extends Page implements HasForms,HasTable
          ))
          ->icon('heroicon-o-eye')
          ->iconButton(),
+       Action::make('buy_sells')
+         ->tooltip('تفاصيل الشراء')
+         ->visible(fn () => Auth::user()->hasRole('admin'))
+         ->modalHeading(false)
+         ->modalSubmitAction(false)
+         ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
+         ->modalContent(fn (Sell $record): View => view(
+           'filament.market.pages.reports.views.view-buy-sell-widget',
+           ['sell_id' => $record->id],
+         ))
+         ->icon('heroicon-o-clipboard-document-list')
+         ->iconButton(),
          Action::make('print')
              ->icon('heroicon-o-printer')
              ->iconButton()
@@ -229,7 +241,6 @@ class SellRep extends Page implements HasForms,HasTable
                          'sell'=>$sell,
                      ]
                  ), 'filename.pdf', self::ret_spatie_header());
-
              })
 
      ])
@@ -247,13 +258,9 @@ class SellRep extends Page implements HasForms,HasTable
                  if ($filters['customer_id']->getState()['value'])
                      $customer=Customer::find($filters['customer_id']->getState()['value'])->name;
                  else $customer=null;
-
                  $any=$filters['created_at']->getState();
                  $RepDate1=$any['Date1'] ; $RepDate2=$any['Date2'];
-
                  $active=$this->activeTab;
-
-
                  return Response::download(self::ret_spatie($res,
                      'PDF.pdf-rep-sell',[
                          'RepDate1'=>$RepDate1,
