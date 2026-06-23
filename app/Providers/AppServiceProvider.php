@@ -9,6 +9,7 @@ use App\Filament\ins\Resources\Mains\MainResource;
 use App\Filament\market\Pages\InpBuy;
 use App\Filament\Market\Pages\InpPer;
 use App\Filament\market\Pages\InpSell;
+use App\Filament\market\Pages\InpSellOffer;
 use App\Filament\market\Pages\QueckSell;
 use App\Filament\market\Resources\Buys\BuyResource;
 use App\Filament\market\Resources\BuysWorks\BuysWorkResource;
@@ -117,6 +118,7 @@ class AppServiceProvider extends ServiceProvider
             newCont::class,
             InpHafithaTran::class,
             InpSell::class,
+            InpSellOffer::class,
             InpBuy::class,
             QueckSell::class,
             InventoryForm::class,
