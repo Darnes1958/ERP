@@ -14,6 +14,7 @@ class FifoReconcileCommand extends Command
                             {company? : Company database connection name}
                             {--item=* : Specific item id(s) to reconcile}
                             {--repair : Create opening purchase layers for unallocated sales}
+                            {--orphans-only : Repair only sell_trans missing buy_sells}
                             {--dry-run : Show gaps without writing}';
 
     protected $description = 'Rebuild buy_sells and buy_trans.qs1 from purchases and sales (FIFO)';
@@ -59,6 +60,12 @@ class FifoReconcileCommand extends Command
 
         Config::set('database.default', $connection);
 
+        if ($this->option('orphans-only')) {
+            $this->repairOrphans($service);
+
+            return;
+        }
+
         $itemIds = $this->option('item');
         if (empty($itemIds)) {
             $itemIds = DB::connection($connection)->table('buy_trans')->distinct()->pluck('item_id')
@@ -69,6 +76,9 @@ class FifoReconcileCommand extends Command
         }
 
         if ($this->option('dry-run')) {
+            $orphans = $service->orphanSellTranCount();
+            $this->info("  Orphan sell_trans (no buy_sells): {$orphans}");
+
             $this->table(
                 ['item_id', 'name', 'purchased', 'sold', 'gap', 'sum(qs1) before'],
                 collect($itemIds)->map(function ($itemId) use ($connection, $service) {
@@ -112,6 +122,29 @@ class FifoReconcileCommand extends Command
 
         $bar->finish();
         $this->newLine(2);
+        $orphans = $service->orphanSellTranCount();
         $this->info("  Reconciled ".count($itemIds)." item(s). Items with remaining gaps: {$gaps}");
+        $this->info("  Orphan sell_trans remaining: {$orphans}");
+    }
+
+    protected function repairOrphans(FifoReconcileService $service): void
+    {
+        $before = $service->orphanSellTranCount();
+        $this->info("  Orphan sell_trans before repair: {$before}");
+
+        if ($before === 0) {
+            $this->info('  Nothing to repair.');
+
+            return;
+        }
+
+        $result = $service->repairOrphans();
+
+        $this->info("  Items repaired: {$result['items_repaired']}");
+        $this->info("  Orphan sell_trans after repair: {$result['orphans_after']}");
+
+        if ($result['orphans_after'] > 0) {
+            $this->warn('  Some orphans remain — check items with no place_id or invalid item/barcode data.');
+        }
     }
 }

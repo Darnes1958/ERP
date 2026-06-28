@@ -11,6 +11,7 @@ use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Sell_tran;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class FifoReconcileService
 {
@@ -216,15 +217,122 @@ class FifoReconcileService
 
     public function repairItem(int $itemId, bool $createOpening = true): array
     {
+        if ($createOpening) {
+            $placeId = $this->query(Place_stock::class)->where('item_id', $itemId)->value('place_id');
+            $this->ensureFifoBalance($itemId, $placeId);
+        }
+
         $result = $this->reconcileItem($itemId);
 
         if ($createOpening && $this->roundQty($result['unallocated_sales']) > 0) {
-            $this->createOpeningLayer($itemId, $result['unallocated_sales']);
+            $placeId = $this->query(Place_stock::class)->where('item_id', $itemId)->value('place_id');
+            $this->createOpeningLayer($itemId, $result['unallocated_sales'], $placeId);
             $result = $this->reconcileItem($itemId);
             $result['opening_created'] = true;
         }
 
         return $result;
+    }
+
+    /**
+     * sell_trans (q1 > 0) with no buy_sells for the same sell_id + item_id.
+     * Matches: sell_trans WHERE item_id NOT IN (buy_sells for same sell_id).
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function orphanSellTranQuery(): Builder
+    {
+        return $this->query(Sell_tran::class)
+            ->where('sell_trans.q1', '>', 0)
+            ->whereNotExists(function ($q) {
+                $q->selectRaw('1')
+                    ->from('buy_sells')
+                    ->whereColumn('buy_sells.sell_id', 'sell_trans.sell_id')
+                    ->whereColumn('buy_sells.item_id', 'sell_trans.item_id');
+            });
+    }
+
+    /**
+     * sell_trans linked to buy_sells but total buy_sells.q1 < sell_trans.q1.
+     *
+     * @return list<int>
+     */
+    public function incompleteItemIds(): array
+    {
+        if (! $this->connection) {
+            return collect(DB::select('
+                SELECT st.item_id
+                FROM sell_trans st
+                LEFT JOIN buy_sells bs ON bs.sell_tran_id = st.id
+                WHERE st.q1 > 0
+                GROUP BY st.id, st.item_id, st.q1
+                HAVING ISNULL(SUM(bs.q1), 0) < st.q1
+            '))->pluck('item_id')->unique()->map(fn ($id) => (int) $id)->values()->all();
+        }
+
+        return collect(DB::connection($this->connection)->select('
+            SELECT st.item_id
+            FROM sell_trans st
+            LEFT JOIN buy_sells bs ON bs.sell_tran_id = st.id
+            WHERE st.q1 > 0
+            GROUP BY st.id, st.item_id, st.q1
+            HAVING ISNULL(SUM(bs.q1), 0) < st.q1
+        '))->pluck('item_id')->unique()->map(fn ($id) => (int) $id)->values()->all();
+    }
+
+    /**
+     * All item_ids that need FIFO repair (no buy_sells or incomplete qty).
+     *
+     * @return list<int>
+     */
+    public function itemsNeedingRepair(): array
+    {
+        return collect($this->orphanItemIds())
+            ->merge($this->incompleteItemIds())
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function orphanItemIds(): array
+    {
+        return $this->orphanSellTranQuery()
+            ->distinct()
+            ->pluck('sell_trans.item_id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    public function orphanSellTranCount(): int
+    {
+        return (int) $this->orphanSellTranQuery()->count('sell_trans.id');
+    }
+
+    /**
+     * Repair sell_trans that have no buy_sells and profit = 0.
+     *
+     * @return array{orphans_before: int, orphans_after: int, items_repaired: int, results: array<int, array>}
+     */
+    public function repairOrphans(): array
+    {
+        $orphansBefore = $this->orphanSellTranCount();
+        $itemIds = $this->itemsNeedingRepair();
+        $results = [];
+
+        foreach ($itemIds as $itemId) {
+            $results[$itemId] = $this->repairItem($itemId, true);
+        }
+
+        return [
+            'orphans_before' => $orphansBefore,
+            'orphans_after' => $this->orphanSellTranCount(),
+            'items_repaired' => count($itemIds),
+            'results' => $results,
+        ];
     }
 
     public function purchasedTotal(int $itemId): float
