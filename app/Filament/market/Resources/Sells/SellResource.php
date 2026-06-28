@@ -27,6 +27,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SellResource extends Resource
 {
@@ -61,37 +62,7 @@ class SellResource extends Resource
     public static function TwoToOne($count,$q1,$q2){
         return $q2+($q1*$count);
     }
-    public static function  incQs($sell_id,$item,$count){
-
-        $buysell= BuySell::where('sell_id',$sell_id)
-            ->where('item_id',$item)
-            ->get();
-        foreach ($buysell as $tran) {
-            $two_unit=Item::find($item)->two_unit;
-
-            if ($two_unit->value==1)
-                $q=static::TwoToOne($count,$tran->q1,$tran->q2);
-            else $q=$tran->q1;
-
-            $Buy=Buy_tran::where('buy_id',$tran->buy_id)
-                ->where('item_id',$item)->first();
-
-            if ($two_unit->value==1)
-                $qs=$q+static::TwoToOne($count,$Buy->qs1,$Buy->qs2);
-            else $qs=$q+$Buy->qs1;
-
-
-            Buy_tran::where('buy_id',$tran->buy_id)
-                ->where('item_id',$item)->update([
-                    'qs1'=>$qs,
-                ]);
-
-        }
-        BuySell::where('sell_id',$sell_id)
-            ->where('item_id',$item)
-            ->delete();
-    }
-    public static function incAll($sell_id,$item_id,$place_id,$q1,$q2) {
+    public static function incAll($sell_id,$item_id,$place_id,$q1,$q2, ?int $sell_tran_id = null) {
 
         $item=Item::find($item_id);
         $count=$item->count;
@@ -106,14 +77,21 @@ class SellResource extends Resource
         $item->save();
 
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
+        if (! $place) {
+            throw new \RuntimeException("رصيد المكان غير موجود للصنف رقم {$item_id}");
+        }
+
         if ($two_unit->value==1) {
             $quantPlace = ($place->stock2 + ($place->stock1 * $count)) + $quant;
             $place->stock1 = intdiv($quantPlace, $count);
             $place->stock2 = $quantPlace % $count;
         } else $place->stock1+=$q1;
         $place->save();
+    }
 
-        static::incQs($sell_id,$item_id,$count);
+    public static function syncFifoItem(int $item_id, ?int $place_id = null): array
+    {
+        return app(\App\Services\FifoReconcileService::class)->syncItem($item_id, $place_id);
     }
     public static function table(Table $table): Table
     {
@@ -215,12 +193,18 @@ class SellResource extends Resource
                     ->modalHeading('حذف فاتورة مبيعات')
                     ->modalDescription('هل انت متأكد من الغاء هذه الفاتورة ؟')
                     ->before(function(Sell $record) {
-                        $selltran=Sell_tran::where('sell_id',$record->id)->get();
-                        foreach ($selltran as $tran) {
-                            static::incAll($record->id,$tran->item_id,$record->place_id,$tran->q1,$tran->q2);
-                        }
-                        Receipt::where('sell_id',$record->id)->delete();
-                        Sell_tran::where('sell_id',$record->id)->delete();
+                        DB::connection(Auth::user()->company)->transaction(function () use ($record) {
+                            $selltran=Sell_tran::where('sell_id',$record->id)->get();
+                            $itemIds=$selltran->pluck('item_id')->unique();
+                            foreach ($selltran as $tran) {
+                                static::incAll($record->id,$tran->item_id,$record->place_id,$tran->q1,$tran->q2,$tran->id);
+                            }
+                            Receipt::where('sell_id',$record->id)->delete();
+                            Sell_tran::where('sell_id',$record->id)->delete();
+                            foreach ($itemIds as $itemId) {
+                                static::syncFifoItem($itemId, $record->place_id);
+                            }
+                        });
                     }),
             ]);
     }

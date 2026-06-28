@@ -39,8 +39,7 @@ class BuySellTran extends BaseWidget
                     ->on('buy_trans.item_id', '=', 'buy_sells.item_id');
             })
             ->join('sell_trans', function ($join) {
-                $join->on('sell_trans.sell_id', '=', 'buy_sells.sell_id')
-                    ->on('sell_trans.item_id', '=', 'buy_sells.item_id');
+                $join->on('sell_trans.id', '=', 'buy_sells.sell_tran_id');
             })
             ->join('items', 'items.id', '=', 'buy_sells.item_id')
             ->with('Item')

@@ -12,6 +12,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class Tar_sell_Page extends Page implements HasTable
 {
@@ -73,29 +75,28 @@ class Tar_sell_Page extends Page implements HasTable
                         return $record->Sell()->exists();
                     })
                     ->action(function (Tar_sell $record){
-                        $selltran=Sell_tran::where('sell_id',$record->sell_id)->where('item_id',$record->item_id)->first()  ;
-                        $tarsell=$record;
-                        $sell=Sell::find($record->sell_id);
+                        try {
+                            DB::connection(Auth::user()->company)->transaction(function () use ($record) {
+                                $selltran=Sell_tran::where('sell_id',$record->sell_id)->where('item_id',$record->item_id)->first()  ;
+                                $tarsell=$record;
+                                $sell=Sell::find($record->sell_id);
 
-                        $this->incAll($record->sell_id,$selltran->item_id,$sell->place_id,$selltran->q1,
-                            $selltran->q2);
-                        $selltran->q1+=$tarsell->q1;
-                        $selltran->tar_sell_id=null;
-                        $selltran->sub_tot+=$tarsell->sub_tot;
-                        $selltran->save();
-                        $this->decAll($selltran->id,$record->sell_id,$selltran->item_id,
-                            $sell->place_id,$selltran->q1,$selltran->q2);
+                                $this->incAll($record->sell_id,$selltran->item_id,$sell->place_id,$selltran->q1,
+                                    $selltran->q2,$selltran->id);
+                                $selltran->q1+=$tarsell->q1;
+                                $selltran->tar_sell_id=null;
+                                $selltran->sub_tot+=$tarsell->sub_tot;
+                                $selltran->save();
+                                $this->decAll($selltran->id,$record->sell_id,$selltran->item_id,
+                                    $sell->place_id,$selltran->q1,$selltran->q2);
 
-                      // $tot = Sell_tran::where('sell_id', $record->sell_id)->sum('sub_tot');
-                      // $sell->tot=$tot;
-                      // $sell->differ=($sell->tot+$sell->cost)*$sell->rate/100;
-                      // $sell->total=$tot+$sell->differ+$sell->cost;
-                      // $sell->baky=$sell->total-$sell->pay;
-                      // $sell->save();
+                                $tarsell->delete();
+                            });
+                        } catch (\Throwable $e) {
+                            \Filament\Notifications\Notification::make()->title($e->getMessage())->danger()->send();
 
-                        $tarsell->delete();
-
-
+                            return;
+                        }
                     })
             ])
             ;

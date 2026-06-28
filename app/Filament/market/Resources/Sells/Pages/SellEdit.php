@@ -35,6 +35,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SellEdit extends Page implements HasTable,HasForms
 {
@@ -538,44 +539,49 @@ class SellEdit extends Page implements HasTable,HasForms
             return;
         }
 
-        $quant=$this->retSetQuant($item_id,$q1,$q2);
+        try {
+            DB::connection(Auth::user()->company)->transaction(function () use ($place_id, $item_id, $q1, $q2) {
+                $res = Sell_tran::where('sell_id', $this->sell_id)->where('item_id', $item_id)->first();
+                if ($res) {
+                    $this->incAll($this->sell_id, $item_id, $place_id, $res->q1, $res->q2, $res->id);
+                    $res->delete();
+                }
 
-        $res = Sell_tran::where('sell_id', $this->sell_id)->where('item_id', $item_id)->first();
-        if ($res){
-            $this->incAll($this->sell_id,$item_id,$place_id,$res->q1,$res->q2);
-            $res->delete();}
+                $sub = ($q1 * $this->selltranData['price1']) + ($q2 * $this->selltranData['price2']);
+                $this->selltran = Sell_tran::create(collect($this->selltranData)
+                    ->put('sub_tot', $sub)
+                    ->put('sell_id', $this->sell_id)
+                    ->put('user_id', Auth::id())
+                    ->except('id')
+                    ->except('raseed_all')
+                    ->except('raseed_place')
+                    ->toArray());
 
-        $sub=($q1*$this->selltranData['price1'])+($q2*$this->selltranData['price2']);
-        $this->selltran=Sell_tran::create(collect($this->selltranData)
-            ->put('sub_tot',$sub)
-            ->put('sell_id',$this->sell_id)
-            ->put('user_id',Auth::id())
-            ->except('id')
-            ->except('raseed_all')
-            ->except('raseed_place')
-            ->toArray());
+                $this->decAll($this->selltran->id, $this->sell_id, $item_id, $place_id, $q1, $q2);
 
-        $this->decAll($this->selltran->id,$this->sell_id,$item_id,$place_id,$q1,$q2);
+                $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
+                $this->sell->tot = $tot;
+                $this->sell->differ = ($this->sell->tot + $this->sell->cost) * $this->sell->rate / 100;
+                $this->sell->total = $tot + $this->sell->differ + $this->sell->cost - $this->sell->ksm;
+                $this->sell->baky = $this->sell->total - $this->sell->pay;
+                $this->sell->save();
 
+                if (Setting::find(Auth::user()->company)->is_together) {
+                    $main = Main::where('sell_id', $this->sell_id)->first();
+                    if ($main) {
+                        $main->sul = $this->sell->baky;
+                        $main->raseed = $this->sell->baky - $main->pay;
+                        $main->save();
+                    }
+                }
+            });
+        } catch (\Throwable $e) {
+            Notification::make()->title($e->getMessage())->danger()->send();
 
-        $this->sellTranForm->fill([]);
-        $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
-        $this->sell->tot=$tot;
-        $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
-        $this->sell->total=$tot+$this->sell->differ+$this->sell->cost-$this->sell->ksm;
-        $this->sell->baky=$this->sell->total-$this->sell->pay;
-        $this->sell->save();
-
-        if (Setting::find(Auth::user()->company)->is_together) {
-            $main=Main::where('sell_id',$this->sell_id)->first();
-            if ($main){
-                $main->sul=$this->sell->baky;
-                $main->raseed=$this->sell->baky-$main->pay;
-                $main->save();
-            }
+            return;
         }
 
-
+        $this->sellTranForm->fill([]);
         $this->sellForm->fill($this->sell->toArray());
       if ($this->sell->pay!=0){
         $receipt=Receipt::where('sell_id',$this->sell->id)->first();
@@ -714,26 +720,32 @@ class SellEdit extends Page implements HasTable,HasForms
                             }
                         }
 
-                        $this->incAll($this->sell_id,$record->item_id,$this->sell->place_id,$record->q1,$record->q2);
-                        $this->selltran= $record->delete();
+                        DB::connection(Auth::user()->company)->transaction(function () use ($record) {
+                            $this->incAll($this->sell_id, $record->item_id, $this->sell->place_id, $record->q1, $record->q2, $record->id);
+                            $itemId = $record->item_id;
+                            $record->delete();
 
-                        $tot=Sell_tran::where('sell_id',$this->sell_id)->sum('sub_tot');
-                        $this->sell->differ=($tot+$this->sell->cost)*$this->sell->rate/100;
-                        $total=$tot+$this->sell->cost+$this->sell->differ-$this->sell->ksm;
-                        $baky=$total-$this->sell->pay;
+                            $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
+                            $this->sell->differ = ($tot + $this->sell->cost) * $this->sell->rate / 100;
+                            $total = $tot + $this->sell->cost + $this->sell->differ - $this->sell->ksm;
+                            $baky = $total - $this->sell->pay;
 
-                        $this->sell->total=$total;
-                        $this->sell->tot=$tot;
-                        $this->sell->baky=$baky;
-                        $this->sell->save();
-                        if (Setting::find(Auth::user()->company)->is_together) {
-                            $main=Main::where('sell_id',$this->sell_id)->first();
-                            if ($main){
-                                $main->sul=$this->sell->baky;
-                                $main->raseed=$this->sell->baky-$main->pay;
-                                $main->save();
+                            $this->sell->total = $total;
+                            $this->sell->tot = $tot;
+                            $this->sell->baky = $baky;
+                            $this->sell->save();
+
+                            if (Setting::find(Auth::user()->company)->is_together) {
+                                $main = Main::where('sell_id', $this->sell_id)->first();
+                                if ($main) {
+                                    $main->sul = $this->sell->baky;
+                                    $main->raseed = $this->sell->baky - $main->pay;
+                                    $main->save();
+                                }
                             }
-                        }
+
+                            $this->syncFifoItem($itemId, $this->sell->place_id);
+                        });
 
                         $this->sellForm->fill($this->sell->toArray());
                         $this->sellTranForm->fill([]);

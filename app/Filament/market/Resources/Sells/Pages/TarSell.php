@@ -29,6 +29,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TarSell extends Page implements HasTable,HasForms
 {
@@ -176,26 +177,26 @@ public function tarsellForm(Schema $schema): Schema
                             ->requiresConfirmation()
                             ->action(function () {
 
-                               $tar=Tar_sell::create(['sell_id'=>$this->record->id,'tar_date'=>$this->tarsellData['tar_date'],
-                                                 'item_id'=>$this->tarsellData['item_id'],'q1'=>$this->tarsellData['q1'],'p1'=>$this->tarsellData['p1'],
-                                                 'sub_tot'=>$this->tarsellData['q1']*$this->tarsellData['p1'],
-                                                 'user_id'=>Auth::id(),
-                               ]);
+                               try {
+                                   DB::connection(Auth::user()->company)->transaction(function () {
+                                       $tar=Tar_sell::create(['sell_id'=>$this->record->id,'tar_date'=>$this->tarsellData['tar_date'],
+                                                             'item_id'=>$this->tarsellData['item_id'],'q1'=>$this->tarsellData['q1'],'p1'=>$this->tarsellData['p1'],
+                                                             'sub_tot'=>$this->tarsellData['q1']*$this->tarsellData['p1'],
+                                                             'user_id'=>Auth::id(),
+                                       ]);
 
-                               $this->incAll($this->sell_id,$this->tarsellData['item_id'],$this->record->place_id,$this->selltran->q1,$this->selltran->q2);
-                               $this->selltran->q1-=$this->tarsellData['q1'];
-                               $this->selltran->tar_sell_id=$tar->id;
-                            //   $this->selltran->sub_tot-=$tar->sub_tot;
-                               $this->selltran->save();
-                               $this->decAll($this->selltran->id,$this->sell_id,$this->selltran->item_id,
-                                   $this->sell->place_id,$this->selltran->q1,$this->selltran->q2);
+                                       $this->incAll($this->sell_id,$this->tarsellData['item_id'],$this->record->place_id,$this->selltran->q1,$this->selltran->q2,$this->selltran->id);
+                                       $this->selltran->q1-=$this->tarsellData['q1'];
+                                       $this->selltran->tar_sell_id=$tar->id;
+                                       $this->selltran->save();
+                                       $this->decAll($this->selltran->id,$this->sell_id,$this->selltran->item_id,
+                                           $this->sell->place_id,$this->selltran->q1,$this->selltran->q2);
+                                   });
+                               } catch (\Throwable $e) {
+                                   Notification::make()->title($e->getMessage())->danger()->send();
 
-                             //$tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
-                             //$this->sell->tot=$tot;
-                             //$this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
-                             //$this->sell->total=$tot+$this->sell->differ+$this->sell->cost-$this->sell->ksm;
-                             //$this->sell->baky=$this->sell->total-$this->sell->pay;
-                             //$this->sell->save();
+                                   return;
+                               }
 
                                 $this->tarsellForm->fill(['sell_id'=>$this->record->id,'tar_date'=>now(),'q1'=>1,'item_id'=>null]);
                                 $this->resetTable();
@@ -267,25 +268,33 @@ public function tarsellForm(Schema $schema): Schema
                 ->requiresConfirmation()
                ->action(function (Sell_tran $record){
 
-                  $this->selltran=Sell_tran::find($record->id)  ;
-                  $this->tarsell=Tar_sell::find($this->selltran->Tar_sell->id);
-                 $this->incAll($this->sell_id,$this->selltran->item_id,$this->sell->place_id,$this->selltran->q1,
-                   $this->selltran->q2);
-                 $this->selltran->q1+=$this->tarsell->q1;
-                 $this->selltran->tar_sell_id=null;
-                 $this->selltran->sub_tot+=$this->tarsell->sub_tot;
-                 $this->selltran->save();
-                 $this->decAll($this->selltran->id,$this->sell_id,$this->selltran->item_id,
-                   $this->sell->place_id,$this->selltran->q1,$this->selltran->q2);
+                  try {
+                      DB::connection(Auth::user()->company)->transaction(function () use ($record) {
+                          $this->selltran=Sell_tran::find($record->id)  ;
+                          $this->tarsell=Tar_sell::find($this->selltran->Tar_sell->id);
+                          $this->incAll($this->sell_id,$this->selltran->item_id,$this->sell->place_id,$this->selltran->q1,
+                            $this->selltran->q2,$this->selltran->id);
+                          $this->selltran->q1+=$this->tarsell->q1;
+                          $this->selltran->tar_sell_id=null;
+                          $this->selltran->sub_tot+=$this->tarsell->sub_tot;
+                          $this->selltran->save();
+                          $this->decAll($this->selltran->id,$this->sell_id,$this->selltran->item_id,
+                            $this->sell->place_id,$this->selltran->q1,$this->selltran->q2);
 
-                 $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
-                 $this->sell->tot=$tot;
-                 $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
-                 $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
-                 $this->sell->baky=$this->sell->total-$this->sell->pay;
-                 $this->sell->save();
+                          $tot = Sell_tran::where('sell_id', $this->sell_id)->sum('sub_tot');
+                          $this->sell->tot=$tot;
+                          $this->sell->differ=($this->sell->tot+$this->sell->cost)*$this->sell->rate/100;
+                          $this->sell->total=$tot+$this->sell->differ+$this->sell->cost;
+                          $this->sell->baky=$this->sell->total-$this->sell->pay;
+                          $this->sell->save();
 
-                 $this->tarsell->delete();
+                          $this->tarsell->delete();
+                      });
+                  } catch (\Throwable $e) {
+                      Notification::make()->title($e->getMessage())->danger()->send();
+
+                      return;
+                  }
 
                  $this->tarsellForm->fill(['sell_id'=>$this->sell_id,'tar_date'=>now(),'q1'=>1,'item_id'=>null]);
                  $this->resetTable();

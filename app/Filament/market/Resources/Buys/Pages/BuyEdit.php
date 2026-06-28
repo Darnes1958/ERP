@@ -568,7 +568,7 @@ class BuyEdit extends Page implements HasTable,HasForms
             ->where('item_id',$this->buytranData['item_id'])->first();
         if ($this->buytran) {
             $this->decAllBuy($this->buytran->item_id,$this->buy->place_id,$this->buytran->q1);
-            $this->buytran->update($this->buyTranForm->getState());
+            $this->buytran->update(collect($this->buyTranForm->getState())->put('qs1', $q1)->toArray());
             $this->buytran->update(['sub_input'=>$sub]);
         }
         else

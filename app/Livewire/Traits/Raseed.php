@@ -20,6 +20,8 @@ use App\Models\Salary;
 use App\Models\Salarytran;
 use App\Models\Sell_tran;
 use App\Models\Setting;
+use App\Services\FifoReconcileService;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -134,34 +136,83 @@ trait Raseed {
       return $this->retRaseedTwo($item_id,$place_id) - $this->retQuant($item_id,$quant['q1'],$quant['q2']) >=0;
     }
 
+    public function retFifoAvailable(int $item_id): float
+    {
+        $service = app(FifoReconcileService::class);
+
+        return $service->theoreticalFifoRemaining($item_id);
+    }
+
+    public function syncFifoItem(int $item_id, ?int $place_id = null): array
+    {
+        return app(FifoReconcileService::class)->syncItem($item_id, $place_id);
+    }
+
+    public function syncFifoItems(iterable $item_ids, ?int $place_id = null): array
+    {
+        $service = app(FifoReconcileService::class);
+        $results = [];
+        foreach ($item_ids as $item_id) {
+            $results[$item_id] = $service->syncItem((int) $item_id, $place_id);
+        }
+
+        return $results;
+    }
 
     public function decAll($sell_tran_id,$sell_id,$item_id,$place_id,$q1,$q2){
         $item=Item::find($item_id);
         $count=$item->count;
+        $quant = ($item->two_unit->value == 1)
+            ? $q2 + ($q1 * $count)
+            : $q1;
 
         if ($item->two_unit->value==1) {
-            $quant = $q2 + ($q1 * $count);
             $quantItem = ($item->stock2 + ($item->stock1 * $count)) - $quant;
             $item->stock1 = intdiv($quantItem, $count);
             $item->stock2 = $quantItem % $count;
-        } else  {
-            $quant=$q1;
+        } else {
             $item->stock1 -= $q1;
         }
 
         $item->save();
 
         $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
+        if (! $place) {
+            throw new \RuntimeException("رصيد المكان غير موجود للصنف رقم {$item_id}");
+        }
+
         if ($item->two_unit->value==1) {
             $quantPlace = ($place->stock2 + ($place->stock1 * $count)) - $quant;
             $place->stock1 = intdiv($quantPlace, $count);
             $place->stock2 = $quantPlace % $count;
-        } else $place->stock1 -= $q1;
+        } else {
+            $place->stock1 -= $q1;
+        }
         $place->save();
 
-        $this->decQs($sell_tran_id,$sell_id,$item_id,$count,$quant);
+        $result = $this->syncFifoItem($item_id, $place_id);
+        $this->notifyFifoOpeningIfCreated($item_id, $result);
+
+        return $result;
     }
-    public function incAll($sell_id,$item_id,$place_id,$q1,$q2){
+
+    protected function notifyFifoOpeningIfCreated(int $item_id, array $syncResult): void
+    {
+        if (empty($syncResult['opening']['created'])) {
+            return;
+        }
+
+        $item = Item::find($item_id);
+        $qty = $syncResult['opening']['quantity'];
+        $buyId = $syncResult['opening']['buy_id'];
+
+        Notification::make()
+            ->title('رصيد افتتاحي FIFO')
+            ->body('الصنف ('.($item?->name ?? $item_id)."): تمت إضافة كمية {$qty} في فاتورة شراء رقم {$buyId}")
+            ->warning()
+            ->send();
+    }
+    public function incAll($sell_id,$item_id,$place_id,$q1,$q2, ?int $sell_tran_id = null){
 
     $item=Item::find($item_id);
     $count=$item->count;
@@ -176,14 +227,16 @@ trait Raseed {
     $item->save();
 
     $place=Place_stock::where('place_id',$place_id)->where('item_id',$item_id)->first();
+    if (! $place) {
+        throw new \RuntimeException("رصيد المكان غير موجود للصنف رقم {$item_id}");
+    }
+
     if ($two_unit->value==1) {
         $quantPlace = ($place->stock2 + ($place->stock1 * $count)) + $quant;
         $place->stock1 = intdiv($quantPlace, $count);
         $place->stock2 = $quantPlace % $count;
     } else $place->stock1+=$q1;
     $place->save();
-
-    $this->incQs($sell_id,$item_id,$count);
   }
     public function incAllBuy($item_id,$place_id,$q1,$price_type,$price_input){
 
@@ -218,6 +271,8 @@ trait Raseed {
            'stock1'=>$q1,
            'stock2'=>0,
         ]);
+
+        $this->syncFifoItem($item_id, $place_id);
     }
     public function decAllBuy($item_id,$place_id,$q1){
 
@@ -229,6 +284,8 @@ trait Raseed {
         $place->stock1-=$q1;
 
         $place->save();
+
+        $this->syncFifoItem($item_id, $place_id);
     }
    public function OneToTwo($count,$quant){
        return ['q1'=>intdiv($quant,$count),'q2' => $quant % $count];
@@ -238,65 +295,43 @@ trait Raseed {
     }
    public function decQs($sell_tran_id,$sell_id,$item,$count,$quant){
       $buyTran=Buy_tran::where('item_id',$item)
-          ->Where(function (Builder $query) {
-              $query->where('qs1', '>',0)
-                    ->orwhere('qs2', '>', 0);
-          })
+          ->where('qs1', '>', 0)
          ->orderBy('created_at','asc')
          ->get();
       $tank=0;
       $sell_tran=Sell_tran::find($sell_tran_id);
       $profit=0;
-      $two_unit=Item::find($item)->two_unit;
       foreach ($buyTran as $tran) {
-
-        if ($two_unit->value==1)
-         $qs=$this->TwoToOne($count,$tran->qs1,$tran->qs2);
-        else $qs=$tran->qs1;
+        $qs=$tran->qs1;
 
         if ( $qs > ($quant-$tank)) $decQuant=$quant-$tank;
         else $decQuant=$qs;
 
-        if ($two_unit->value==1)  {
-          $qs=$this->OneToTwo($count,$qs-$decQuant) ;
-          $tran->qs1=$qs['q1'];
-          $tran->qs2=$qs['q2'];
+        $tran->qs1 = $qs - $decQuant;
+        $tran->save();
 
-        }else {
-            $qs =  $qs - $decQuant;
-            $tran->qs1 = $qs;
-        }
-          $tran->save();
-
-        if ($two_unit->value==1) {
-            $decQ = $this->OneToTwo($count, $decQuant);
-            BuySell::create([
-                'buy_id' => $tran->buy_id,
-                'sell_id' => $sell_id,
-                'item_id' => $item,
-                'q1' => $decQ['q1'],
-                'q2' => $decQ['q2'],
-            ]);
-            $sub_input=($tran->price_input*$decQ['q1']) + (($tran->price_input/$count)*$decQ['q2']);
-            $sub_tot=($sell_tran->price1*$decQ['q1']) + ($sell_tran->price2*$decQ['q2']);
-        } else {
-            BuySell::create([
-                'buy_id' => $tran->buy_id,
-                'sell_id' => $sell_id,
-                'item_id' => $item,
-                'q1' => $decQuant,
-                'q2' => 0,
-            ]);
-            $sub_input=($tran->price_input*$decQuant) ;
-            $sub_tot=($sell_tran->price1*$decQuant);
-        }
-
+        BuySell::create([
+            'buy_id' => $tran->buy_id,
+            'sell_id' => $sell_id,
+            'sell_tran_id' => $sell_tran_id,
+            'item_id' => $item,
+            'q1' => $decQuant,
+            'q2' => 0,
+        ]);
+        $sub_input = $tran->price_input * $decQuant;
+        $sub_tot = $sell_tran->price1 * $decQuant;
 
           $profit+=$sub_tot-$sub_input;
           $tank+=$decQuant;
           if ($tank==$quant) break;
 
       }
+
+      if ($tank < $quant) {
+          $itemName = Item::find($item)?->name ?? (string) $item;
+          throw FifoStockException::forItem($itemName, $quant, $tank);
+      }
+
       Sell_tran::find($sell_tran_id)->update(['profit'=>$profit]);
    }
     public function decQs2($sell_tran_id,$sell_id,$item,$count,$quant){
@@ -404,35 +439,40 @@ trait Raseed {
             if ($tank==$quant) break;
         }
     }
-   public function incQs($sell_id,$item,$count){
+   public function incQs($sell_id,$item,$count, ?int $sell_tran_id = null){
 
-   $buysell= BuySell::where('sell_id',$sell_id)
-             ->where('item_id',$item)
-             ->get();
+   $query = BuySell::where('sell_id', $sell_id)->where('item_id', $item);
+   if ($sell_tran_id !== null) {
+       $query->where('sell_tran_id', $sell_tran_id);
+   }
+   $buysell = $query->get();
+
+   if ($buysell->isEmpty() && $sell_tran_id !== null) {
+       $buysell = BuySell::where('sell_id', $sell_id)
+           ->where('item_id', $item)
+           ->whereNull('sell_tran_id')
+           ->get();
+   }
+
     foreach ($buysell as $tran) {
-      $two_unit=Item::find($item)->two_unit;
-
-      if ($two_unit->value==1)
-       $q=$this->TwoToOne($count,$tran->q1,$tran->q2);
-      else $q=$tran->q1;
+      $q = $tran->q1;
 
       $Buy=Buy_tran::where('buy_id',$tran->buy_id)
                 ->where('item_id',$item)->first();
 
-      if ($two_unit->value==1)
-       $qs=$q+$this->TwoToOne($count,$Buy->qs1,$Buy->qs2);
-      else $qs=$q+$Buy->qs1;
-
-
-        Buy_tran::where('buy_id',$tran->buy_id)
-            ->where('item_id',$item)->update([
-               'qs1'=>$qs,
-            ]);
-
+      if ($Buy) {
+          $Buy->qs1 = $q + $Buy->qs1;
+          $Buy->save();
+      }
     }
-     BuySell::where('sell_id',$sell_id)
-       ->where('item_id',$item)
-       ->delete();
+
+    $deleteQuery = BuySell::where('sell_id', $sell_id)->where('item_id', $item);
+    if ($sell_tran_id !== null) {
+        $deleteQuery->where(function ($q) use ($sell_tran_id) {
+            $q->where('sell_tran_id', $sell_tran_id)->orWhereNull('sell_tran_id');
+        });
+    }
+    $deleteQuery->delete();
   }
     public function TarseedTrans(){
         $res=Salary::all();

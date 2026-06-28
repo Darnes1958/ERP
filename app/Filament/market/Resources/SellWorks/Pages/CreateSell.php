@@ -39,6 +39,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CreateSell extends Page  implements HasTable,HasForms
 {
@@ -770,36 +771,47 @@ class CreateSell extends Page  implements HasTable,HasForms
                                         $kaz=$this->sellStoreData['kazena_id'];
                                     }
                                     else $kaz=null;
-                                    unset($this->sell['id'],$this->sell['created_at'],$this->sell['updated_at']);
-                                    $id=Sell::create($this->sell->toArray());
-                                    $selltran=Sell_tran_work::where('sell_id',Auth::id())->get();
-                                    foreach ($selltran as $tran) {
-                                        $tran->sell_id=$id->id;
-                                        unset($tran['id'],$tran['created_at'],$tran['updated_at']);
-                                        $tran_id=Sell_tran::create($tran->toArray());
 
-                                        $this->decAll($tran_id->id,$id->id,$tran->item_id,$id->place_id,$tran->q1,$tran->q2);
-                                        if (! Price_sell::where('item_id',$tran->item_id)->where('price_type_id',$this->sell->price_type_id)->first())
-                                            Price_sell::create(['item_id'=>$tran->item_id,'price_type_id'=>$this->sell->price_type_id
-                                                ,'price1'=>$tran->price1,'price2'=>$tran->price2,'pricej1'=>$tran->price1,'pricej2'=>$tran->price2,]);
-                                        // $this->setPriceSell($tran->item_id,$this->sell->price_type_id,$this->sell->single,$tran->price1,$tran->price2);
+                                    try {
+                                        $id = DB::connection(Auth::user()->company)->transaction(function () use ($kaz, $acc) {
+                                            unset($this->sell['id'], $this->sell['created_at'], $this->sell['updated_at']);
+                                            $id = Sell::create($this->sell->toArray());
+                                            $selltran = Sell_tran_work::where('sell_id', Auth::id())->get();
+                                            foreach ($selltran as $tran) {
+                                                $tran->sell_id = $id->id;
+                                                unset($tran['id'], $tran['created_at'], $tran['updated_at']);
+                                                $tran_id = Sell_tran::create($tran->toArray());
+
+                                                $this->decAll($tran_id->id, $id->id, $tran->item_id, $id->place_id, $tran->q1, $tran->q2);
+                                                if (! Price_sell::where('item_id', $tran->item_id)->where('price_type_id', $this->sell->price_type_id)->first()) {
+                                                    Price_sell::create(['item_id' => $tran->item_id, 'price_type_id' => $this->sell->price_type_id
+                                                        , 'price1' => $tran->price1, 'price2' => $tran->price2, 'pricej1' => $tran->price1, 'pricej2' => $tran->price2, ]);
+                                                }
+                                            }
+                                            if ($this->sell->pay > 0) {
+                                                Receipt::create([
+                                                    'receipt_date' => $this->sell->order_date,
+                                                    'customer_id' => $this->sell->customer_id,
+                                                    'sell_id' => $id->id,
+                                                    'price_type_id' => $this->sell->price_type_id,
+                                                    'rec_who' => 6,
+                                                    'imp_exp' => 0,
+                                                    'val' => $this->sell->pay,
+                                                    'kazena_id' => $kaz,
+                                                    'acc_id' => $acc,
+                                                    'place_id' => $this->sell->place_id,
+                                                    'notes' => 'فاتورة مبيعات رقم '.strval($id->id),
+                                                    'user_id' => Auth::id(),
+                                                ]);
+                                            }
+
+                                            return $id;
+                                        });
+                                    } catch (\Throwable $e) {
+                                        Notification::make()->title($e->getMessage())->danger()->send();
+
+                                        return;
                                     }
-                                    if ($this->sell->pay>0)
-
-                                        Receipt::create([
-                                            'receipt_date'=>$this->sell->order_date,
-                                            'customer_id'=>$this->sell->customer_id,
-                                            'sell_id'=>$id->id,
-                                            'price_type_id'=>$this->sell->price_type_id,
-                                            'rec_who'=>6,
-                                            'imp_exp'=>0,
-                                            'val'=>$this->sell->pay,
-                                            'kazena_id'=>$kaz,
-                                            'acc_id'=>$acc,
-                                            'place_id'=>$this->sell->place_id,
-                                            'notes'=>'فاتورة مبيعات رقم '.strval($id->id),
-                                            'user_id'=>Auth::id()
-                                        ]);
 
                                     $this->sell=Sell_work::find(Auth::id());
                                     $this->sell->tot=0;  $this->sell->pay=0; $this->sell->baky=0;$this->sell->total=0;

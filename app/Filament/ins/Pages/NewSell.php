@@ -27,6 +27,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Repeater\TableColumn;
 
 class NewSell extends Page implements HasForms
@@ -289,13 +290,22 @@ class NewSell extends Page implements HasForms
                                      $set('price_type_id',3);
                                      $set('single',1);
                                      $set('user_id',Auth::id());
-                                     $sell=Sell::create( collect($this->sellData)->except(['Sell_tran'])->toArray());
-                                     foreach ($this->sellData['Sell_tran'] as $item){
+                                     try {
+                                         $sell = DB::connection(Auth::user()->company)->transaction(function () {
+                                             $sell = Sell::create(collect($this->sellData)->except(['Sell_tran'])->toArray());
+                                             foreach ($this->sellData['Sell_tran'] as $item) {
+                                                 $item['sell_id'] = $sell->id;
+                                                 $tran_id = Sell_tran::create(collect($item)->except(['stock1'])->toArray());
+                                                 $this->decAll($tran_id->id, $sell->id, $item['item_id'], $sell->place_id, $item['q1'], 0);
+                                                 $this->setPriceSell($item['item_id'], $sell->price_type_id, $sell->single, $item['price1'], 0);
+                                             }
 
-                                         $item['sell_id']=$sell->id;
-                                         $tran_id=Sell_tran::create(collect($item)->except(['stock1'])->toArray());
-                                         $this->decAll($tran_id->id,$sell->id,$item['item_id'],$sell->place_id,$item['q1'],0);
-                                         $this->setPriceSell($item['item_id'],$sell->price_type_id,$sell->single,$item['price1'],0);
+                                             return $sell;
+                                         });
+                                     } catch (\Throwable $e) {
+                                         Notification::make()->title($e->getMessage())->danger()->send();
+
+                                         return;
                                      }
                                      $set('Sell_tran',null);
                                      $set('place_id',null);

@@ -123,9 +123,9 @@ class SellTranForm extends Form
     {
         $this->decAll($sell_tran_id,$this->sell_id,$this->item_id,$place_id,$this->q1,$this->q2);
     }
-  public function DoIncALl($place_id)
+  public function DoIncALl($place_id, ?int $sell_tran_id = null)
   {
-    $this->incAll($this->sell_id,$this->item_id,$place_id,$this->q1,$this->q2);
+    $this->incAll($this->sell_id,$this->item_id,$place_id,$this->q1,$this->q2,$sell_tran_id);
   }
 
 }
