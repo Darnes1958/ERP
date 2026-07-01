@@ -102,7 +102,6 @@ class SellOfferResource extends Resource
                     ->color('blue')
                     ->action(function (Sell_offer $record) {
                         $res = Sell_offer_tran::where('sell_id', $record->id)->get();
-
                         return Response::download(
                             self::ret_spatie($res, 'PDF.rep-order-sell-offer', ['sell' => $record]),
                             'offer-'.$record->id.'.pdf',

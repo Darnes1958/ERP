@@ -252,9 +252,7 @@ class InpSellOffer extends Page implements HasSchemas,HasTable
                             ->hiddenLabel()
                             ->prefix('نقطة البيع')
                             ->relationship('Place','name')
-                            ->disabled(function (){
-                                return Sell_offer_tran_work::where('sell_id',$this->sell->id)->exists();
-                            })
+
                             ->live()
                             ->required()
                             ->columnSpan(4)
@@ -288,7 +286,7 @@ class InpSellOffer extends Page implements HasSchemas,HasTable
                                     ])->columns(2)
                             ])
                             ->id('place_id')
-                            ->visible(Setting::find(Auth::user()->company)->many_place && Auth::user()->hasRole('admin')),
+                         ,
                         Select::make('price_type_id')
                             ->hiddenLabel()
                             ->prefix('طريقة الدفع')

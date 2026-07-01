@@ -235,15 +235,101 @@ class FifoReconcileService
     }
 
     /**
-     * sell_trans (q1 > 0) with no buy_sells for the same sell_id + item_id.
-     * Matches: sell_trans WHERE item_id NOT IN (buy_sells for same sell_id).
+     * Exact user SQL: sell_trans rows with no buy_sells for same sell_id + item_id.
+     */
+    public function userOrphanCount(): int
+    {
+        return (int) $this->db()->selectOne('
+            SELECT COUNT(*) AS cnt
+            FROM sell_trans
+            WHERE item_id NOT IN (
+                SELECT item_id FROM buy_sells
+                WHERE sell_trans.sell_id = buy_sells.sell_id
+            )
+        ')->cnt;
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function userOrphanItemIds(): array
+    {
+        return collect($this->db()->select('
+            SELECT DISTINCT item_id
+            FROM sell_trans
+            WHERE item_id NOT IN (
+                SELECT item_id FROM buy_sells
+                WHERE sell_trans.sell_id = buy_sells.sell_id
+            )
+        '))->pluck('item_id')->map(fn ($id) => (int) $id)->values()->all();
+    }
+
+    /**
+     * sell_trans lines with no buy_sells.sell_tran_id link (per-line FIFO view).
+     */
+    public function sellTranOrphanCount(): int
+    {
+        return (int) $this->db()->selectOne('
+            SELECT COUNT(*) AS cnt
+            FROM sell_trans st
+            WHERE NOT EXISTS (
+                SELECT 1 FROM buy_sells bs WHERE bs.sell_tran_id = st.id
+            )
+        ')->cnt;
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function sellTranOrphanItemIds(): array
+    {
+        return collect($this->db()->select('
+            SELECT DISTINCT st.item_id
+            FROM sell_trans st
+            WHERE NOT EXISTS (
+                SELECT 1 FROM buy_sells bs WHERE bs.sell_tran_id = st.id
+            )
+        '))->pluck('item_id')->map(fn ($id) => (int) $id)->values()->all();
+    }
+
+    /**
+     * Repair FIFO for all items that ever appeared in sell_trans.
+     *
+     * @return array{user_orphans_before: int, user_orphans_after: int, sell_tran_orphans_before: int, sell_tran_orphans_after: int, items_repaired: int}
+     */
+    public function repairDatabase(bool $createOpening = true): array
+    {
+        $userBefore = $this->userOrphanCount();
+        $lineBefore = $this->sellTranOrphanCount();
+
+        $itemIds = $this->query(Sell_tran::class)
+            ->distinct()
+            ->pluck('item_id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
+        foreach ($itemIds as $itemId) {
+            $this->repairItem($itemId, $createOpening);
+        }
+
+        return [
+            'user_orphans_before' => $userBefore,
+            'user_orphans_after' => $this->userOrphanCount(),
+            'sell_tran_orphans_before' => $lineBefore,
+            'sell_tran_orphans_after' => $this->sellTranOrphanCount(),
+            'items_repaired' => count($itemIds),
+        ];
+    }
+
+    /**
+     * sell_trans with no buy_sells for the same sell_id + item_id (NOT EXISTS, no q1 filter).
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
     protected function orphanSellTranQuery(): Builder
     {
         return $this->query(Sell_tran::class)
-            ->where('sell_trans.q1', '>', 0)
             ->whereNotExists(function ($q) {
                 $q->selectRaw('1')
                     ->from('buy_sells')
@@ -287,7 +373,9 @@ class FifoReconcileService
      */
     public function itemsNeedingRepair(): array
     {
-        return collect($this->orphanItemIds())
+        return collect($this->userOrphanItemIds())
+            ->merge($this->sellTranOrphanItemIds())
+            ->merge($this->orphanItemIds())
             ->merge($this->incompleteItemIds())
             ->unique()
             ->values()
@@ -313,13 +401,14 @@ class FifoReconcileService
     }
 
     /**
-     * Repair sell_trans that have no buy_sells and profit = 0.
+     * Repair items with missing or incomplete buy_sells links.
      *
-     * @return array{orphans_before: int, orphans_after: int, items_repaired: int, results: array<int, array>}
+     * @return array{user_orphans_before: int, user_orphans_after: int, sell_tran_orphans_before: int, sell_tran_orphans_after: int, items_repaired: int, results: array<int, array>}
      */
     public function repairOrphans(): array
     {
-        $orphansBefore = $this->orphanSellTranCount();
+        $userBefore = $this->userOrphanCount();
+        $lineBefore = $this->sellTranOrphanCount();
         $itemIds = $this->itemsNeedingRepair();
         $results = [];
 
@@ -328,8 +417,10 @@ class FifoReconcileService
         }
 
         return [
-            'orphans_before' => $orphansBefore,
-            'orphans_after' => $this->orphanSellTranCount(),
+            'user_orphans_before' => $userBefore,
+            'user_orphans_after' => $this->userOrphanCount(),
+            'sell_tran_orphans_before' => $lineBefore,
+            'sell_tran_orphans_after' => $this->sellTranOrphanCount(),
             'items_repaired' => count($itemIds),
             'results' => $results,
         ];
@@ -405,5 +496,10 @@ class FifoReconcileService
         return $this->connection
             ? $modelClass::on($this->connection)->create($attributes)
             : $modelClass::create($attributes);
+    }
+
+    protected function db(): \Illuminate\Database\Connection
+    {
+        return $this->connection ? DB::connection($this->connection) : DB::connection();
     }
 }
