@@ -390,7 +390,7 @@ class SellEdit extends Page implements HasTable,HasForms
                             ->live()
                             ->required()
                             ->id('price1')
-                            ->readOnly(fn():bool => ! Auth::user()->hasRole('admin'))
+                            ->readOnly(fn():bool => ! Auth::user()->can('تعديل السعر'))
                             ->extraAttributes([
                                 'wire:keydown.enter' => "\$dispatch('gotoitem', { test: 'q1' })",
                             ]),
